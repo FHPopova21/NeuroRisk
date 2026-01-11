@@ -11,9 +11,11 @@ from src.data_processing.loader import load_bonn_data
 from src.data_processing.filtering import apply_lowpass_filter
 from src.data_processing.segmentation import segment_data
 from src.data_processing.splitting import split_data_by_patient
+from src.data_processing.splitting import split_data_by_patient
 from src.data_processing.normalization import fit_scaler, apply_scaler
+from src.data_processing.features import extract_features
 
-def save_subset_to_csv(X, y, filename, subset_name, expected_classes=None):
+def save_subset_to_csv(X, y, filename, subset_name, expected_classes=None, extra_features=None, shuffle=False):
     """Encodes labels to One-Hot and saves to CSV."""
     if len(X) == 0:
         print(f"Warning: {subset_name} is empty. Skipping save.")
@@ -23,6 +25,11 @@ def save_subset_to_csv(X, y, filename, subset_name, expected_classes=None):
     n_features = X.shape[1]
     columns = [f'X{i+1}' for i in range(n_features)]
     df = pd.DataFrame(X, columns=columns)
+    
+    # 1.5 Add Extra Features if provided
+    if extra_features is not None:
+        df_features = pd.DataFrame(extra_features)
+        df = pd.concat([df, df_features], axis=1)
     
     # 2. One-Hot Encoding of Labels
     y_series = pd.Series(y)
@@ -40,9 +47,25 @@ def save_subset_to_csv(X, y, filename, subset_name, expected_classes=None):
     # Concatenate features and OHE labels
     df_final = pd.concat([df, y_dummies], axis=1)
     
+    # Shuffle if requested
+    if shuffle:
+        print(f"  -> Shuffling {subset_name} rows...")
+        df_final = df_final.sample(frac=1, random_state=42).reset_index(drop=True)
+    
     # Save
     print(f"Saving {subset_name} ({df_final.shape}) to {filename}...")
     df_final.to_csv(filename, index=False)
+
+def process_features(X_raw_segments):
+    """
+    Compute transient features for a list of segments.
+    """
+    feature_list = []
+    print(f"Extracting features for {len(X_raw_segments)} segments...")
+    for segment in X_raw_segments:
+        feats = extract_features(segment)
+        feature_list.append(feats)
+    return feature_list
 
 def main():
     print("Starting dataset generation pipeline...")
@@ -86,10 +109,21 @@ def main():
     X_val, y_val = segment_data(X_val_norm, y_val_raw, WINDOW_SIZE, STEP_SIZE)
     X_test, y_test = segment_data(X_test_norm, y_test_raw, WINDOW_SIZE, STEP_SIZE)
     
-    print(f"Segmentation complete.")
+    print(f"Segmentation complete (Normalized).")
     print(f"  Train: {X_train.shape}")
     print(f"  Val:   {X_val.shape}")
     print(f"  Test:  {X_test.shape}")
+    
+    # 4.1 Segment RAW Data (for Feature Extraction) - Same logic, no scaler
+    print("Segmenting RAW data for feature extraction (preserving absolute amplitude)...")
+    X_train_raw_seg, _ = segment_data(X_train_raw, y_train_raw, WINDOW_SIZE, STEP_SIZE)
+    X_val_raw_seg, _ = segment_data(X_val_raw, y_val_raw, WINDOW_SIZE, STEP_SIZE)
+    X_test_raw_seg, _ = segment_data(X_test_raw, y_test_raw, WINDOW_SIZE, STEP_SIZE)
+    
+    # 4.2 Compute Features
+    feats_train = process_features(X_train_raw_seg)
+    feats_val = process_features(X_val_raw_seg)
+    feats_test = process_features(X_test_raw_seg)
     
     # 5. Export to CSV (with One-Hot Encoding)
     os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -97,9 +131,9 @@ def main():
     # Define expected columns for 3-class mapping
     expected_classes = [0, 1, 2]
     
-    save_subset_to_csv(X_train, y_train, os.path.join(OUTPUT_DIR, 'Bonn_EEG_Train.csv'), "Train Set", expected_classes)
-    save_subset_to_csv(X_val, y_val, os.path.join(OUTPUT_DIR, 'Bonn_EEG_Val.csv'), "Validation Set", expected_classes)
-    save_subset_to_csv(X_test, y_test, os.path.join(OUTPUT_DIR, 'Bonn_EEG_Test.csv'), "Test Set", expected_classes)
+    save_subset_to_csv(X_train, y_train, os.path.join(OUTPUT_DIR, 'Bonn_EEG_Train.csv'), "Train Set", expected_classes, extra_features=feats_train, shuffle=True)
+    save_subset_to_csv(X_val, y_val, os.path.join(OUTPUT_DIR, 'Bonn_EEG_Val.csv'), "Validation Set", expected_classes, extra_features=feats_val, shuffle=False)
+    save_subset_to_csv(X_test, y_test, os.path.join(OUTPUT_DIR, 'Bonn_EEG_Test.csv'), "Test Set", expected_classes, extra_features=feats_test, shuffle=False)
     
     print("Dataset generation successful!")
 
