@@ -60,6 +60,7 @@ def main():
     # Evaluate
     print("\n--- Evaluation on Test Set ---")
     y_pred = model.predict(X_test)
+    y_prob = model.predict_proba(X_test)
     
     acc = accuracy_score(y_test, y_pred)
     print(f"Accuracy: {acc:.4f}")
@@ -73,8 +74,17 @@ def main():
     if acc > 0.90:
         print("\nNote: High accuracy achieved with simple linear model. \n" 
               "This suggests the engineered features (amplitude/energy) are very discriminative for Seizure vs Non-Seizure.")
-    else:
         print(f"\nBaseline Performance: {acc*100:.1f}%. Deep Learning models should aim to beat this.")
+    
+    # Save outputs for Notebook Evaluation
+    output_dir = "outputs"
+    os.makedirs(output_dir, exist_ok=True)
+    
+    print(f"\nSaving predictions to {output_dir}/ ...")
+    np.save(os.path.join(output_dir, "y_test_true.npy"), y_test)
+    np.save(os.path.join(output_dir, "y_test_pred.npy"), y_pred)
+    np.save(os.path.join(output_dir, "y_test_prob.npy"), y_prob)
+    print("Done.")
 
 if __name__ == "__main__":
     main()
