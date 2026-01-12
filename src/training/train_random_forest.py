@@ -4,10 +4,20 @@ import numpy as np
 import pandas as pd
 import joblib
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+
+# --- 1. SETUP PATHS (CRITICAL FIX) ---
+# Намираме къде се намира този файл (src/training/train_random_forest.py)
+current_script_dir = os.path.dirname(os.path.abspath(__file__))
+# Връщаме се две нива назад, за да намерим главната папка на проекта (Project Root)
+project_root = os.path.abspath(os.path.join(current_script_dir, '..', '..'))
+
+# Добавяме главната папка към Python пътя, за да работят импортите от src
+if project_root not in sys.path:
+    sys.path.append(project_root)
+
+# Сега можем безопасно да импортираме нашия модел
 from src.models.random_forest import RandomForest
 
-# Add project root to path
-sys.path.append(os.path.abspath('.'))
 
 def load_data(path, target_class_col='y_2'):
     """
@@ -18,86 +28,107 @@ def load_data(path, target_class_col='y_2'):
         raise FileNotFoundError(f"File not found: {path}")
 
     df = pd.read_csv(path)
-    
+
     # Identify feature columns (X... and transient features)
     label_cols = ['y_0', 'y_1', 'y_2']
     feature_cols = [c for c in df.columns if c not in label_cols]
-    
+
     X = df[feature_cols].values
     y = df[target_class_col].values
-    
+
     return X, y, feature_cols
+
 
 def main():
     print("--- Classical ML: Random Forest (Sklearn) ---")
-    
-    # Paths
-    train_path = 'data/processed/Bonn_EEG_Train.csv'
-    test_path = 'data/processed/Bonn_EEG_Test.csv'
-    model_save_path = 'models/random_forest.pkl'
-    os.makedirs('models', exist_ok=True)
-    os.makedirs('outputs', exist_ok=True)
 
-    # 1. Load Data
-    print("Loading data...")
+    # --- 2. DEFINE ABSOLUTE PATHS ---
+    # Използваме project_root, за да сме сигурни, че файловете ще бъдат намерени
+    train_path = os.path.join(project_root, 'data', 'processed', 'Bonn_EEG_Train.csv')
+    test_path = os.path.join(project_root, 'data', 'processed', 'Bonn_EEG_Test.csv')
+
+    model_dir = os.path.join(project_root, 'models')
+    output_dir = os.path.join(project_root, 'outputs')
+    model_save_path = os.path.join(model_dir, 'random_forest.pkl')
+
+    # Създаваме папките, ако не съществуват
+    os.makedirs(model_dir, exist_ok=True)
+    os.makedirs(output_dir, exist_ok=True)
+
+    # --- 3. LOAD DATA ---
+    print(f"Loading data from: {train_path}")
     try:
         X_train, y_train, feat_names = load_data(train_path)
         X_test, y_test, _ = load_data(test_path)
     except Exception as e:
-        print(e)
+        print(f"Error loading data: {e}")
         return
 
     print(f"Train Statistics: {X_train.shape} samples")
     print(f"Test Statistics:  {X_test.shape} samples")
 
-    # 2. Initialize Model
+    # --- 4. INITIALIZE MODEL ---
     # Using 100 trees, entropy criterion (information gain), and parallel processing
     clf = RandomForest(
         n_estimators=100,
         criterion='entropy',
-        max_depth=20,           # КРИТИЧНО: ограничаваме сложността
-        min_samples_split=10,   # предотвратява микро-разклонения
-        min_samples_leaf=5,     # стабилизира листата
+        max_depth=20,
+        min_samples_split=10,
+        min_samples_leaf=5,
         bootstrap=True,
-        n_jobs=-1,              # ако използваш sklearn
+
         random_state=42
-)
+    )
 
-    print(f"\nConfiguration: 100 Trees, Entropy, Max Depth=None")
+    print(f"\nConfiguration: 100 Trees, Entropy, Max Depth=20")
 
-    # 3. Train
+    # --- 5. TRAIN ---
     print("\nTraining Random Forest...")
     clf.fit(X_train, y_train)
     print("Training complete.")
 
-    # 4. Save Model
+    # --- 6. SAVE MODEL ---
     joblib.dump(clf, model_save_path)
     print(f"Model saved to {model_save_path}")
 
-    # 5. Evaluate
+    # --- 7. EVALUATE ---
     print("\n--- Evaluation on Test Set ---")
-    y_pred = clf.predict(X_test)
-    y_prob = clf.predict_proba(X_test)[:, 1] # Probability of Class 1 (Seizure)
 
-    train_acc = clf.score(X_train, y_train)
-    test_acc = clf.score(X_test, y_test)
-    print(train_acc, test_acc)
+    # 1. Предсказване (това работи, защото wrapper-ът има predict)
+    y_pred_test = clf.predict(X_test)
+    y_pred_train = clf.predict(X_train)  # Трябва да предскажем и за train, за да сметнем точността
 
-    acc = accuracy_score(y_test, y_pred)
-    print(f"Accuracy: {acc:.4f}")
+    # Проверка за вероятности
+    try:
+        y_prob = clf.predict_proba(X_test)[:, 1]
+    except:
+        y_prob = np.zeros_like(y_pred_test)
+        print("Warning: predict_proba not supported, setting probs to 0.")
+
+    # 2. ИЗЧИСЛЯВАНЕ НА ТОЧНОСТ (КОРЕКЦИЯТА Е ТУК)
+    # Вместо clf.score(X, y), използваме accuracy_score(y_true, y_pred)
+    train_acc = accuracy_score(y_train, y_pred_train)
+    test_acc = accuracy_score(y_test, y_pred_test)
+
+    print(f"Train Accuracy: {train_acc:.4f}")
+    print(f"Test Accuracy:  {test_acc:.4f}")
+
+    # Тази проверка е излишна сега, защото test_acc е същото, но може да я оставите за всеки случай
+    # acc = accuracy_score(y_test, y_pred_test)
+    # print(f"Sklearn Accuracy Check: {acc:.4f}")
 
     print("\nConfusion Matrix:")
-    cm = confusion_matrix(y_test, y_pred)
+    cm = confusion_matrix(y_test, y_pred_test)
     print(cm)
 
     print("\nClassification Report:")
-    print(classification_report(y_test, y_pred, target_names=['Non-Seizure', 'Seizure']))
+    print(classification_report(y_test, y_pred_test, target_names=['Non-Seizure', 'Seizure']))
 
-    # 6. Save Predictions for Notebook Evaluation
-    print(f"\nSaving predictions to outputs/ ...")
-    np.save("outputs/rf_y_test_true.npy", y_test)
-    np.save("outputs/rf_y_test_pred.npy", y_pred)
-    np.save("outputs/rf_y_test_prob.npy", y_prob)
+    # --- 8. SAVE PREDICTIONS ---
+    print(f"\nSaving predictions to {output_dir} ...")
+    np.save(os.path.join(output_dir, "rf_y_test_true.npy"), y_test)
+    np.save(os.path.join(output_dir, "rf_y_test_pred.npy"), y_pred_test)  # Внимавайте да ползвате правилната променлива
+    np.save(os.path.join(output_dir, "rf_y_test_prob.npy"), y_prob)
     print("Done.")
 
 if __name__ == "__main__":
