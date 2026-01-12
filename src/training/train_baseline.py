@@ -2,6 +2,7 @@ import os
 import sys
 import pandas as pd
 import numpy as np
+import pickle
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 
 # Add project root to path
@@ -78,9 +79,17 @@ def main():
     
     # Save outputs for Notebook Evaluation
     output_dir = "outputs"
+    model_dir = "models"
     os.makedirs(output_dir, exist_ok=True)
+    os.makedirs(model_dir, exist_ok=True)
     
-    print(f"\nSaving predictions to {output_dir}/ ...")
+    # Save Model
+    model_path = os.path.join(model_dir, "baseline_logistic_regression.pkl")
+    print(f"\nSaving model to {model_path} ...")
+    with open(model_path, "wb") as f:
+        pickle.dump(model, f)
+    
+    print(f"Saving predictions to {output_dir}/ ...")
     np.save(os.path.join(output_dir, "y_test_true.npy"), y_test)
     np.save(os.path.join(output_dir, "y_test_pred.npy"), y_pred)
     np.save(os.path.join(output_dir, "y_test_prob.npy"), y_prob)
