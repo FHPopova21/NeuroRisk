@@ -1,6 +1,8 @@
-# Multicollinearity Management Report (Window Overlap)
+# Multicollinearity Management Report
 
-## Problem Analysis
+## 1. Temporal Redundancy (Window Overlap)
+
+### Problem Analysis
 The segmentation process uses a **178-sample window** with a **45-sample step**, resulting in a **75% overlap** between consecutive segments.
 This high overlap leads to severe multicollinearity (redundancy) if the segments are fed sequentially into a model, particularly if the model assumes independent and identically distributed (i.i.d.) samples (like standard MLP/CNNs).
 
@@ -14,19 +16,38 @@ We analyzed the autocorrelation of transient features (RMS, Envelope, ZCR) betwe
     *   Mean Feature Correlation: **~0.005**
     *   Result: **LOW REDUNDANCY**
 
-## Mitigation Strategies Implemented
+### Mitigation Implemented: Training Set Shuffling
+We modified `generate_dataset.py` to explicit shuffle the **Train Set** rows (`frac=1`). This breaks the temporal dependency.
 
-### 1. Training Set Shuffling
-We modified `generate_dataset.py` to explicit shuffle the **Train Set** rows (`frac=1`). This breaks the temporal dependency between adjacent samples in the CSV file, ensuring that a batch of data contains a random mix of segments rather than a highly correlated sequence.
+---
 
-*   **Note**: Validation and Test sets are **NOT** shuffled to maintain reproducibility and allow for sequential evaluation if needed (though standard metrics don't care about order).
+## 2. Feature Correlation Analysis (Column-wise)
 
-### 2. Recommended Regularization Strategies
-For the subsequent modeling phase (Task 6+), we recommend the following to further handle any residual feature co-variance:
+### Objective
+Identify redundant features that carry the same information (Multicollinearity). If two features have a correlation > 0.95, one can potentially be removed to simplify the model.
 
-*   **Dropout**: A Dropout rate of **0.3 - 0.5** in dense layers. This prevents neurons from co-adapting to the redundant features.
-*   **L2 Regularization (Weight Decay)**: Apply L2 penalty (e.g., `1e-4` or `1e-5`) to weights. This penalizes large weights and forces the model to distribute importance across features, reducing sensitivity to collinearity.
-*   **Global Average Pooling (GAP)**: For CNNs, using GAP instead of flattening at the end can reduce overfitting to specific spatial/temporal locations of features.
+### Methodology
+We computed the Pearson Correlation Matrix for the 11 extracted features on the **Training Set**.
 
-## Conclusion
-The multicollinearity issue has been successfully addressed at the data level via shuffling. The dataset is now robust for training standard neural networks.
+### Results
+![Feature Correlation Heatmap](figures/correlation_heatmap.png)
+
+#### High Correlation Pairs (> 0.95)
+The following pairs exhibit extreme redundancy:
+
+| Feature A | Feature B | Correlation | Interpretation |
+| :--- | :--- | :--- | :--- |
+| **RMS** | **Envelope_Mean** | **0.9965** | **Identical Information**. `RMS` is root-mean-square, `Envelope_Mean` is mean of Hilbert envelope. Both measure average amplitude/energy. |
+| **Deriv1_Std** | **Deriv2_Std** | **0.9839** | Highly correlated. Variance of the 1st derivative predicts variance of the 2nd derivative. |
+| **RMS** | **Envelope_Max** | **0.9708** | Strong relationship between average energy and peak amplitude. |
+| **RMS** | **Hjorth_Activity** | **0.9540** | `Hjorth_Activity` is essentially Variance. For zero-mean signals, Variance $\approx$ RMS$^2$. |
+
+### Recommendations (Feature Selection)
+Based on this analysis, we can reduce the feature space without losing information:
+
+1.  **Remove `Envelope_Mean`**: It is 99.7% correlated with `RMS`. Keep `RMS` as it is more standard.
+2.  **Remove `Envelope_Max`**: It supplies similar info to RMS (97%).
+3.  **Keep `Hjorth_Activity` and `Deriv` stats**: Even though correlated, they might capture slight nuances useful for nonlinear classifiers, but are candidates for removal if model size is constrained.
+
+> [!NOTE]
+> For the current baseline model (Logistic Regression / MLP), keeping 11 features is computationally negligible. However, for interprability, removing `Envelope_Mean` is advised.
