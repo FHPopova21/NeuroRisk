@@ -59,10 +59,12 @@
 - **Резултат:** Увеличаване на данните от 500 записа до ~44,000 сегмента.
 
 ### 4.5. Извличане на Характеристики (Feature Extraction)
-За да се компенсира загубата на абсолютна амплитуда при Z-score нормализацията, са извлечени **11 допълнителни признака** от *суровия (филтриран)* сигнал преди нормализацията:
-1.  **Energy:** RMS.
-2.  **Frequency:** ZCR, Hjorth Mobility/Complexity.
-3.  **Dynamics:** Envelope Mean/Max, 1st & 2nd Derivative Stats.
+За да се компенсира загубата на абсолютна амплитуда при Z-score нормализацията, са извлечени **8 допълнителни признака** от *суровия (филтриран)* сигнал (Optimized Feature Set):
+1.  **Energy:** RMS, Envelope Max.
+2.  **Frequency:** ZCR, Hjorth Mobility, Hjorth Complexity.
+3.  **Dynamics:** Hjorth Activity, 1st & 2nd Derivative Std.
+
+*Note: Removed `Envelope_Mean`, `Deriv1_Mean`, `Deriv2_Mean` based on feature importance and correlation analysis.*
 
 ---
 
@@ -73,9 +75,9 @@
 | Компонент | Брой Колони | Описание |
 | :--- | :--- | :--- |
 | **Time Series** | 178 | Нормализирани стойности на сигнала (Z-score). |
-| **Features** | 11 | Абсолютни характеристики (RMS, Hjorth, etc.). |
+| **Features** | 8 | Абсолютни характеристики (RMS, Hjorth, etc.). |
 | **Labels** | 3 | One-Hot Encoded (y_0, y_1, y_2). |
-| **ОБЩО** | **192** | Колони на ред. |
+| **ОБЩО** | **189** | Колони на ред. |
 
 **Обем на данните:**
 - **Train:** ~26,312 примера (Shuffled).

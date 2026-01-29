@@ -86,13 +86,13 @@ def extract_features(signal):
     features['Hjorth_Complexity'] = comp
     
     env_mean, env_max = compute_envelope_stats(signal)
-    features['Envelope_Mean'] = env_mean
+    # features['Envelope_Mean'] = env_mean  # REMOVED: Redundant with RMS
     features['Envelope_Max'] = env_max
     
     md1, sd1, md2, sd2 = compute_derivative_stats(signal)
-    features['Deriv1_Mean'] = md1
+    # features['Deriv1_Mean'] = md1  # REMOVED: Noise
     features['Deriv1_Std'] = sd1
-    features['Deriv2_Mean'] = md2
+    # features['Deriv2_Mean'] = md2  # REMOVED: Noise
     features['Deriv2_Std'] = sd2
     
     return features
