@@ -1,0 +1,54 @@
+@startuml User Flow Diagrams - EEG Analysis System
+
+skinparam activity {
+  BackgroundColor<<Student>> #d5e8d4
+  BackgroundColor<<Instructor>> #dae8fc
+  BackgroundColor<<ML>> #fff2cc
+  BackgroundColor<<Critical>> #f8cecc
+  BorderColor<<Student>> #82b366
+  BorderColor<<Instructor>> #6c8ebf
+  BorderColor<<ML>> #d6b656
+  BorderColor<<Critical>> #b85450
+}
+
+title User Flow Diagrams
+
+' Student Flow
+start
+:Login<<Student>>;
+:Student Dashboard<<Student>>;
+:Upload / Select EEG<<Student>>;
+:ML Processing<<ML>>;
+:EEG Analysis View<<Student>>;
+note right
+  • Risk Level (Low/Medium/High)
+  • Feature Contributions
+  • Time & Frequency Graphs
+end note
+:Student Notes<<Student>>;
+:Submit<<Student>>;
+stop
+
+newpage
+
+' Instructor Flow
+start
+:Login<<Instructor>>;
+:Instructor Dashboard<<Instructor>>;
+:Sorted Cases by Risk<<Instructor>>;
+:Select Case<<Instructor>>;
+:Review Analysis<<Instructor>>;
+note right
+  • Model Result
+  • Student Analysis
+end note
+:Instructor Notes<<Instructor>>;
+if (Mark as Critical?) then (yes)
+  :Mark as Critical<<Critical>>;
+else (no)
+endif
+:Feedback Submitted<<Instructor>>;
+stop
+
+@enduml
+
