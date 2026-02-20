@@ -11,7 +11,7 @@ class RandomForest:
             max_depth=max_depth,
             criterion=criterion,
             random_state=random_state,
-            n_jobs=-1,  # Use all cores
+            n_jobs=-1,  
             class_weight='balanced',
             **kwargs
         )
@@ -27,5 +27,4 @@ class RandomForest:
         return self.model.predict_proba(X)
     
     def get_params(self, deep=True):
-        # Needed if we want to use this with sklearn tools like GridSearchCV
         return self.model.get_params(deep)

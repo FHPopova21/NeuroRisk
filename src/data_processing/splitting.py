@@ -24,8 +24,6 @@ def split_data_by_patient(X: np.ndarray, y: np.ndarray,
         X_train, X_val, X_test, y_train, y_val, y_test
     """
     
-    # 1. First Split: Separate Test set
-    # Train+Val = 1.0 - test_size
     X_temp, X_test, y_temp, y_test = train_test_split(
         X, y, 
         test_size=test_size, 
@@ -33,9 +31,6 @@ def split_data_by_patient(X: np.ndarray, y: np.ndarray,
         stratify=y
     )
     
-    # 2. Second Split: Separate Validation set from the remaining (Train+Val)
-    # We need to calculate the NEW validation proportion relative to the temp set.
-    # val_size_relative = val_size / (1.0 - test_size)
     remaining_size = 1.0 - test_size
     relative_val_size = val_size / remaining_size
     

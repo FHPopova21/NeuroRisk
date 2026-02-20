@@ -5,17 +5,12 @@ import pandas as pd
 import joblib
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 
-# --- 1. SETUP PATHS (CRITICAL FIX) ---
-# Намираме къде се намира този файл (src/training/train_random_forest.py)
 current_script_dir = os.path.dirname(os.path.abspath(__file__))
-# Връщаме се две нива назад, за да намерим главната папка на проекта (Project Root)
 project_root = os.path.abspath(os.path.join(current_script_dir, '..', '..'))
 
-# Добавяме главната папка към Python пътя, за да работят импортите от src
 if project_root not in sys.path:
     sys.path.append(project_root)
 
-# Сега можем безопасно да импортираме нашия модел
 from src.models.random_forest import RandomForest
 
 
@@ -29,7 +24,6 @@ def load_data(path, target_class_col='y_2'):
 
     df = pd.read_csv(path)
 
-    # Identify feature columns (X... and transient features)
     label_cols = ['y_0', 'y_1', 'y_2']
     feature_cols = [c for c in df.columns if c not in label_cols]
 
@@ -42,8 +36,6 @@ def load_data(path, target_class_col='y_2'):
 def main():
     print("--- Classical ML: Random Forest (Sklearn) ---")
 
-    # --- 2. DEFINE ABSOLUTE PATHS ---
-    # Използваме project_root, за да сме сигурни, че файловете ще бъдат намерени
     train_path = os.path.join(project_root, 'data', 'processed', 'Bonn_EEG_Train.csv')
     test_path = os.path.join(project_root, 'data', 'processed', 'Bonn_EEG_Test.csv')
 
@@ -51,11 +43,9 @@ def main():
     output_dir = os.path.join(project_root, 'outputs')
     model_save_path = os.path.join(model_dir, 'random_forest.pkl')
 
-    # Създаваме папките, ако не съществуват
     os.makedirs(model_dir, exist_ok=True)
     os.makedirs(output_dir, exist_ok=True)
 
-    # --- 3. LOAD DATA ---
     print(f"Loading data from: {train_path}")
     try:
         X_train, y_train, feat_names = load_data(train_path)
@@ -67,8 +57,6 @@ def main():
     print(f"Train Statistics: {X_train.shape} samples")
     print(f"Test Statistics:  {X_test.shape} samples")
 
-    # --- 4. INITIALIZE MODEL ---
-    # Using 100 trees, entropy criterion (information gain), and parallel processing
     clf = RandomForest(
         n_estimators=100,
         criterion='entropy',
@@ -81,24 +69,18 @@ def main():
     )
 
     print(f"\nConfiguration: 100 Trees, Entropy, Max Depth=20")
-
-    # --- 5. TRAIN ---
     print("\nTraining Random Forest...")
     clf.fit(X_train, y_train)
     print("Training complete.")
 
-    # --- 6. SAVE MODEL ---
     joblib.dump(clf, model_save_path)
     print(f"Model saved to {model_save_path}")
 
-    # --- 7. EVALUATE ---
     print("\n--- Evaluation on Test Set ---")
 
-    # 1. Предсказване (това работи, защото wrapper-ът има predict)
     y_pred_test = clf.predict(X_test)
-    y_pred_train = clf.predict(X_train)  # Трябва да предскажем и за train, за да сметнем точността
+    y_pred_train = clf.predict(X_train)
 
-    # Проверка за вероятности
     try:
         y_prob = clf.predict_proba(X_test)[:, 1]
     except:

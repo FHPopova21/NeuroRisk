@@ -5,13 +5,11 @@ class LogisticRegression:
         self.number_inputs = number_inputs
         self.learning_rate = learning_rate
         self.epochs = epochs
-        # Initialize weights to zero
         self.weights = np.zeros(number_inputs)
         self.bias = 0
         self.threshold = 0.5
 
     def sigmoid(self, z):
-        # Clip z to avoid overflow
         z = np.clip(z, -250, 250)
         return 1 / (1 + np.exp(-z))
 
@@ -25,7 +23,6 @@ class LogisticRegression:
         return (probs >= self.threshold).astype(int)
 
     def loss(self, y_expected, y_predicted):
-        # Binary Cross Entropy with epsilon for numerical stability
         eps = 1e-15
         y_predicted = np.clip(y_predicted, eps, 1 - eps)
         loss = -np.mean(y_expected * np.log(y_predicted) + (1 - y_expected) * np.log(1 - y_predicted))
@@ -46,16 +43,9 @@ class LogisticRegression:
             z = np.dot(X, self.weights) + self.bias
             y_pred = self.sigmoid(z)
 
-            # 2. Gradient Calculation
-            # error = y_expected - y_predicted (Direction we want to move)
-            # Depending on derivation, gradient of Loss w.r.t weights (for minimization) is X^T * (p - y)
-            # Update rule for minimization: w = w - lr * grad
-            # w = w - lr * X^T * (p - y) 
-            # w = w + lr * X^T * (y - p)
-            
             error = y - y_pred 
             
-            # Gradients averaged over batch
+            # Gradients 
             dw = np.dot(X.T, error) / n_samples
             db = np.sum(error) / n_samples
 

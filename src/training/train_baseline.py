@@ -5,7 +5,6 @@ import numpy as np
 import pickle
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 
-# Add project root to path
 sys.path.append(os.path.abspath('.'))
 
 from src.models.baseline import LogisticRegression
@@ -13,20 +12,16 @@ from src.models.baseline import LogisticRegression
 def load_data(path, target_class_col='y_2'):
     df = pd.read_csv(path)
     
-    # Identify feature columns (X... and transient features)
-    # Exclude label columns y_0, y_1, y_2
     label_cols = ['y_0', 'y_1', 'y_2']
     feature_cols = [c for c in df.columns if c not in label_cols]
     
     X = df[feature_cols].values
-    y = df[target_class_col].values # 1 for Seizure, 0 for others
-    
+    y = df[target_class_col].values 
     return X, y, feature_cols
 
 def main():
     print("--- Baseline Model Training (Logistic Regression) ---")
     
-    # Paths
     train_path = 'data/processed/Bonn_EEG_Train.csv'
     test_path = 'data/processed/Bonn_EEG_Test.csv'
     
@@ -34,7 +29,6 @@ def main():
         print("Data not found. Please run generate_dataset.py first.")
         return
 
-    # Load Data
     print("Loading data...")
     X_train, y_train, feat_names = load_data(train_path)
     X_test, y_test, _ = load_data(test_path)
@@ -42,11 +36,7 @@ def main():
     print(f"Train Shape: {X_train.shape}, Class distribution: {np.bincount(y_train)}")
     print(f"Test Shape: {X_test.shape}, Class distribution: {np.bincount(y_test)}")
     
-    # Initialize Model
-    # Since we have many samples and features, we might need more epochs or higher LR
-    # Normalize inputs? They are already Z-scored (mostly), but transient features might vary.
-    # Logistic regression works best with scaled features.
-    
+
     print("Initializing Custom Logistic Regression...")
     model = LogisticRegression(
         number_inputs=X_train.shape[1], 
@@ -54,11 +44,9 @@ def main():
         epochs=2000
     )
     
-    # Train
     print("Training...")
     model.train(X_train, y_train, verbose=True)
     
-    # Evaluate
     print("\n--- Evaluation on Test Set ---")
     y_pred = model.predict(X_test)
     y_prob = model.predict_proba(X_test)
@@ -77,13 +65,11 @@ def main():
               "This suggests the engineered features (amplitude/energy) are very discriminative for Seizure vs Non-Seizure.")
         print(f"\nBaseline Performance: {acc*100:.1f}%. Deep Learning models should aim to beat this.")
     
-    # Save outputs for Notebook Evaluation
     output_dir = "outputs"
     model_dir = "models"
     os.makedirs(output_dir, exist_ok=True)
     os.makedirs(model_dir, exist_ok=True)
     
-    # Save Model
     model_path = os.path.join(model_dir, "baseline_logistic_regression.pkl")
     print(f"\nSaving model to {model_path} ...")
     with open(model_path, "wb") as f:
