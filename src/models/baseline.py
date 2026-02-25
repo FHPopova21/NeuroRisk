@@ -49,7 +49,7 @@ class LogisticRegression:
             dw = np.dot(X.T, error) / n_samples
             db = np.sum(error) / n_samples
 
-            # 3. Update Weights
+            # Update Weights
             self.weights += self.learning_rate * dw
             self.bias += self.learning_rate * db
             
