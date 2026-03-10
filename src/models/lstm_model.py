@@ -30,11 +30,11 @@ class LSTMModel:
             Dropout(self.dropout_rate),
             Dense(32, activation='relu'),
             Dropout(self.dropout_rate),
-            Dense(1, activation='softmax')  
+            Dense(1, activation='sigmoid')  
         ])
         
         optimizer = tf.keras.optimizers.Adam(learning_rate=self.learning_rate)
-        model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
+        model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy'])
         return model
 
     def _reshape_data(self, X):
