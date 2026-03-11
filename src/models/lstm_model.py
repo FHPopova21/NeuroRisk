@@ -20,6 +20,7 @@ class LSTMModel:
         """
         self.input_shape = input_shape
         self.units = units
+        self.num_classes = 3
         self.dropout_rate = dropout_rate
         self.learning_rate = learning_rate
         self.model = self._build_model()
@@ -30,11 +31,11 @@ class LSTMModel:
             Dropout(self.dropout_rate),
             Dense(32, activation='relu'),
             Dropout(self.dropout_rate),
-            Dense(1, activation='sigmoid')  
+            Dense(self.num_classes, activation='softmax')  
         ])
         
         optimizer = tf.keras.optimizers.Adam(learning_rate=self.learning_rate)
-        model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy'])
+        model.compile(optimizer=optimizer, loss='sparse_categorical_crossentropy', metrics=['accuracy'])
         return model
 
     def _reshape_data(self, X):
@@ -63,14 +64,12 @@ class LSTMModel:
     def predict(self, X):
         X_reshaped = self._reshape_data(X)
         y_prob = self.model.predict(X_reshaped, verbose=0)
-        return (y_prob > 0.5).astype(int).flatten()
+        return np.argmax(y_prob, axis=1).flatten()
 
     def predict_proba(self, X):
         X_reshaped = self._reshape_data(X)
-        y_prob = self.model.predict(X_reshaped, verbose=0).flatten()
-        # To maintain compatibility with scikit-learn models which return an array of 
-        # class probabilities of shape (n_samples, n_classes), we return both P(y=0) and P(y=1)
-        return np.vstack((1 - y_prob, y_prob)).T
+        y_prob = self.model.predict(X_reshaped, verbose=0)
+        return y_prob
 
     def save(self, filepath):
         """Saves the Keras model to the specified filepath."""

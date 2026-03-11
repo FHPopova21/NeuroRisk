@@ -14,10 +14,11 @@ if project_root not in sys.path:
 from src.models.lstm_model import LSTMModel
 
 
-def load_data(path, target_class_col='y_2'):
+def load_data(path):
     """
     Load data from CSV.
-    target_class_col: Column to use as target (1=Seizure, 0=Non-Seizure)
+    Target classes are one-hot encoded in y_0, y_1, y_2.
+    Returns: X (features), y (class index 0, 1, or 2), feature_cols
     """
     if not os.path.exists(path):
         raise FileNotFoundError(f"File not found: {path}")
@@ -28,7 +29,9 @@ def load_data(path, target_class_col='y_2'):
     feature_cols = [c for c in df.columns if c not in label_cols]
 
     X = df[feature_cols].values
-    y = df[target_class_col].values
+    
+    # Convert one-hot to class index (0, 1, 2)
+    y = df[['y_0', 'y_1', 'y_2']].values.argmax(axis=1)
 
     return X, y, feature_cols
 
@@ -78,7 +81,7 @@ def main():
     y_pred_train = clf.predict(X_train)
 
     try:
-        y_prob = clf.predict_proba(X_test)[:, 1]
+        y_prob = clf.predict_proba(X_test)
     except Exception as e:
         print(f"Warning: predict_proba not supported or failed: {e}")
         y_prob = np.zeros_like(y_pred_test)
@@ -94,7 +97,7 @@ def main():
     print(cm)
 
     print("\nClassification Report:")
-    print(classification_report(y_test, y_pred_test, target_names=['Non-Seizure', 'Seizure']))
+    print(classification_report(y_test, y_pred_test, target_names=['Non-Seizure', 'Inter-ictal', 'Seizure']))
 
     print(f"\nSaving predictions to {output_dir} ...")
     np.save(os.path.join(output_dir, "lstm_y_test_true.npy"), y_test)
