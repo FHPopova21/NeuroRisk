@@ -103,7 +103,7 @@ def main():
     # print(f"Sklearn Accuracy Check: {acc:.4f}")
 
     print("\nConfusion Matrix:")
-    cm = confusion_matrix(y_test, y_pred_test)
+    cm = confusion_matrix(y_test, y_pred_test, y_prob)
     print(cm)
 
     print("\nClassification Report:")
