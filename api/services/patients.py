@@ -74,24 +74,15 @@ def activate_patient(db: Session, token: str, activation_data: schemas.PatientAc
     ).first()
 
     if not patient:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Невалиден или вече използван активационен токен!"
-        )
+        raise Exception("Невалиден или вече използван активационен токен!")
 
     # 2. Проверка на валидността на токена
     if datetime.now() > patient.token_expires_at:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Активационният токен е изтекъл!"
-        )
+        raise Exception("Активационният токен е изтекъл!")
 
     # 3. Валидация на паролата
     if activation_data.password != activation_data.confirm_password:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Паролите не съвпадат!"
-        )
+        raise Exception("Паролите не съвпадат!")
 
     # 4. Активиране
     patient.password_hash = hash_password(activation_data.password)

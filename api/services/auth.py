@@ -1,7 +1,6 @@
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from api import models, schemas
-from fastapi import HTTPException, status
 
 # 1. Контекст за хеширане на пароли (bcrypt)
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -20,18 +19,12 @@ def create_doctor(db: Session, doctor_data: schemas.DoctorCreate):
     """
     # 1. Проверка дали паролите съвпадат
     if doctor_data.password != doctor_data.confirm_password:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Паролите не съвпадат!"
-        )
+        raise Exception("Паролите не съвпадат!")
 
     # 2. Проверка дали имейлът вече съществува
     existing_doctor = db.query(models.Doctor).filter(models.Doctor.email == doctor_data.email).first()
     if existing_doctor:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Този имейл вече е регистриран!"
-        )
+        raise Exception("Този имейл вече е регистриран!")
 
     # 3. Хеширане на паролата 
     hashed_pwd = hash_password(doctor_data.password)

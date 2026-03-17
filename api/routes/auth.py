@@ -1,19 +1,32 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from flask import Blueprint, request, jsonify
 from api import schemas, database
 from api.services import auth
+from pydantic import ValidationError
 
-# 1. Създаваме Рутер (Router) специално за автентикация
-router = APIRouter(
-    prefix="/auth",
-    tags=["Authentication (Автентикация)"]
-)
+auth_bp = Blueprint('auth', __name__)
 
-@router.post("/register/doctor", response_model=schemas.Doctor)
-def register_doctor(doctor: schemas.DoctorCreate, db: Session = Depends(database.get_db)):
+@auth_bp.route('/register/doctor', methods=['POST'])
+def register_doctor():
     """
-    Ендпойнът за регистрация на нов лекар.
-    Приема Pydantic схема и връща създадения лекар (без паролата).
+    Ендпойнт за регистрация на нов лекар (Flask версия).
     """
-    # Извикваме логиката от нашия сервиз
-    return auth.create_doctor(db=db, doctor_data=doctor)
+    data = request.get_json()
+    
+    # Ръчна валидация с Pydantic схемата ни
+    try:
+        doctor_create = schemas.DoctorCreate(**data)
+    except ValidationError as e:
+        return jsonify({"detail": e.errors()}), 400
+
+    # Вземаме сесия към базата
+    db = next(database.get_db())
+    
+    try:
+        new_doctor = auth.create_doctor(db=db, doctor_data=doctor_create)
+        # Превръщаме обекта в речник за JSON отговор
+        return jsonify(schemas.Doctor.from_orm(new_doctor).dict()), 201
+    except Exception as e:
+        # Тук хващаме грешките от сервиза (като съществуващ имейл)
+        return jsonify({"detail": str(e)}), 400
+    finally:
+        db.close()
