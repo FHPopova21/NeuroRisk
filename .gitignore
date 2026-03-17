@@ -13,3 +13,7 @@ venv/
 
 # Notebooks
 .ipynb_checkpoints/
+
+#IOS
+.DS_Store
+

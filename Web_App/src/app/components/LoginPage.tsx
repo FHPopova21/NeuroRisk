@@ -1,0 +1,104 @@
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router";
+import { Activity, Mail, Lock, ArrowRight } from "lucide-react";
+import { motion } from "motion/react";
+import { toast } from "sonner";
+
+export const LoginPage: React.FC = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email && password) {
+      toast.success("Login successful");
+      navigate("/dashboard");
+    } else {
+      toast.error("Please fill in all fields");
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-emerald-50/30 flex items-center justify-center p-4">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-md w-full bg-white rounded-2xl shadow-xl shadow-emerald-900/5 p-8 border border-emerald-100"
+      >
+        <div className="flex flex-col items-center mb-8">
+          <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mb-4">
+            <Activity className="w-8 h-8 text-emerald-600" />
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900">Welcome Back</h1>
+          <p className="text-slate-500 text-center mt-2">
+            Access your NeuroRisk Edu clinical dashboard
+          </p>
+        </div>
+
+        <form onSubmit={handleLogin} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Email Address
+            </label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="doctor@neurorisk.edu"
+                className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all outline-none"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Password
+            </label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all outline-none"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <label className="flex items-center gap-2 cursor-pointer group">
+              <input type="checkbox" className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
+              <span className="text-sm text-slate-600 group-hover:text-slate-900">Remember me</span>
+            </label>
+            <Link to="#" className="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
+              Forgot password?
+            </Link>
+          </div>
+
+          <button
+            type="submit"
+            className="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl hover:bg-emerald-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-200"
+          >
+            Login to Dashboard
+            <ArrowRight className="w-5 h-5" />
+          </button>
+        </form>
+
+        <div className="mt-8 text-center">
+          <p className="text-slate-500 text-sm">
+            Don't have an account?{" "}
+            <Link to="/" className="text-emerald-600 font-bold hover:underline">
+              Register now
+            </Link>
+          </p>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
