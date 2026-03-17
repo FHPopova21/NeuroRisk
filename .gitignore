@@ -17,3 +17,5 @@ venv/
 #IOS
 .DS_Store
 
+#Node.js
+Web_App/node_modules/
