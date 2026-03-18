@@ -1,0 +1,10 @@
+flask
+sqlalchemy
+psycopg2-binary
+passlib
+bcrypt
+pydantic
+email-validator
+pytest
+requests
+python-dotenv

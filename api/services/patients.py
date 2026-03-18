@@ -1,7 +1,6 @@
 from sqlalchemy.orm import Session
 from api import models, schemas
 from api.services.auth import hash_password
-from fastapi import HTTPException, status
 import secrets
 from datetime import datetime, timedelta
 
@@ -30,10 +29,7 @@ def create_patient(db: Session, patient_data: schemas.PatientCreate, doctor_id: 
     # 1. Проверка дали имейлът вече съществува
     existing_patient = db.query(models.Patient).filter(models.Patient.email == patient_data.email).first()
     if existing_patient:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Вече съществува пациент с този имейл!"
-        )
+        raise Exception("Вече съществува пациент с този имейл!")
 
     # 2. Генериране на задължителните полета
     new_patient_id = generate_patient_id(db)

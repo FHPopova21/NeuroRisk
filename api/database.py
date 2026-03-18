@@ -1,15 +1,14 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import os
+from dotenv import load_dotenv
 
-# 1. URL за връзка с PostgreSQL базата данни
-# Обикновено това се зарежда от .env файл
+load_dotenv()
+
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost/neurorisk")
 
-# 2. Създаване на Engine (Двигателят на базата данни)
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
-# 3. SessionLocal - Фабрика за създаване на сесии (връзки)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # 4. Dependency, който ще използваме в API маршрутите
