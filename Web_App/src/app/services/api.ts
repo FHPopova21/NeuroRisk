@@ -57,6 +57,19 @@ export const apiService = {
     return response.json();
   },
 
+  async createPatient(data: any): Promise<Patient> {
+    const response = await fetch(`${API_BASE_URL}/patients/`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(data)
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Failed to create patient");
+    }
+    return response.json();
+  },
+
   // EEG Monitoring
   async getEEGHistory(patientId: string): Promise<EEGRecord[]> {
     const url = patientId 

@@ -31,15 +31,14 @@ def create_patient(db: Session, patient_data: schemas.PatientCreate, doctor_id: 
     if existing_patient:
         raise Exception("Вече съществува пациент с този имейл!")
 
-    # 2. Генериране на задължителните полета
-    new_patient_id = generate_patient_id(db)
+    # 2. Генериране на токен
     token = secrets.token_urlsafe(32) # Сигурен случаен токен
     expiry = datetime.now() + timedelta(days=7) # Токенът важи 7 дни
 
     # 3. Създаване на пациента в базата
     new_patient = models.Patient(
         doctor_id=doctor_id,
-        patient_id=new_patient_id,
+        patient_id=patient_data.patient_id,
         name=patient_data.name,
         email=patient_data.email,
         birth_date=patient_data.birth_date,
@@ -48,15 +47,38 @@ def create_patient(db: Session, patient_data: schemas.PatientCreate, doctor_id: 
         activation_token=token,
         token_expires_at=expiry,
         is_active=False,
-        status="INACTIVE"
+        status="ACTIVE" if patient_data.has_epilepsy else "INACTIVE"
     )
 
     db.add(new_patient)
     db.commit()
     db.refresh(new_patient)
     
-    # В реална ситуация тук ще изпратим имейл с токена. 
-    # Засега просто го връщаме в отговора, за да го виждаме.
+    # 4. Ако има начални ЕЕГ данни, създаваме първия запис
+    if patient_data.initial_eeg_data:
+        from api.services.monitoring import create_eeg_record
+        from api import schemas as monitoring_schemas
+        
+        # Определяме риск на базата на флага has_epilepsy (засега просто)
+        risk_status = "HIGH" if patient_data.has_epilepsy else "LOW"
+        risk_score = 90 if patient_data.has_epilepsy else 5
+        
+        eeg_create = monitoring_schemas.EEGRecordCreate(
+            patient_id=new_patient.id,
+            risk_score=risk_score,
+            risk_status=risk_status,
+            interpretation="Първоначален запис при регистрация.",
+            ai_metadata={"raw_signal": patient_data.initial_eeg_data}
+        )
+        create_eeg_record(db, eeg_create)
+
+    # 5. Пращане на имейл (Mock)
+    print(f"--- EMAIL SERVICE MOCK ---")
+    print(f"To: {new_patient.email}")
+    print(f"Subject: NeuroRisk - Patient ID за достъп")
+    print(f"Message: Здравейте, Вашият Patient ID е: {new_patient.patient_id}")
+    print(f"--------------------------")
+
     return new_patient, token
 
 def activate_patient(db: Session, token: str, activation_data: schemas.PatientActivate):

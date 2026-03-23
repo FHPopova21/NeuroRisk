@@ -41,7 +41,8 @@ class PatientBase(BaseModel):
 
 class PatientCreate(PatientBase):
     """Използва се от лекаря при първоначално създаване."""
-    pass
+    has_epilepsy: bool = False
+    initial_eeg_data: Optional[List[float]] = None
 
 class PatientActivate(BaseModel):
     """Използва се от пациента при активиране на акаунта."""
