@@ -145,3 +145,15 @@ class MedicalNote(MedicalNoteBase):
 
     class Config:
         from_attributes = True
+
+# --- АДМИНИСТРАТОРИ ---
+
+class AdminBase(BaseModel):
+    username: str
+
+class Admin(AdminBase):
+    id: UUID
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

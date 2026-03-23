@@ -1,17 +1,19 @@
-from passlib.context import CryptContext
+import bcrypt
 from sqlalchemy.orm import Session
 from api import models, schemas
 
-# 1. Контекст за хеширане на пароли (bcrypt)
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 def hash_password(password: str) -> str:
-    """Превръща чиста парола в неразпознаваем хеш."""
-    return pwd_context.hash(password)
+    """Превръща чиста парола в неразпознаваем хеш чрез bcrypt."""
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
+    return hashed.decode('utf-8')
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Проверява дали въведената парола съответства на хеша."""
-    return pwd_context.verify(plain_password, hashed_password)
+    """Проверява дали въведената парола съответства на хеша чрез bcrypt."""
+    return bcrypt.checkpw(
+        plain_password.encode('utf-8'), 
+        hashed_password.encode('utf-8')
+    )
 
 def create_doctor(db: Session, doctor_data: schemas.DoctorCreate):
     """

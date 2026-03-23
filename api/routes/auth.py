@@ -50,10 +50,17 @@ def login():
         if not user:
             return jsonify({"detail": "Невалидни данни за вход!"}), 401
             
+        # 3. Генерираме JWT токен
         token = generate_token(user.id, role)
         
-        # Определяме кой модел да се ползва за респонса
-        user_data = schemas.Doctor.from_orm(user).dict() if role == 'doctor' else schemas.Patient.from_orm(user).dict()
+        # 4. Определяме кой модел да се ползва за респонса спрямо ролята
+        if role == 'admin':
+            user_data = schemas.Admin.from_orm(user).dict()
+        elif role == 'doctor':
+            user_data = schemas.Doctor.from_orm(user).dict()
+        else: # patient
+            user_data = schemas.Patient.from_orm(user).dict()
+            
         user_data['role'] = role
         
         return jsonify({

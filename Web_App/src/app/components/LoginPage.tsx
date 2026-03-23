@@ -17,9 +17,14 @@ export const LoginPage: React.FC = () => {
     if (email && password) {
       setLoading(true);
       try {
-        await login(email, password);
+        const loggedUser = await login(email, password);
         toast.success("Login successful");
-        navigate("/dashboard");
+        
+        if (loggedUser.role === 'admin') {
+          navigate("/admin/dashboard");
+        } else {
+          navigate("/dashboard");
+        }
       } catch (error: any) {
         toast.error(error.message || "Login failed");
       } finally {

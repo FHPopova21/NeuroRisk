@@ -23,7 +23,7 @@ def create_app():
     Base.metadata.create_all(bind=engine)
     
     app = Flask(__name__)
-    CORS(app) # Enable CORS for all routes
+    CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 
     
     # Конфигурация
