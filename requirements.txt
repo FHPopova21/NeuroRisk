@@ -20,4 +20,5 @@ email-validator
 pytest
 requests
 python-dotenv
+PyJWT
 

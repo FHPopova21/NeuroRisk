@@ -13,6 +13,9 @@ import {
 import { clsx } from "clsx";
 import { motion } from "motion/react";
 import { Link } from "react-router";
+import { apiService, EEGRecord } from "../services/api";
+import { User } from "lucide-react";
+import { useEffect } from "react";
 
 const initialRecords = [
   { id: 1, patient: "Sarah Jenkins", date: "Mar 17, 2026", time: "10:24 AM", risk: 92, status: "Critical", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop" },
@@ -28,13 +31,26 @@ const initialRecords = [
 export const EEGRecordsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [riskFilter, setRiskFilter] = useState("All");
+  const [records, setRecords] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredRecords = initialRecords.filter(r => {
-    const matchesSearch = r.patient.toLowerCase().includes(searchTerm.toLowerCase());
+  useEffect(() => {
+    setLoading(true);
+    // In a real app we'd need patient names too, but the EEGRecord has patient_id.
+    // For now we'll fetch and hope for the best or join with patients.
+    apiService.getEEGHistory("") // Calling with empty to get all if we update apiService
+      .then(data => {
+        setRecords(data);
+        setLoading(false);
+      });
+  }, []);
+
+  const filteredRecords = records.filter(r => {
+    const matchesSearch = r.patient_id.toLowerCase().includes(searchTerm.toLowerCase()); // Searching by ID for now
     const matchesRisk = riskFilter === "All" || 
-      (riskFilter === "Critical" && r.risk > 75) ||
-      (riskFilter === "Elevated" && r.risk > 40 && r.risk <= 75) ||
-      (riskFilter === "Normal" && r.risk <= 40);
+      (riskFilter === "Critical" && r.risk_score > 75) ||
+      (riskFilter === "Elevated" && r.risk_score > 40 && r.risk_score <= 75) ||
+      (riskFilter === "Normal" && r.risk_score <= 40);
     return matchesSearch && matchesRisk;
   });
 
@@ -108,15 +124,15 @@ export const EEGRecordsPage: React.FC = () => {
                 >
                   <td className="px-6 py-5">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden">
-                        <img src={record.avatar} alt="" className="w-full h-full object-cover" />
+                      <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center">
+                         <User className="w-6 h-6 text-slate-400" />
                       </div>
-                      <span className="text-sm font-bold text-slate-900 block">{record.patient}</span>
+                      <span className="text-sm font-bold text-slate-900 block">{record.patient_id}</span>
                     </div>
                   </td>
                   <td className="px-6 py-5">
-                    <span className="text-sm font-bold text-slate-900 block">{record.date}</span>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{record.time}</span>
+                    <span className="text-sm font-bold text-slate-900 block">{new Date(record.timestamp).toLocaleDateString()}</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{new Date(record.timestamp).toLocaleTimeString()}</span>
                   </td>
                   <td className="px-6 py-5">
                     <div className="flex items-center gap-4">
@@ -124,22 +140,22 @@ export const EEGRecordsPage: React.FC = () => {
                         <div 
                           className={clsx(
                             "h-full rounded-full transition-all",
-                            record.risk > 75 ? "bg-orange-500" : record.risk > 40 ? "bg-amber-500" : "bg-emerald-500"
+                            record.risk_score > 75 ? "bg-orange-500" : record.risk_score > 40 ? "bg-amber-500" : "bg-emerald-500"
                           )}
-                          style={{ width: `${record.risk}%` }}
+                          style={{ width: `${record.risk_score}%` }}
                         />
                       </div>
-                      <span className="text-sm font-black text-slate-700">{record.risk}%</span>
+                      <span className="text-sm font-black text-slate-700">{record.risk_score}%</span>
                     </div>
                   </td>
                   <td className="px-6 py-5">
                     <span className={clsx(
                       "text-[10px] font-black px-2.5 py-1 rounded-lg uppercase tracking-wider border",
-                      record.status === "Critical" ? "bg-orange-50 text-orange-600 border-orange-100" :
-                      record.status === "Elevated" ? "bg-amber-50 text-amber-700 border-amber-100" :
+                      record.risk_status === "HIGH" ? "bg-orange-50 text-orange-600 border-orange-100" :
+                      record.risk_status === "MEDIUM" ? "bg-amber-50 text-amber-700 border-amber-100" :
                       "bg-emerald-50 text-emerald-600 border-emerald-100"
                     )}>
-                      {record.status}
+                      {record.risk_status}
                     </span>
                   </td>
                   <td className="px-6 py-5 text-right">

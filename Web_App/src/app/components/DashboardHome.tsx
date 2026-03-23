@@ -14,28 +14,38 @@ import {
 import { clsx } from "clsx";
 import { motion } from "motion/react";
 import { Link } from "react-router";
-
-const stats = [
-  { label: "Total Patients", value: "1,284", icon: Users, color: "bg-emerald-100 text-emerald-700", trend: "+12%" },
-  { label: "Patients with App", value: "842", icon: Smartphone, color: "bg-blue-100 text-blue-700", trend: "+5%" },
-  { label: "High Risk Patients", value: "12", icon: AlertCircle, color: "bg-orange-100 text-orange-700", trend: "-2" },
-  { label: "New Recordings", value: "48", icon: Activity, color: "bg-purple-100 text-purple-700", trend: "+18" },
-];
-
-const recentAnalyses = [
-  { id: 1, patient: "Sarah Jenkins", risk: "High", time: "10 mins ago", status: "Review Needed", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop" },
-  { id: 2, patient: "Robert Wilson", risk: "Low", time: "1 hour ago", status: "Completed", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop" },
-  { id: 3, patient: "Maria Garcia", risk: "Medium", time: "3 hours ago", status: "Analyzing", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop" },
-  { id: 4, patient: "James Miller", risk: "Low", time: "Yesterday", status: "Completed", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop" },
-  { id: 5, patient: "Emily Davis", risk: "High", time: "Yesterday", status: "Review Needed", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop" },
-];
-
-const highRiskAlerts = [
-  { id: 1, patient: "Sarah Jenkins", risk: "92%", time: "10:24 AM", message: "Spike-wave activity detected" },
-  { id: 2, patient: "Emily Davis", risk: "88%", time: "Yesterday", message: "Increased frequency of events" },
-];
+import { apiService, Patient, EEGRecord } from "../services/api";
+import { useState, useEffect, useMemo } from "react";
 
 export const DashboardHome: React.FC = () => {
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [history, setHistory] = useState<EEGRecord[]>([]);
+  const [alerts, setAlerts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    Promise.all([
+      apiService.getPatients(),
+      apiService.getEEGHistory(""),
+      apiService.getAlerts()
+    ]).then(([p, h, a]) => {
+      setPatients(p);
+      setHistory(h);
+      setAlerts(a);
+      setLoading(false);
+    });
+  }, []);
+
+  const stats = useMemo(() => [
+    { label: "Total Patients", value: patients.length.toString(), icon: Users, color: "bg-emerald-100 text-emerald-700", trend: "Live" },
+    { label: "Patients with App", value: patients.filter(p => p.is_active).length.toString(), icon: Smartphone, color: "bg-blue-100 text-blue-700", trend: "Live" },
+    { label: "High Risk Patients", value: patients.filter(p => p.status === "HIGH").length.toString(), icon: AlertCircle, color: "bg-orange-100 text-orange-700", trend: "Live" },
+    { label: "Total Recordings", value: history.length.toString(), icon: Activity, color: "bg-purple-100 text-purple-700", trend: "Live" },
+  ], [patients, history]);
+
+  const recentAnalyses = useMemo(() => history.slice(0, 5), [history]);
+  const highRiskAlerts = useMemo(() => alerts.slice(0, 3), [alerts]);
   return (
     <div className="space-y-8">
       {/* TOP BAR */}
@@ -115,35 +125,36 @@ export const DashboardHome: React.FC = () => {
                   <tr key={analysis.id} className="hover:bg-slate-50/50 transition-colors group">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <img src={analysis.avatar} alt="" className="w-8 h-8 rounded-lg object-cover" />
-                        <span className="text-sm font-bold text-slate-900">{analysis.patient}</span>
+                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400">
+                          <User className="w-5 h-5" />
+                        </div>
+                        <span className="text-sm font-bold text-slate-900">{analysis.patient_id}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <span className={clsx(
                         "text-[10px] font-black px-2.5 py-1 rounded-lg uppercase tracking-wider border",
-                        analysis.risk === "High" ? "bg-orange-50 text-orange-600 border-orange-100" :
-                        analysis.risk === "Medium" ? "bg-amber-50 text-amber-600 border-amber-100" :
+                        analysis.risk_status === "HIGH" ? "bg-orange-50 text-orange-600 border-orange-100" :
+                        analysis.risk_status === "MEDIUM" ? "bg-amber-50 text-amber-600 border-amber-100" :
                         "bg-emerald-50 text-emerald-600 border-emerald-100"
                       )}>
-                        {analysis.risk} Risk
+                        {analysis.risk_status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm font-medium text-slate-500">{analysis.time}</td>
+                    <td className="px-6 py-4 text-sm font-medium text-slate-500">{new Date(analysis.timestamp).toLocaleTimeString()}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <div className={clsx(
                           "w-1.5 h-1.5 rounded-full",
-                          analysis.status === "Review Needed" ? "bg-orange-500 animate-pulse" :
-                          analysis.status === "Analyzing" ? "bg-blue-500 animate-pulse" : "bg-emerald-500"
+                          analysis.risk_status === "HIGH" ? "bg-orange-500 animate-pulse" : "bg-emerald-500"
                         )} />
-                        <span className="text-sm font-bold text-slate-700">{analysis.status}</span>
+                        <span className="text-sm font-bold text-slate-700">{analysis.risk_status === "HIGH" ? "Urgent Review" : "Healthy"}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button className="p-1.5 text-slate-300 hover:text-emerald-600 transition-colors">
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
+                      <Link to={`/patients/${analysis.patient_id}`} className="p-1.5 text-slate-300 hover:text-emerald-600 transition-colors block">
+                        <ChevronRight className="w-4 h-4 ml-auto" />
+                      </Link>
                     </td>
                   </tr>
                 ))}
@@ -156,19 +167,19 @@ export const DashboardHome: React.FC = () => {
         <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm flex flex-col">
           <div className="p-6 border-b border-slate-50 flex items-center justify-between">
             <h3 className="font-black text-slate-900 uppercase tracking-widest text-xs">Critical Alerts</h3>
-            <span className="bg-orange-100 text-orange-600 text-[10px] font-black px-2 py-0.5 rounded-full">2 NEW</span>
+            <span className="bg-orange-100 text-orange-600 text-[10px] font-black px-2 py-0.5 rounded-full">{highRiskAlerts.length} NEW</span>
           </div>
           <div className="p-6 space-y-6 flex-1">
             {highRiskAlerts.map((alert) => (
               <div key={alert.id} className="relative pl-6 border-l-2 border-orange-500 py-1">
                 <div className="flex justify-between items-start mb-1">
-                  <h4 className="text-sm font-black text-slate-900">{alert.patient}</h4>
-                  <span className="text-[10px] font-bold text-slate-400">{alert.time}</span>
+                  <h4 className="text-sm font-black text-slate-900">{alert.patient_id}</h4>
+                  <span className="text-[10px] font-bold text-slate-400">{new Date(alert.timestamp).toLocaleTimeString()}</span>
                 </div>
                 <p className="text-xs text-slate-500 mb-3 leading-relaxed">{alert.message}</p>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-black text-orange-600 bg-orange-50 px-2 py-0.5 rounded-lg">{alert.risk} Risk Score</span>
-                  <Link to={`/patients/${alert.id}`} className="text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:underline">View Case</Link>
+                  <span className="text-xs font-black text-orange-600 bg-orange-50 px-2 py-0.5 rounded-lg">{alert.risk_score}% Risk Score</span>
+                  <Link to={`/patients/${alert.patient_id}`} className="text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:underline">View Case</Link>
                 </div>
               </div>
             ))}

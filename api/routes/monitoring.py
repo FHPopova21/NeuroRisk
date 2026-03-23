@@ -66,3 +66,15 @@ def get_alerts():
         return jsonify([schemas.Alert.from_attributes(a).dict() for a in alerts]), 200
     finally:
         db.close()
+
+@monitoring_bp.route('/history', methods=['GET'])
+def get_all_history():
+    """
+    Връща списък с последните анализи за всички пациенти.
+    """
+    db = next(database.get_db())
+    try:
+        history = monitoring.get_all_records(db=db)
+        return jsonify([schemas.EEGRecord.from_attributes(r).dict() for r in history]), 200
+    finally:
+        db.close()

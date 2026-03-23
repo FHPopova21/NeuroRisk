@@ -52,3 +52,29 @@ def activate_account(token):
         return jsonify({"detail": str(e)}), 400
     finally:
         db.close()
+
+@patients_bp.route('/<patient_id>', methods=['GET'])
+def get_patient_details(patient_id):
+    """
+    Връща детайли за конкретен пациент.
+    """
+    db = next(database.get_db())
+    try:
+        patient = patients.get_patient_by_id(db=db, patient_id=patient_id)
+        if not patient:
+            return jsonify({"detail": "Пациентът не е намерен"}), 404
+        return jsonify(schemas.Patient.from_orm(patient).dict()), 200
+    finally:
+        db.close()
+
+@patients_bp.route('/doctor/<doctor_id>', methods=['GET'])
+def get_doctor_patients(doctor_id):
+    """
+    Връща списък с пациенти за конкретен лекар.
+    """
+    db = next(database.get_db())
+    try:
+        results = patients.get_patients_by_doctor(db=db, doctor_id=doctor_id)
+        return jsonify([schemas.Patient.from_orm(p).dict() for p in results]), 200
+    finally:
+        db.close()

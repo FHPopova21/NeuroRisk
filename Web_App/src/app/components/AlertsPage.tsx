@@ -12,6 +12,9 @@ import {
 import { clsx } from "clsx";
 import { motion } from "motion/react";
 import { Link } from "react-router";
+import { apiService } from "../services/api";
+import { useState, useEffect } from "react";
+import { User } from "lucide-react";
 
 const alerts = [
   { id: 1, patient: "Sarah Jenkins", risk: "92%", time: "10:24 AM", message: "Significant spike-wave activity detected in the left temporal lobe. Immediate review recommended.", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop" },
@@ -21,6 +24,17 @@ const alerts = [
 ];
 
 export const AlertsPage: React.FC = () => {
+  const [alerts, setAlerts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    apiService.getAlerts()
+      .then(data => {
+        setAlerts(data);
+        setLoading(false);
+      });
+  }, []);
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       {/* HEADER */}
@@ -62,21 +76,23 @@ export const AlertsPage: React.FC = () => {
             <div className="absolute top-0 left-0 w-2 h-full bg-orange-500" />
             
             <div className="flex flex-col items-center gap-4">
-              <div className="w-16 h-16 rounded-[1.5rem] border-2 border-white shadow-lg overflow-hidden flex-shrink-0">
-                <img src={alert.avatar} alt="" className="w-full h-full object-cover" />
+              <div className="w-16 h-16 rounded-[1.5rem] bg-slate-100 border-2 border-white shadow-lg overflow-hidden flex-shrink-0 flex items-center justify-center">
+                 <User className="w-8 h-8 text-slate-300" />
               </div>
               <div className="px-3 py-1 bg-orange-50 rounded-xl border border-orange-100">
-                <span className="text-xs font-black text-orange-600 uppercase tracking-widest">{alert.risk} Risk</span>
+                <span className="text-xs font-black text-orange-600 uppercase tracking-widest">{alert.risk_score}% Risk</span>
               </div>
             </div>
 
             <div className="flex-1 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-xl font-black text-slate-900">{alert.patient}</h3>
+                  <h3 className="text-xl font-black text-slate-900">Patient: {alert.patient_id}</h3>
                   <div className="flex items-center gap-2 mt-1">
                     <Clock className="w-3.5 h-3.5 text-slate-400" />
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{alert.time}</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                      {new Date(alert.timestamp).toLocaleString()}
+                    </span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -94,7 +110,7 @@ export const AlertsPage: React.FC = () => {
 
               <div className="flex items-center gap-4 pt-2">
                 <Link 
-                  to={`/patients/${alert.id}`}
+                  to={`/patients/${alert.patient_id}`}
                   className="px-8 py-3 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl hover:bg-slate-800 transition-all flex items-center gap-2"
                 >
                   View Patient Analysis <ArrowRight className="w-3 h-3" />

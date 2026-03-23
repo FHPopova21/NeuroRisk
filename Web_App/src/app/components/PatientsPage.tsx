@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Users, 
   Search, 
@@ -12,24 +12,29 @@ import {
 import { clsx } from "clsx";
 import { motion } from "motion/react";
 import { Link } from "react-router";
-
-const initialPatients = [
-  { id: 1, name: "Sarah Jenkins", age: 28, appStatus: "Active", lastAnalysis: "10 mins ago", risk: "High", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop" },
-  { id: 2, name: "Robert Wilson", age: 45, appStatus: "Inactive", lastAnalysis: "1 hour ago", risk: "Low", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop" },
-  { id: 3, name: "Maria Garcia", age: 34, appStatus: "Active", lastAnalysis: "3 hours ago", risk: "Medium", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop" },
-  { id: 4, name: "James Miller", age: 52, appStatus: "Active", lastAnalysis: "Yesterday", risk: "Low", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop" },
-  { id: 5, name: "Emily Davis", age: 19, appStatus: "Inactive", lastAnalysis: "Yesterday", risk: "High", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop" },
-  { id: 6, name: "Michael Thompson", age: 41, appStatus: "Active", lastAnalysis: "Mar 15, 2026", risk: "Low", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop" },
-  { id: 7, name: "Linda Moore", age: 63, appStatus: "Active", lastAnalysis: "Mar 14, 2026", risk: "Medium", avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&h=150&fit=crop" },
-  { id: 8, name: "William Taylor", age: 29, appStatus: "Inactive", lastAnalysis: "Mar 12, 2026", risk: "Low", avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&h=150&fit=crop" },
-];
+import { apiService, Patient } from "../services/api";
 
 export const PatientsPage: React.FC = () => {
   const [filter, setFilter] = useState<"All" | "Active" | "Inactive">("All");
   const [searchTerm, setSearchTerm] = useState("");
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredPatients = initialPatients.filter(p => {
-    const matchesFilter = filter === "All" || p.appStatus === filter;
+  useEffect(() => {
+    setLoading(true);
+    apiService.getPatients()
+      .then(data => {
+        setPatients(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Error fetching patients:", err);
+        setLoading(false);
+      });
+  }, []);
+
+  const filteredPatients = patients.filter(p => {
+    const matchesFilter = filter === "All" || (filter === "Active" ? p.is_active : !p.is_active);
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesFilter && matchesSearch;
   });
@@ -108,34 +113,34 @@ export const PatientsPage: React.FC = () => {
                 >
                   <td className="px-6 py-5">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden">
-                        <img src={patient.avatar} alt="" className="w-full h-full object-cover" />
+                      <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center">
+                        <User className="w-6 h-6 text-slate-400" />
                       </div>
                       <div>
                         <span className="text-sm font-bold text-slate-900 block">{patient.name}</span>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ID: #00{patient.id}384</span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ID: #{patient.patient_id}</span>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-5 text-sm font-bold text-slate-600">{patient.age} yrs</td>
+                  <td className="px-6 py-5 text-sm font-bold text-slate-600">{patient.birth_date || "N/A"}</td>
                   <td className="px-6 py-5">
                     <div className={clsx(
                       "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider",
-                      patient.appStatus === "Active" ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-400"
+                      patient.is_active ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-400"
                     )}>
                       <Smartphone className="w-3 h-3" />
-                      {patient.appStatus}
+                      {patient.is_active ? "Connected" : "No App"}
                     </div>
                   </td>
-                  <td className="px-6 py-5 text-sm font-medium text-slate-500">{patient.lastAnalysis}</td>
+                  <td className="px-6 py-5 text-sm font-medium text-slate-500">{new Date(patient.created_at).toLocaleDateString()}</td>
                   <td className="px-6 py-5">
                     <span className={clsx(
                       "text-[10px] font-black px-2.5 py-1 rounded-lg uppercase tracking-wider border",
-                      patient.risk === "High" ? "bg-orange-50 text-orange-600 border-orange-100" :
-                      patient.risk === "Medium" ? "bg-amber-50 text-amber-700 border-amber-100" :
+                      patient.status === "HIGH" ? "bg-orange-50 text-orange-600 border-orange-100" :
+                      patient.status === "MEDIUM" ? "bg-amber-50 text-amber-700 border-amber-100" :
                       "bg-emerald-50 text-emerald-600 border-emerald-100"
                     )}>
-                      {patient.risk} Risk
+                      {patient.status}
                     </span>
                   </td>
                   <td className="px-6 py-5 text-right">
@@ -157,7 +162,7 @@ export const PatientsPage: React.FC = () => {
           </table>
         </div>
         <div className="p-6 border-t border-slate-50 flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
-          <span>Showing {filteredPatients.length} of {initialPatients.length} patients</span>
+          <span>Showing {filteredPatients.length} of {patients.length} patients</span>
           <div className="flex items-center gap-2">
             <button className="p-2 rounded-lg hover:bg-slate-50 disabled:opacity-30" disabled>Previous</button>
             <button className="px-4 py-2 bg-emerald-50 text-emerald-700 rounded-lg">1</button>

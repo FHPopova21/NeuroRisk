@@ -18,6 +18,7 @@ import { motion } from "motion/react";
 import { Link, useParams } from "react-router";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { clsx } from "clsx";
+import { apiService, Patient, EEGRecord } from "../services/api";
 
 // Risk Gauge Component (extracted from AnalysisPage)
 const RiskGauge = ({ score }: { score: number }) => {
@@ -58,32 +59,37 @@ const RiskGauge = ({ score }: { score: number }) => {
 export const PatientProfilePage: React.FC = () => {
   const { id } = useParams();
   const [activeTab, setActiveTab] = useState<"eeg" | "history" | "notes">("eeg");
+  const [patient, setPatient] = useState<Patient | null>(null);
+  const [eegHistory, setEegHistory] = useState<EEGRecord[]>([]);
+  const [medicalNotes, setMedicalNotes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock patient data
-  const patient = {
-    id: id,
-    name: "Sarah Jenkins",
-    age: 28,
-    gender: "Female",
-    status: "Active",
-    joined: "Jan 12, 2026",
-    condition: "Post-traumatic epilepsy",
-    lastAnalysis: "10 mins ago",
-    riskScore: 92,
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop"
-  };
+  useEffect(() => {
+    if (id) {
+      setLoading(true);
+      Promise.all([
+        apiService.getPatient(id),
+        apiService.getEEGHistory(id)
+      ]).then(([p, history]) => {
+        setPatient(p);
+        setEegHistory(history);
+        setLoading(false);
+      }).catch(err => {
+        console.error("Error fetching patient data:", err);
+        setLoading(false);
+      });
+    }
+  }, [id]);
 
-  const eegHistory = [
-    { id: 101, date: "Mar 17, 2026", time: "10:24 AM", risk: 92, status: "Critical" },
-    { id: 100, date: "Mar 16, 2026", time: "02:15 PM", risk: 45, status: "Elevated" },
-    { id: 99, date: "Mar 14, 2026", time: "09:00 AM", risk: 12, status: "Normal" },
-    { id: 98, date: "Mar 10, 2026", time: "11:30 AM", risk: 8, status: "Normal" },
-  ];
+  if (loading || !patient) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
-  const medicalNotes = [
-    { id: 1, author: "Dr. Alex Silva", date: "Mar 17, 2026", content: "Patient reported minor aura symptoms earlier today. EEG analysis confirms spike-wave activity in the temporal region." },
-    { id: 2, author: "Nurse Roberts", date: "Mar 16, 2026", content: "Medication compliance confirmed. Patient has been using the mobile app consistently for the past 48 hours." },
-  ];
+  const latestRecord = eegHistory[0] || null;
 
   // Static chart data
   const chartData = useMemo(() => {
@@ -106,8 +112,8 @@ export const PatientProfilePage: React.FC = () => {
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-[1.5rem] bg-emerald-100 border-2 border-white shadow-lg overflow-hidden">
-              <img src={patient.avatar} alt="" className="w-full h-full object-cover" />
+            <div className="w-16 h-16 rounded-[1.5rem] bg-emerald-100 border-2 border-white shadow-lg overflow-hidden flex items-center justify-center">
+              <User className="w-8 h-8 text-emerald-600" />
             </div>
             <div>
               <h1 className="text-2xl font-black text-slate-900">{patient.name}</h1>
@@ -135,9 +141,9 @@ export const PatientProfilePage: React.FC = () => {
           <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-8">
             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6">Patient Overview</h3>
             <div className="space-y-6">
-              <InfoItem label="Age" value={`${patient.age} Years`} />
-              <InfoItem label="Gender" value={patient.gender} />
-              <InfoItem label="Joined" value={patient.joined} />
+              <InfoItem label="Birth Date" value={patient.birth_date || "N/A"} />
+              <InfoItem label="Gender" value={patient.gender || "N/A"} />
+              <InfoItem label="Joined" value={new Date(patient.created_at).toLocaleDateString()} />
               <div className="pt-4 border-t border-slate-50">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Mobile App Status</label>
                 <div className="flex items-center gap-3 bg-emerald-50/50 p-3 rounded-xl border border-emerald-100/50">
@@ -214,17 +220,31 @@ export const PatientProfilePage: React.FC = () => {
                       </div>
                       <div>
                         <h4 className="text-sm font-black text-slate-900">Latest AI Interpretation</h4>
-                        <p className="text-xs text-slate-500">Analysis completed at 10:24 AM Today</p>
+                        <p className="text-xs text-slate-500">
+                          {latestRecord ? `Analysis completed at ${new Date(latestRecord.timestamp).toLocaleTimeString()}` : "No analysis available"}
+                        </p>
                       </div>
                     </div>
                     <p className="text-slate-600 text-sm leading-relaxed mb-6">
-                      System detected rhythmic delta activity (3Hz) in the left temporal leads. This pattern correlates with the patient's typical pre-ictal state. Risk probability has increased by 12% compared to the previous baseline recording.
+                      {latestRecord?.interpretation || "Бракът на данни за този пациент възпрепятства автоматичния анализ. Моля, стартирайте нов запис."}
                     </p>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                      <AnalysisStat label="Amplitude" value="142 µV" status="High" />
-                      <AnalysisStat label="Frequency" value="3.4 Hz" status="Critical" />
-                      <AnalysisStat label="Hjorth Act" value="64.2" status="Normal" />
-                      <AnalysisStat label="Complexity" value="0.78" status="Normal" />
+                      {latestRecord ? (
+                        <>
+                          <AnalysisStat label="Hjorth Act" value={latestRecord.hjorth_activity?.toFixed(2) || "0"} status="Normal" />
+                          <AnalysisStat label="Mobility" value={latestRecord.hjorth_mobility?.toFixed(2) || "0"} status="Normal" />
+                          <AnalysisStat label="Complexity" value={latestRecord.hjorth_complexity?.toFixed(2) || "0"} status="Normal" />
+                          <AnalysisStat label="RMS" value={latestRecord.rms?.toFixed(2) || "0"} status="Normal" />
+                          <AnalysisStat label="ZCR" value={latestRecord.zcr?.toFixed(4) || "0"} status="Normal" />
+                          <AnalysisStat label="Peak Amp" value={latestRecord.envelope_max?.toFixed(1) || "0"} status="Normal" />
+                          <AnalysisStat label="Deriv1 SD" value={latestRecord.deriv1_std?.toFixed(2) || "0"} status="Normal" />
+                          <AnalysisStat label="Deriv2 SD" value={latestRecord.deriv2_std?.toFixed(2) || "0"} status="Normal" />
+                        </>
+                      ) : (
+                        <div className="col-span-4 py-8 text-center text-slate-400 text-xs font-bold uppercase tracking-widest">
+                          Waiting for data...
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -232,7 +252,7 @@ export const PatientProfilePage: React.FC = () => {
                 <div className="md:col-span-1">
                   <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm p-8 sticky top-8">
                     <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-8 text-center">Live Risk Score</h3>
-                    <RiskGauge score={patient.riskScore} />
+                    <RiskGauge score={latestRecord?.risk_score || 0} />
                     
                     <div className="mt-12 space-y-4">
                       <div className="p-4 bg-orange-50 border border-orange-100 rounded-2xl">
@@ -272,8 +292,8 @@ export const PatientProfilePage: React.FC = () => {
                               <Calendar className="w-5 h-5" />
                             </div>
                             <div>
-                              <span className="text-sm font-bold text-slate-900 block">{item.date}</span>
-                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{item.time}</span>
+                              <span className="text-sm font-bold text-slate-900 block">{new Date(item.timestamp).toLocaleDateString()}</span>
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{new Date(item.timestamp).toLocaleTimeString()}</span>
                             </div>
                           </div>
                         </td>
@@ -283,22 +303,22 @@ export const PatientProfilePage: React.FC = () => {
                               <div 
                                 className={clsx(
                                   "h-full rounded-full transition-all",
-                                  item.risk > 75 ? "bg-orange-500" : item.risk > 40 ? "bg-amber-500" : "bg-emerald-500"
+                                  item.risk_score > 75 ? "bg-orange-500" : item.risk_score > 40 ? "bg-amber-500" : "bg-emerald-500"
                                 )}
-                                style={{ width: `${item.risk}%` }}
+                                style={{ width: `${item.risk_score}%` }}
                               />
                             </div>
-                            <span className="text-sm font-black text-slate-700">{item.risk}%</span>
+                            <span className="text-sm font-black text-slate-700">{item.risk_score}%</span>
                           </div>
                         </td>
                         <td className="px-8 py-5">
                           <span className={clsx(
                             "text-[10px] font-black px-2.5 py-1 rounded-lg uppercase tracking-wider border",
-                            item.status === "Critical" ? "bg-orange-50 text-orange-600 border-orange-100" :
-                            item.status === "Elevated" ? "bg-amber-50 text-amber-700 border-amber-100" :
+                            item.risk_status === "HIGH" ? "bg-orange-50 text-orange-600 border-orange-100" :
+                            item.risk_status === "MEDIUM" ? "bg-amber-50 text-amber-700 border-amber-100" :
                             "bg-emerald-50 text-emerald-600 border-emerald-100"
                           )}>
-                            {item.status}
+                            {item.risk_status}
                           </span>
                         </td>
                         <td className="px-8 py-5 text-right">
@@ -321,7 +341,7 @@ export const PatientProfilePage: React.FC = () => {
                     <Plus className="w-4 h-4" /> Add Medical Note
                   </button>
                 </div>
-                {medicalNotes.map((note) => (
+                {medicalNotes.map((note: any) => (
                   <div key={note.id} className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-8 group hover:border-emerald-100 transition-colors">
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex items-center gap-3">

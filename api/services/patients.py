@@ -90,3 +90,15 @@ def activate_patient(db: Session, token: str, activation_data: schemas.PatientAc
     db.refresh(patient)
     
     return patient
+
+def get_patient_by_id(db: Session, patient_id: str):
+    """
+    Връща пациент по неговия UUID.
+    """
+    return db.query(models.Patient).filter(models.Patient.id == patient_id).first()
+
+def get_patients_by_doctor(db: Session, doctor_id: str):
+    """
+    Връща всички пациенти, за които отговаря даден лекар.
+    """
+    return db.query(models.Patient).filter(models.Patient.doctor_id == doctor_id).all()

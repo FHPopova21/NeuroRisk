@@ -176,3 +176,12 @@ def get_active_alerts(db: Session, patient_id: str = None):
     if patient_id:
         query = query.filter(models.Alert.patient_id == patient_id)
     return query.order_by(models.Alert.timestamp.desc()).all()
+
+def get_all_records(db: Session, limit: int = 100):
+    """
+    Връща последните ЕЕГ записи за всички пациенти.
+    """
+    return db.query(models.EEGRecord)\
+             .order_by(models.EEGRecord.timestamp.desc())\
+             .limit(limit)\
+             .all()
