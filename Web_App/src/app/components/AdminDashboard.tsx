@@ -26,8 +26,10 @@ export const AdminDashboard: React.FC = () => {
   }, []);
 
   if (loading) return <div className="p-8">Loading stats...</div>;
+  if (!stats) return <div className="p-8 text-rose-600 bg-rose-50 rounded-xl m-8 border border-rose-100">Failed to load statistics. Please ensure you are logged in and the server is running.</div>;
 
   return (
+
     <div className="space-y-8">
       <header className="flex justify-between items-end">
         <div>

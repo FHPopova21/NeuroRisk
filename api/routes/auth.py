@@ -25,7 +25,7 @@ def register_doctor():
     try:
         new_doctor = auth.create_doctor(db=db, doctor_data=doctor_create)
         # Превръщаме обекта в речник за JSON отговор
-        return jsonify(schemas.Doctor.from_orm(new_doctor).dict()), 201
+        return jsonify(schemas.Doctor.model_validate(new_doctor).model_dump()), 201
     except Exception as e:
         # Тук хващаме грешките от сервиза (като съществуващ имейл)
         return jsonify({"detail": str(e)}), 400
@@ -55,11 +55,11 @@ def login():
         
         # 4. Определяме кой модел да се ползва за респонса спрямо ролята
         if role == 'admin':
-            user_data = schemas.Admin.from_orm(user).dict()
+            user_data = schemas.Admin.model_validate(user).model_dump()
         elif role == 'doctor':
-            user_data = schemas.Doctor.from_orm(user).dict()
+            user_data = schemas.Doctor.model_validate(user).model_dump()
         else: # patient
-            user_data = schemas.Patient.from_orm(user).dict()
+            user_data = schemas.Patient.model_validate(user).model_dump()
             
         user_data['role'] = role
         
@@ -78,7 +78,15 @@ def get_current_user(current_user):
     """
     Връща текущо логнатия потребител.
     """
-    role = 'doctor' if hasattr(current_user, 'specialization') else 'patient'
-    user_data = schemas.Doctor.from_orm(current_user).dict() if role == 'doctor' else schemas.Patient.from_orm(current_user).dict()
+    if hasattr(current_user, 'username'):
+        role = 'admin'
+        user_data = schemas.Admin.model_validate(current_user).model_dump()
+    elif hasattr(current_user, 'specialization'):
+        role = 'doctor'
+        user_data = schemas.Doctor.model_validate(current_user).model_dump()
+    else:
+        role = 'patient'
+        user_data = schemas.Patient.model_validate(current_user).model_dump()
+        
     user_data['role'] = role
     return jsonify(user_data), 200

@@ -42,7 +42,7 @@ def get_stats(current_user):
             "active_sessions": 5, # Мок
             "high_risk_alerts": high_risk_alerts,
             "analyses_over_time": analyses_over_time,
-            "recent_activity": [schemas.ActivityLog.from_attributes(log).dict() for log in recent_logs]
+            "recent_activity": [schemas.ActivityLog.model_validate(log).model_dump() for log in recent_logs]
         }
         return jsonify(stats), 200
     finally:
@@ -60,7 +60,7 @@ def get_doctors(current_user):
             query = query.filter(models.Doctor.status == status)
         
         doctors = query.all()
-        return jsonify([schemas.Doctor.from_attributes(d).dict() for d in doctors]), 200
+        return jsonify([schemas.Doctor.model_validate(d).model_dump() for d in doctors]), 200
     finally:
         db.close()
 
@@ -83,7 +83,7 @@ def update_doctor_status(current_user, doctor_id):
             log_activity(db, current_user.id, 'admin', f"Changed doctor {doctor.email} status to {doctor.status}", f"Target ID: {doctor_id}")
             
         db.commit()
-        return jsonify(schemas.Doctor.from_attributes(doctor).dict()), 200
+        return jsonify(schemas.Doctor.model_validate(doctor).model_dump()), 200
     finally:
         db.close()
 
@@ -99,7 +99,7 @@ def get_all_alerts(current_user):
             query = query.filter(models.Alert.severity == severity)
         
         alerts = query.order_by(models.Alert.timestamp.desc()).all()
-        return jsonify([schemas.Alert.from_attributes(a).dict() for a in alerts]), 200
+        return jsonify([schemas.Alert.model_validate(a).model_dump() for a in alerts]), 200
     finally:
         db.close()
 
@@ -111,7 +111,7 @@ def get_all_patients(current_user):
     try:
         query = db.query(models.Patient)
         patients = query.all()
-        return jsonify([schemas.Patient.from_attributes(p).dict() for p in patients]), 200
+        return jsonify([schemas.Patient.model_validate(p).model_dump() for p in patients]), 200
     finally:
         db.close()
 
@@ -122,6 +122,6 @@ def get_logs(current_user):
     db = next(database.get_db())
     try:
         logs = db.query(models.ActivityLog).order_by(models.ActivityLog.timestamp.desc()).limit(100).all()
-        return jsonify([schemas.ActivityLog.from_attributes(l).dict() for l in logs]), 200
+        return jsonify([schemas.ActivityLog.model_validate(l).model_dump() for l in logs]), 200
     finally:
         db.close()

@@ -179,9 +179,84 @@ def get_active_alerts(db: Session, patient_id: str = None):
 
 def get_all_records(db: Session, limit: int = 100):
     """
-    Връща последните ЕЕГ записи за всички пациенти.
+    Връща списък с последните ЕЕГ записи за всички пациенти.
     """
     return db.query(models.EEGRecord)\
              .order_by(models.EEGRecord.timestamp.desc())\
              .limit(limit)\
              .all()
+
+def analyze_with_lstm(db: Session, record: models.EEGRecord):
+    """
+    Извършва детайлен анализ на записа чрез LSTM модел.
+    Ако моделът не е зареден, използва разширената евристика.
+    """
+    import os
+    from src.models.lstm_model import LSTMModel
+    
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    model_path = os.path.join(project_root, "models", "lstm_model.keras")
+    
+    raw_signal = record.ai_metadata.get("raw_signal") if record.ai_metadata else None
+    
+    if not raw_signal:
+        raise ValueError("Записът не съдържа суров сигнал за анализ.")
+    
+    # Резултати по подразбиране (от метаданните или евристиката)
+    risk_score = record.risk_score
+    risk_status = record.risk_status
+    interpretation = record.interpretation
+    
+    try:
+        if os.path.exists(model_path):
+            # 1. Зареждане на модела
+            # Резолваме input_shape: (178, 1)
+            clf = LSTMModel.load(model_path, input_shape=(len(raw_signal), 1))
+            
+            # 2. Подготовка на данните
+            X = np.array(raw_signal).reshape(1, -1)
+            
+            # 3. Предсказание
+            # y=0: Non-Seizure, y=1: Inter-ictal, y=2: Seizure (според train_lstm.py)
+            y_prob = clf.predict_proba(X)[0]
+            y_pred = int(np.argmax(y_prob))
+            
+            risk_score = int(y_prob[y_pred] * 100)
+            
+            if y_pred == 2: # Seizure
+                risk_status = "HIGH"
+                interpretation = f"ВНИМАНИЕ: LSTM моделът засече висока вероятност за Епилептичен пристъп ({risk_score}% сигурност)."
+            elif y_pred == 1: # Inter-ictal
+                risk_status = "MEDIUM"
+                interpretation = f"Засечена е интер-иктална активност ({risk_score}% сигурност)."
+            else: # Non-Seizure
+                risk_status = "LOW"
+                interpretation = f"Нормална мозъчна активност според LSTM анализа ({risk_score}% сигурност)."
+        else:
+            # Фолбек към съществуващата логика, ако моделът го няма
+            # (вече имаме резултати от сидинга, така че просто ги потвърждаваме)
+            interpretation = f"[Heuristic Check] {interpretation}"
+    
+    except Exception as e:
+        print(f"Грешка при AI анализ: {e}")
+        interpretation = f"Грешка при AI анализ: {str(e)}"
+
+    # Обновяваме записа
+    record.risk_score = risk_score
+    record.risk_status = risk_status
+    record.interpretation = interpretation
+    
+    # Проверка за нова аларма
+    if risk_status == "HIGH":
+        create_alert(
+            db=db,
+            patient_id=record.patient_id,
+            message=f"AI АНАЛИЗ (LSTM): {interpretation}",
+            severity="CRITICAL",
+            source="AI_ENGINE",
+            alert_type="seizure_risk"
+        )
+        
+    db.commit()
+    db.refresh(record)
+    return record

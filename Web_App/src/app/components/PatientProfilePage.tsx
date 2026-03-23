@@ -63,6 +63,8 @@ export const PatientProfilePage: React.FC = () => {
   const [eegHistory, setEegHistory] = useState<EEGRecord[]>([]);
   const [medicalNotes, setMedicalNotes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -80,6 +82,22 @@ export const PatientProfilePage: React.FC = () => {
       });
     }
   }, [id]);
+
+  const handleAnalyze = async () => {
+    if (!eegHistory[0]) return;
+    
+    setAnalyzing(true);
+    setAnalysisError(null);
+    try {
+      const updatedRecord = await apiService.analyzeRecord(eegHistory[0].id);
+      // Update history with the new analyzed record
+      setEegHistory(prev => [updatedRecord, ...prev.slice(1)]);
+    } catch (err: any) {
+      setAnalysisError(err.message);
+    } finally {
+      setAnalyzing(false);
+    }
+  };
 
   if (loading || !patient) {
     return (
@@ -126,11 +144,22 @@ export const PatientProfilePage: React.FC = () => {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <button className="px-6 py-3 bg-white text-slate-600 font-bold text-sm rounded-2xl border border-slate-100 hover:bg-slate-50 transition-all shadow-sm">
-            Export Records
-          </button>
-          <button className="px-6 py-3 bg-emerald-600 text-white font-bold text-sm rounded-2xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200">
-            Schedule Analysis
+          <button 
+            onClick={handleAnalyze}
+            disabled={analyzing || !eegHistory.length}
+            className={clsx(
+              "px-6 py-3 font-bold text-sm rounded-2xl transition-all shadow-lg",
+              analyzing || !eegHistory.length 
+                ? "bg-slate-100 text-slate-400 cursor-not-allowed" 
+                : "bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-200"
+            )}
+          >
+            {analyzing ? (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Analyzing...
+              </div>
+            ) : "Analyze Record"}
           </button>
         </div>
       </div>
@@ -161,7 +190,7 @@ export const PatientProfilePage: React.FC = () => {
             <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-emerald-500/20 transition-all" />
             <h3 className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em] mb-4">Medical Note Summary</h3>
             <p className="text-sm text-slate-300 leading-relaxed mb-6 italic">
-              "Chronic history of temporal lobe seizures. Responsive to current medication plan. Patient uses NeuroRisk app for logging."
+              {patient.medical_history || "No medical history recorded for this patient."}
             </p>
             <button className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2 hover:gap-3 transition-all">
               View All Notes <ChevronRight className="w-4 h-4" />
@@ -226,8 +255,13 @@ export const PatientProfilePage: React.FC = () => {
                       </div>
                     </div>
                     <p className="text-slate-600 text-sm leading-relaxed mb-6">
-                      {latestRecord?.interpretation || "Бракът на данни за този пациент възпрепятства автоматичния анализ. Моля, стартирайте нов запис."}
+                      {latestRecord?.interpretation || "Няма налични данни за този пациент за автоматичен анализ. Моля, стартирайте нов запис."}
                     </p>
+                    {analysisError && (
+                      <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-xs font-bold">
+                        Error: {analysisError}
+                      </div>
+                    )}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                       {latestRecord ? (
                         <>

@@ -2,6 +2,7 @@
 # Data
 data/raw/
 data/processed/
+data/eeg_data/
 *.csv
 
 # Python

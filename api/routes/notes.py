@@ -27,7 +27,7 @@ def add_note(current_user):
     db = next(database.get_db())
     try:
         new_note = notes.create_note(db=db, note_data=note_in, doctor_id=doctor_id)
-        return jsonify(schemas.MedicalNote.from_attributes(new_note).dict()), 201
+        return jsonify(schemas.MedicalNote.model_validate(new_note).model_dump()), 201
     except Exception as e:
         return jsonify({"detail": str(e)}), 400
     finally:
@@ -42,6 +42,6 @@ def get_notes(current_user, patient_id):
     db = next(database.get_db())
     try:
         all_notes = notes.get_patient_notes(db=db, patient_id=patient_id)
-        return jsonify([schemas.MedicalNote.from_attributes(n).dict() for n in all_notes]), 200
+        return jsonify([schemas.MedicalNote.model_validate(n).model_dump() for n in all_notes]), 200
     finally:
         db.close()

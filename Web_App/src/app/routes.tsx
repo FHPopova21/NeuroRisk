@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from "react-router";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import { LandingPage } from "./components/LandingPage";
 import { LoginPage } from "./components/LoginPage";
 import { RegisterPage } from "./components/RegisterPage";
@@ -12,6 +12,7 @@ import { EEGRecordsPage } from "./components/EEGRecordsPage";
 import { AlertsPage } from "./components/AlertsPage";
 import { MedicalNotesPage } from "./components/MedicalNotesPage";
 import { ProfilePage } from "./components/ProfilePage";
+import { SettingsPage } from "./components/SettingsPage";
 import { RootLayout } from "./layouts/RootLayout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
@@ -126,6 +127,18 @@ export const router = createBrowserRouter([
       {
         path: "profile",
         element: <ProfilePage />,
+      },
+      {
+        path: "settings",
+        element: <SettingsPage />,
+      },
+      {
+        path: "admin/settings",
+        element: (
+          <ProtectedRoute requiredRole="admin">
+            <SettingsPage />
+          </ProtectedRoute>
+        ),
       },
     ],
   },

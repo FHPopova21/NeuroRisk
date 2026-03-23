@@ -1,26 +1,45 @@
-import React from "react";
-import { 
-  User, 
-  Mail, 
-  Shield, 
-  Settings, 
-  LogOut, 
-  Key, 
-  Bell, 
-  Globe, 
+import React, { useState, useEffect } from "react";
+import {
+  User,
+  Mail,
+  Shield,
+  Settings,
+  LogOut,
+  Key,
+  Bell,
+  Globe,
   HelpCircle,
   Stethoscope,
   ChevronRight,
   Plus
 } from "lucide-react";
 import { clsx } from "clsx";
-import { useNavigate } from "react-router";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { apiService } from "../services/api";
 
 export const ProfilePage: React.FC = () => {
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [patientCount, setPatientCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      if (user?.role === 'doctor' && user.id) {
+        try {
+          const patients = await apiService.getPatients(user.id);
+          setPatientCount(patients.length);
+        } catch (error) {
+          console.error("Failed to fetch patient count", error);
+        }
+      }
+    };
+    fetchStats();
+  }, [user]);
 
   const handleLogout = () => {
-    navigate("/");
+    logout();
+    navigate("/login");
   };
 
   return (
@@ -28,13 +47,18 @@ export const ProfilePage: React.FC = () => {
       {/* HEADER */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-slate-900">Doctor Profile</h1>
+          <h1 className="text-2xl font-black text-slate-900">
+            {user?.role === 'admin' ? "Admin Profile" : "Doctor Profile"}
+          </h1>
           <p className="text-slate-500 font-medium tracking-tight">Manage your professional identity and security settings.</p>
         </div>
-        <button className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold text-sm rounded-2xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200">
+        <Link
+          to="/settings"
+          className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold text-sm rounded-2xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200"
+        >
           <Settings className="w-5 h-5" />
           General Settings
-        </button>
+        </Link>
       </div>
 
       <div className="grid md:grid-cols-3 gap-8">
@@ -49,21 +73,37 @@ export const ProfilePage: React.FC = () => {
                 <Plus className="w-5 h-5" />
               </button>
             </div>
-            <h2 className="text-xl font-black text-slate-900">Dr. Alex Silva</h2>
-            <p className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] mb-6">Lead Neurologist</p>
-            
+            <h2 className="text-xl font-black text-slate-900">{user?.name || user?.username}</h2>
+            <p className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] mb-6">
+              {user?.role === 'admin' ? "System Administrator" : (user?.specialization || "Medical Staff")}
+            </p>
+
             <div className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-100/50">
               <Shield className="w-4 h-4" />
-              <span className="text-[10px] font-black uppercase tracking-widest">Verified Instructor</span>
+              <span className="text-[10px] font-black uppercase tracking-widest">
+                {user?.role === 'admin' ? "Root Access" : "Verified Instructor"}
+              </span>
             </div>
           </div>
 
           <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white">
-            <h3 className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em] mb-6">Clinical Stats</h3>
+            <h3 className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em] mb-6">
+              {user?.role === 'admin' ? "System Analytics" : "Clinical Stats"}
+            </h3>
             <div className="space-y-6">
-              <StatRow label="Active Patients" value="1,284" />
-              <StatRow label="Monthly Analyses" value="342" />
-              <StatRow label="Student Reviews" value="156" />
+              {user?.role === 'doctor' ? (
+                <>
+                  <StatRow label="Active Patients" value={patientCount !== null ? patientCount.toString() : "..."} />
+                  <StatRow label="Monthly Analyses" value="12" />
+                  <StatRow label="Student Reviews" value="5" />
+                </>
+              ) : (
+                <>
+                  <StatRow label="Total Users" value="24" />
+                  <StatRow label="Active Today" value="8" />
+                  <StatRow label="System Health" value="100%" />
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -74,10 +114,14 @@ export const ProfilePage: React.FC = () => {
           <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm p-10 space-y-10">
             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Profile Information</h3>
             <div className="grid grid-cols-2 gap-8">
-              <ProfileItem label="Full Name" value="Alexandro Silva" icon={User} />
-              <ProfileItem label="Email Address" value="doctor@neurorisk.edu" icon={Mail} />
-              <ProfileItem label="Medical License" value="NR-93824-2026" icon={Stethoscope} />
-              <ProfileItem label="Specialization" value="Epileptology & Clinical EEG" icon={Globe} />
+              <ProfileItem label="Display Name" value={user?.name || user?.username} icon={User} />
+              <ProfileItem label="Email Address" value={user?.email || "No email provided"} icon={Mail} />
+              {user?.role === 'doctor' && (
+                <>
+                  <ProfileItem label="Admin ID" value={user?.admin_assigned_id || "N/A"} icon={Stethoscope} />
+                  <ProfileItem label="Specialization" value={user?.specialization || "Not specified"} icon={Globe} />
+                </>
+              )}
             </div>
           </div>
 
@@ -90,7 +134,7 @@ export const ProfilePage: React.FC = () => {
               <SecurityAction label="Change Account Password" icon={Key} />
               <SecurityAction label="Configure Notifications" icon={Bell} />
               <SecurityAction label="Help & Support Center" icon={HelpCircle} />
-              <button 
+              <button
                 onClick={handleLogout}
                 className="w-full flex items-center justify-between p-8 hover:bg-red-50/30 transition-all text-left group"
               >

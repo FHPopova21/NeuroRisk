@@ -28,11 +28,26 @@ def register_new_patient(current_user):
     try:
         new_patient, token = patients.create_patient(db=db, patient_data=patient_create, doctor_id=doctor_id)
         
-        response_data = schemas.Patient.from_orm(new_patient).dict()
+        response_data = schemas.Patient.model_validate(new_patient).model_dump()
         response_data["activation_token"] = token
         return jsonify(response_data), 201
     except Exception as e:
         return jsonify({"detail": str(e)}), 400
+    finally:
+        db.close()
+
+@patients_bp.route('/', methods=['GET'])
+@token_required
+@role_required('doctor')
+def get_my_patients(current_user):
+    """
+    Връща списък с пациенти за текущо логнатия лекар.
+    """
+    db = next(database.get_db())
+    try:
+        doctor_id = current_user.id
+        results = patients.get_patients_by_doctor(db=db, doctor_id=doctor_id)
+        return jsonify([schemas.Patient.model_validate(p).model_dump() for p in results]), 200
     finally:
         db.close()
 
@@ -50,7 +65,7 @@ def activate_account(token):
     db = next(database.get_db())
     try:
         patient = patients.activate_patient(db=db, token=token, activation_data=activation_data)
-        return jsonify(schemas.Patient.from_orm(patient).dict()), 200
+        return jsonify(schemas.Patient.model_validate(patient).model_dump()), 200
     except Exception as e:
         return jsonify({"detail": str(e)}), 400
     finally:
@@ -67,7 +82,7 @@ def get_patient_details(current_user, patient_id):
         patient = patients.get_patient_by_id(db=db, patient_id=patient_id)
         if not patient:
             return jsonify({"detail": "Пациентът не е намерен"}), 404
-        return jsonify(schemas.Patient.from_orm(patient).dict()), 200
+        return jsonify(schemas.Patient.model_validate(patient).model_dump()), 200
     finally:
         db.close()
 
@@ -81,6 +96,6 @@ def get_doctor_patients(current_user, doctor_id):
     db = next(database.get_db())
     try:
         results = patients.get_patients_by_doctor(db=db, doctor_id=doctor_id)
-        return jsonify([schemas.Patient.from_orm(p).dict() for p in results]), 200
+        return jsonify([schemas.Patient.model_validate(p).model_dump() for p in results]), 200
     finally:
         db.close()

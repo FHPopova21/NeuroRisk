@@ -52,7 +52,7 @@ export const apiService = {
   },
 
   async getPatient(id: string): Promise<Patient> {
-    const response = await fetch(`${API_BASE_URL}/patients/${id}`);
+    const response = await fetch(`${API_BASE_URL}/patients/${id}`, { headers: getHeaders() });
     if (!response.ok) throw new Error("Failed to fetch patient details");
     return response.json();
   },
@@ -64,6 +64,18 @@ export const apiService = {
       : `${API_BASE_URL}/monitoring/history`;
     const response = await fetch(url, { headers: getHeaders() });
     if (!response.ok) throw new Error("Failed to fetch EEG history");
+    return response.json();
+  },
+
+  async analyzeRecord(recordId: string): Promise<EEGRecord> {
+    const response = await fetch(`${API_BASE_URL}/monitoring/analyze/${recordId}`, {
+      method: 'POST',
+      headers: getHeaders()
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Analysis failed");
+    }
     return response.json();
   },
 

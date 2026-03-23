@@ -22,7 +22,7 @@ def add_eeg_record(current_user):
     db = next(database.get_db())
     try:
         new_record = monitoring.create_eeg_record(db=db, record_data=record_in)
-        return jsonify(schemas.EEGRecord.from_attributes(new_record).dict()), 201
+        return jsonify(schemas.EEGRecord.model_validate(new_record).model_dump()), 201
     finally:
         db.close()
 
@@ -41,7 +41,7 @@ def process_signal(current_user):
     db = next(database.get_db())
     try:
         new_record = monitoring.process_eeg_signal(db=db, signal_data=signal_in)
-        return jsonify(schemas.EEGRecord.from_attributes(new_record).dict()), 201
+        return jsonify(schemas.EEGRecord.model_validate(new_record).model_dump()), 201
     finally:
         db.close()
 
@@ -54,7 +54,7 @@ def get_history(current_user, patient_id):
     db = next(database.get_db())
     try:
         history = monitoring.get_patient_history(db=db, patient_id=patient_id)
-        return jsonify([schemas.EEGRecord.from_attributes(r).dict() for r in history]), 200
+        return jsonify([schemas.EEGRecord.model_validate(r).model_dump() for r in history]), 200
     finally:
         db.close()
 
@@ -68,7 +68,7 @@ def get_alerts(current_user):
     db = next(database.get_db())
     try:
         alerts = monitoring.get_active_alerts(db=db, patient_id=patient_id)
-        return jsonify([schemas.Alert.from_attributes(a).dict() for a in alerts]), 200
+        return jsonify([schemas.Alert.model_validate(a).model_dump() for a in alerts]), 200
     finally:
         db.close()
 
@@ -82,6 +82,26 @@ def get_all_history(current_user):
     db = next(database.get_db())
     try:
         history = monitoring.get_all_records(db=db)
-        return jsonify([schemas.EEGRecord.from_attributes(r).dict() for r in history]), 200
+        return jsonify([schemas.EEGRecord.model_validate(r).model_dump() for r in history]), 200
+    finally:
+        db.close()
+
+@monitoring_bp.route('/analyze/<record_id>', methods=['POST'])
+@token_required
+def analyze_existing_record(current_user, record_id):
+    """
+    Ендпойнт за стартиране на AI анализ на вече съществуващ запис (чрез LSTM модел).
+    """
+    db = next(database.get_db())
+    try:
+        record = db.query(models.EEGRecord).filter(models.EEGRecord.id == UUID(record_id)).first()
+        if not record:
+            return jsonify({"detail": "Записът не е намерен"}), 404
+            
+        # Извикваме AI сервиза за анализ
+        updated_record = monitoring.analyze_with_lstm(db, record)
+        return jsonify(schemas.EEGRecord.model_validate(updated_record).model_dump()), 200
+    except Exception as e:
+        return jsonify({"detail": str(e)}), 400
     finally:
         db.close()

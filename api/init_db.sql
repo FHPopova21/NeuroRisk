@@ -20,6 +20,7 @@ CREATE TABLE doctors (
     password_hash TEXT NOT NULL,
     specialization VARCHAR(100),
     is_verified BOOLEAN DEFAULT FALSE,
+    status VARCHAR(20) DEFAULT 'PENDING',
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
