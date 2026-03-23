@@ -1,4 +1,7 @@
+import os
+import sys
 from flask import Flask, jsonify
+
 from flask_cors import CORS
 
 from api.routes.auth import auth_bp
@@ -9,7 +12,13 @@ from api.routes.admin import admin_bp
 from api.models import Base
 from api.database import engine
 
+# Добавяне на основната директория към пътя за импортиране
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if base_dir not in sys.path:
+    sys.path.append(base_dir)
+
 def create_app():
+
     # Създаване на таблиците, ако не съществуват
     Base.metadata.create_all(bind=engine)
     
