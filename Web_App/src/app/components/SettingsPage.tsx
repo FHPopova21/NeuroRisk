@@ -24,7 +24,7 @@ import { useSettings } from "../context/SettingsContext";
 export const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
   const { settings, updateSetting, saveSettings } = useSettings();
-  const [activeTab, setActiveTab] = useState("general");
+  const [activeTab, setActiveTab] = useState("notifications");
 
   const handleSave = () => {
     saveSettings();
@@ -32,7 +32,6 @@ export const SettingsPage: React.FC = () => {
   };
 
   const tabs = [
-    { id: "general", label: "General", icon: Globe },
     { id: "notifications", label: "Notifications", icon: Bell },
     { id: "security", label: "Security", icon: Lock },
     { id: "display", label: "Display", icon: Moon },
@@ -89,66 +88,7 @@ export const SettingsPage: React.FC = () => {
             animate={{ opacity: 1, x: 0 }}
             className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm p-10 space-y-10"
           >
-            {activeTab === "general" && (
-              <div className="space-y-8">
-                <section className="space-y-6">
-                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Localization</h3>
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                       <label className="text-xs font-bold text-slate-700">Language</label>
-                       <select 
-                         value={settings.language}
-                         onChange={(e) => updateSetting("language", e.target.value)}
-                         className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
-                       >
-                         <option>English (US)</option>
-                         <option>Bulgarian (BG)</option>
-                         <option>German (DE)</option>
-                       </select>
-                    </div>
-                    <div className="space-y-2">
-                       <label className="text-xs font-bold text-slate-700">Time Zone</label>
-                       <select 
-                         value={settings.timezone}
-                         onChange={(e) => updateSetting("timezone", e.target.value)}
-                         className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
-                       >
-                         <option>(GMT+02:00) Sofia</option>
-                         <option>(GMT+00:00) London</option>
-                         <option>(GMT-05:00) New York</option>
-                       </select>
-                    </div>
-                  </div>
-                </section>
-
-                <section className="space-y-6">
-                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Clinical Preferences</h3>
-                  <div className="space-y-4">
-                    <ToggleItem 
-                      label="Enable Real-time EEG Streaming" 
-                      description="Show live signal data in monitoring view" 
-                      checked={settings.realTimeEEG}
-                      onChange={(val) => updateSetting("realTimeEEG", val)}
-                      icon={Activity} 
-                    />
-                    <ToggleItem 
-                      label="Auto-save Medical Notes" 
-                      description="Automatically save progress during consultations" 
-                      checked={settings.autoSaveNotes}
-                      onChange={(val) => updateSetting("autoSaveNotes", val)}
-                      icon={Save} 
-                    />
-                    <ToggleItem 
-                      label="Show Risk Level Indicators" 
-                      description="Display color-coded risk alerts in patient list" 
-                      checked={settings.riskIndicators}
-                      onChange={(val) => updateSetting("riskIndicators", val)}
-                      icon={Shield} 
-                    />
-                  </div>
-                </section>
-              </div>
-            )}
+<div />
 
             {activeTab === "notifications" && (
               <div className="space-y-8">

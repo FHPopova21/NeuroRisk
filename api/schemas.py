@@ -28,6 +28,26 @@ class DoctorUpdate(BaseModel):
     is_verified: Optional[bool] = None
     status: Optional[str] = None
 
+# --- БЕЛЕЖКИ ---
+
+class MedicalNoteBase(BaseModel):
+    patient_id: UUID
+    content: str
+
+class MedicalNoteCreate(MedicalNoteBase):
+    pass
+
+class MedicalNoteUpdate(BaseModel):
+    content: str
+
+class MedicalNote(MedicalNoteBase):
+    id: UUID
+    doctor_id: Optional[UUID]
+    timestamp: datetime
+
+    class Config:
+        from_attributes = True
+
 # --- ПАЦИЕНТИ ---
 
 class PatientBase(BaseModel):
@@ -75,6 +95,7 @@ class EEGRecordBase(BaseModel):
     deriv1_std: Optional[float] = None
     deriv2_std: Optional[float] = None
     ai_metadata: Optional[dict] = None
+    doctor_note: Optional[str] = None
 
 class EEGRecordCreate(EEGRecordBase):
     patient_id: UUID
@@ -87,6 +108,8 @@ class EEGSignalIn(BaseModel):
 
 class EEGRecord(EEGRecordBase):
     id: UUID
+    patient_id: UUID
+    patient_name: Optional[str] = None
     timestamp: datetime
 
     class Config:
@@ -105,6 +128,8 @@ class AlertCreate(AlertBase):
 
 class Alert(AlertBase):
     id: UUID
+    patient_id: UUID
+    patient_name: Optional[str] = None
     timestamp: datetime
     is_read: bool
     patient: Optional[Patient] = None
@@ -141,6 +166,8 @@ class MedicalNoteCreate(MedicalNoteBase):
 
 class MedicalNote(MedicalNoteBase):
     id: UUID
+    patient_id: UUID
+    patient_name: Optional[str] = None
     doctor_id: Optional[UUID]
     timestamp: datetime
 

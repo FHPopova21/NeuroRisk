@@ -54,23 +54,16 @@ def create_patient(db: Session, patient_data: schemas.PatientCreate, doctor_id: 
     db.commit()
     db.refresh(new_patient)
     
-    # 4. Ако има начални ЕЕГ данни, създаваме първия запис
+    # 4. Ако има начални ЕЕГ данни, обработваме ги
     if patient_data.initial_eeg_data:
-        from api.services.monitoring import create_eeg_record
+        from api.services.monitoring import process_eeg_signal
         from api import schemas as monitoring_schemas
         
-        # Определяме риск на базата на флага has_epilepsy (засега просто)
-        risk_status = "HIGH" if patient_data.has_epilepsy else "LOW"
-        risk_score = 90 if patient_data.has_epilepsy else 5
-        
-        eeg_create = monitoring_schemas.EEGRecordCreate(
+        signal_in = monitoring_schemas.EEGSignalIn(
             patient_id=new_patient.id,
-            risk_score=risk_score,
-            risk_status=risk_status,
-            interpretation="Първоначален запис при регистрация.",
-            ai_metadata={"raw_signal": patient_data.initial_eeg_data}
+            signal=patient_data.initial_eeg_data
         )
-        create_eeg_record(db, eeg_create)
+        process_eeg_signal(db, signal_in)
 
     # 5. Пращане на имейл (Mock)
     print(f"--- EMAIL SERVICE MOCK ---")

@@ -14,18 +14,29 @@ export interface EEGRecord {
   timestamp: string;
   risk_score: number;
   risk_status: string;
-  interpretation: string;
-  amplitude: number | null;
-  frequency: number | null;
-  hjorth_activity: number | null;
-  hjorth_mobility: number | null;
-  hjorth_complexity: number | null;
-  rms: number | null;
-  zcr: number | null;
-  envelope_max: number | null;
-  deriv1_std: number | null;
-  deriv2_std: number | null;
-  ai_metadata: any;
+  interpretation?: string;
+  amplitude?: number | null;
+  frequency?: number | null;
+  hjorth_activity?: number | null;
+  hjorth_mobility?: number | null;
+  hjorth_complexity?: number | null;
+  rms?: number | null;
+  zcr?: number | null;
+  envelope_max?: number | null;
+  deriv1_std?: number | null;
+  deriv2_std?: number | null;
+  doctor_note?: string;
+  patient_name?: string;
+  ai_metadata?: any;
+}
+
+export interface MedicalNote {
+  id: string;
+  patient_id: string;
+  patient_name?: string;
+  doctor_id?: string;
+  content: string;
+  timestamp: string;
 }
 
 export interface Patient {
@@ -70,6 +81,40 @@ export const apiService = {
     return response.json();
   },
 
+  // --- MEDICAL NOTES ---
+  async getMedicalNotes(patientId?: string): Promise<MedicalNote[]> {
+    const url = patientId ? `${API_BASE_URL}/notes/?patient_id=${patientId}` : `${API_BASE_URL}/notes/`;
+    const response = await fetch(url, { headers: getHeaders() });
+    if (!response.ok) throw new Error("Failed to fetch medical notes");
+    return response.json();
+  },
+
+  async createMedicalNote(patientId: string, content: string): Promise<MedicalNote> {
+    const response = await fetch(`${API_BASE_URL}/notes/`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ patient_id: patientId, content })
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Failed to create medical note");
+    }
+    return response.json();
+  },
+
+  async updateEEGRecordNote(recordId: string, note: string): Promise<EEGRecord> {
+    const response = await fetch(`${API_BASE_URL}/notes/record/${recordId}`, {
+      method: "PUT",
+      headers: getHeaders(),
+      body: JSON.stringify({ note })
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Failed to update EEG record note");
+    }
+    return response.json();
+  },
+
   // EEG Monitoring
   async getEEGHistory(patientId: string): Promise<EEGRecord[]> {
     const url = patientId 
@@ -98,14 +143,10 @@ export const apiService = {
       : `${API_BASE_URL}/monitoring/alerts`;
     const response = await fetch(url, { headers: getHeaders() });
     if (!response.ok) throw new Error("Failed to fetch alerts");
-    return response.json();
+    const data = await response.json();
+    return data;
   },
 
-  async getMedicalNotes(patientId: string): Promise<any[]> {
-    const response = await fetch(`${API_BASE_URL}/monitoring/notes/${patientId}`);
-    if (!response.ok) throw new Error("Failed to fetch notes");
-    return response.json();
-  },
 
   // Auth
   async login(email: string, password: string): Promise<{ token: string, user: any }> {

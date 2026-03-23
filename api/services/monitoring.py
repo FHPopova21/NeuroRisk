@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from api import models, schemas
 from datetime import datetime
 import numpy as np
@@ -28,6 +28,10 @@ def create_eeg_record(db: Session, record_data: schemas.EEGRecordCreate):
 
     db.add(new_record)
     
+    # NEW: Update patient status based on this record
+    if new_record.patient:
+        new_record.patient.status = record_data.risk_status
+
     # 2. АВТОМАТИЧНА ЛОГИКА ЗА АЛАРМИ
     # Ако рискът е HIGH или резултатът е над 80, генерираме аларма
     if record_data.risk_status == "HIGH" or record_data.risk_score >= 80:
@@ -163,6 +167,7 @@ def get_patient_history(db: Session, patient_id: str, limit: int = 50):
     Връща историята на ЕЕГ записите за конкретен пациент.
     """
     return db.query(models.EEGRecord)\
+             .options(joinedload(models.EEGRecord.patient))\
              .filter(models.EEGRecord.patient_id == patient_id)\
              .order_by(models.EEGRecord.timestamp.desc())\
              .limit(limit)\
@@ -172,7 +177,9 @@ def get_active_alerts(db: Session, patient_id: str = None):
     """
     Връща непрочетените аларми.
     """
-    query = db.query(models.Alert).filter(models.Alert.is_read == False)
+    query = db.query(models.Alert)\
+              .options(joinedload(models.Alert.patient))\
+              .filter(models.Alert.is_read == False)
     if patient_id:
         query = query.filter(models.Alert.patient_id == patient_id)
     return query.order_by(models.Alert.timestamp.desc()).all()
@@ -182,6 +189,7 @@ def get_all_records(db: Session, limit: int = 100):
     Връща списък с последните ЕЕГ записи за всички пациенти.
     """
     return db.query(models.EEGRecord)\
+             .options(joinedload(models.EEGRecord.patient))\
              .order_by(models.EEGRecord.timestamp.desc())\
              .limit(limit)\
              .all()
@@ -256,6 +264,10 @@ def analyze_with_lstm(db: Session, record: models.EEGRecord):
             source="AI_ENGINE",
             alert_type="seizure_risk"
         )
+    
+    # NEW: Update patient status based on new analysis
+    if record.patient:
+        record.patient.status = risk_status
         
     db.commit()
     db.refresh(record)

@@ -87,6 +87,11 @@ class EEGRecord(Base):
     deriv1_std = Column(Float)
     deriv2_std = Column(Float)
     ai_metadata = Column(JSONB) # Гъвкаво съхранение на метаданни
+    doctor_note = Column(Text) # Лична бележка от лекаря
+
+    @property
+    def patient_name(self):
+        return self.patient.name if self.patient else "Неизвестен"
 
     # Връзки
     patient = relationship("Patient", back_populates="eeg_records")
@@ -105,6 +110,10 @@ class Alert(Base):
     source = Column(String(50)) # 'AI', 'system'
     type = Column(String(50))   # 'seizure_risk', 'anomaly'
     is_read = Column(Boolean, default=False)
+
+    @property
+    def patient_name(self):
+        return self.patient.name if self.patient else "Неизвестен"
 
     # Връзки
     patient = relationship("Patient", back_populates="alerts")
@@ -137,3 +146,7 @@ class ActivityLog(Base):
     action = Column(String(100), nullable=False)
     details = Column(Text)
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
+
+    @property
+    def patient_name(self):
+        return self.patient.name if self.patient else "Неизвестен"

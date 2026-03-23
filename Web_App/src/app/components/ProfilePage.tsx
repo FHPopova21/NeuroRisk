@@ -48,30 +48,20 @@ export const ProfilePage: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-black text-slate-900">
-            {user?.role === 'admin' ? "Admin Profile" : "Doctor Profile"}
-          </h1>
-          <p className="text-slate-500 font-medium tracking-tight">Manage your professional identity and security settings.</p>
-        </div>
-        <Link
-          to="/settings"
-          className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold text-sm rounded-2xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200"
-        >
-          <Settings className="w-5 h-5" />
-          General Settings
-        </Link>
+          {user?.role === 'admin' ? "Admin Profile" : "Doctor Profile"}
+        </h1>
+        <p className="text-slate-500 font-medium tracking-tight">Manage your professional identity and security settings.</p>
       </div>
+    </div>
 
       <div className="grid md:grid-cols-3 gap-8">
         {/* LEFT COLUMN: IDENTITY */}
         <div className="space-y-6">
           <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm p-8 text-center">
             <div className="relative inline-block mb-6">
-              <div className="w-32 h-32 rounded-[2rem] border-4 border-slate-50 shadow-xl overflow-hidden bg-emerald-100">
-                <img src="https://images.unsplash.com/photo-1645066928295-2506defde470?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBkb2N0b3IlMjBhdmF0YXIlMjBwb3J0cmFpdHxlbnwxfHx8fDE3Njk3NTg1MDZ8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral" alt="Doctor" className="w-full h-full object-cover" />
+              <div className="w-32 h-32 rounded-[2rem] border-4 border-slate-50 shadow-xl overflow-hidden bg-emerald-100 flex items-center justify-center">
+                <User className="w-16 h-16 text-emerald-600" />
               </div>
-              <button className="absolute bottom-0 right-0 p-2.5 bg-emerald-600 text-white rounded-2xl shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all border-4 border-white">
-                <Plus className="w-5 h-5" />
-              </button>
             </div>
             <h2 className="text-xl font-black text-slate-900">{user?.name || user?.username}</h2>
             <p className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] mb-6">

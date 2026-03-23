@@ -17,12 +17,6 @@ import { Link } from "react-router";
 import { apiService } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
-const alerts = [
-  { id: 1, patient: "Sarah Jenkins", risk: "92%", time: "10:24 AM", message: "Significant spike-wave activity detected in the left temporal lobe. Immediate review recommended.", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop" },
-  { id: 2, patient: "Emily Davis", risk: "88%", time: "09:45 AM", message: "Increased frequency of high-amplitude delta waves during the last 30-minute interval.", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop" },
-  { id: 3, patient: "Michael Thompson", risk: "82%", time: "Yesterday, 04:30 PM", message: "Unusual variance in spectral entropy detected in the frontal leads. Possible marker of pre-ictal activity.", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop" },
-  { id: 4, patient: "Sarah Jenkins", risk: "79%", time: "Yesterday, 10:15 AM", message: "Low-frequency rhythmic activity lasting more than 10 seconds. Automated seizure warning triggered.", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop" },
-];
 
 export const AlertsPage: React.FC = () => {
   const [alerts, setAlerts] = useState<any[]>([]);
@@ -104,7 +98,7 @@ export const AlertsPage: React.FC = () => {
             <div className="flex-1 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-xl font-black text-slate-900">Patient: {alert.patient_id}</h3>
+                  <h3 className="text-xl font-black text-slate-900">Patient: {alert.patient_name || alert.patient_id}</h3>
                   <div className="flex items-center gap-2 mt-1">
                     <Clock className="w-3.5 h-3.5 text-slate-400" />
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">

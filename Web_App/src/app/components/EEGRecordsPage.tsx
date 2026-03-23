@@ -1,44 +1,49 @@
 import React, { useState } from "react";
-import { 
-  Activity, 
-  Search, 
-  Filter, 
-  ChevronRight, 
-  MoreVertical, 
-  Calendar, 
-  Brain,
+import {
+  Activity,
+  Search,
+  ChevronRight,
+  MoreVertical,
+  Calendar,
   Download,
-  FilterIcon
+  X,
+  Zap,
+  Waves,
+  Shield,
+  FileText,
+  Brain,
+  MessageSquare
 } from "lucide-react";
 import { clsx } from "clsx";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { Link } from "react-router";
 import { apiService, EEGRecord } from "../services/api";
 import { User } from "lucide-react";
 import { useEffect } from "react";
-
-const initialRecords = [
-  { id: 1, patient: "Sarah Jenkins", date: "Mar 17, 2026", time: "10:24 AM", risk: 92, status: "Critical", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop" },
-  { id: 2, patient: "Robert Wilson", date: "Mar 17, 2026", time: "09:15 AM", risk: 12, status: "Normal", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop" },
-  { id: 3, patient: "Emily Davis", date: "Mar 16, 2026", time: "04:30 PM", risk: 88, status: "Critical", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop" },
-  { id: 4, patient: "Maria Garcia", date: "Mar 16, 2026", time: "02:45 PM", risk: 45, status: "Elevated", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop" },
-  { id: 5, patient: "James Miller", date: "Mar 15, 2026", time: "11:00 AM", risk: 8, status: "Normal", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop" },
-  { id: 6, patient: "Michael Thompson", date: "Mar 14, 2026", time: "08:30 AM", risk: 15, status: "Normal", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop" },
-  { id: 7, patient: "Linda Moore", date: "Mar 13, 2026", time: "01:20 PM", risk: 52, status: "Elevated", avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&h=150&fit=crop" },
-  { id: 8, patient: "William Taylor", date: "Mar 12, 2026", time: "10:00 AM", risk: 10, status: "Normal", avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&h=150&fit=crop" },
-];
+import { toast } from "sonner";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  AreaChart,
+  Area
+} from "recharts";
+import { computeFFT } from "../utils/dsp";
 
 export const EEGRecordsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [riskFilter, setRiskFilter] = useState("All");
-  const [records, setRecords] = useState<any[]>([]);
+  const [records, setRecords] = useState<EEGRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedRecord, setSelectedRecord] = useState<EEGRecord | null>(null);
 
   useEffect(() => {
     setLoading(true);
-    // In a real app we'd need patient names too, but the EEGRecord has patient_id.
-    // For now we'll fetch and hope for the best or join with patients.
-    apiService.getEEGHistory("") // Calling with empty to get all if we update apiService
+    apiService.getEEGHistory("")
       .then(data => {
         setRecords(data);
         setLoading(false);
@@ -46,21 +51,29 @@ export const EEGRecordsPage: React.FC = () => {
   }, []);
 
   const filteredRecords = records.filter(r => {
-    const matchesSearch = r.patient_id.toLowerCase().includes(searchTerm.toLowerCase()); // Searching by ID for now
-    const matchesRisk = riskFilter === "All" || 
+    const matchesSearch = r.patient_id?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRisk = riskFilter === "All" ||
       (riskFilter === "Critical" && r.risk_score > 75) ||
       (riskFilter === "Elevated" && r.risk_score > 40 && r.risk_score <= 75) ||
       (riskFilter === "Normal" && r.risk_score <= 40);
     return matchesSearch && matchesRisk;
   });
 
+  const getRecordDetails = (record: EEGRecord) => {
+    const signal = record.ai_metadata?.raw_signal || [];
+    const timeData = signal.map((val: number, i: number) => ({ time: i, value: val }));
+    const spectralData = computeFFT(signal);
+
+    return { timeData, spectralData };
+  };
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 relative">
       {/* HEADER */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-black text-slate-900">EEG Records</h1>
-          <p className="text-slate-500 font-medium tracking-tight">Access historical EEG data and AI analysis results for all patients.</p>
+          <p className="text-slate-500 font-medium tracking-tight">Access historical EEG data and AI analysis results.</p>
         </div>
         <button className="flex items-center gap-2 px-6 py-3 bg-white text-slate-900 font-bold text-sm rounded-2xl border border-slate-200 hover:bg-slate-50 transition-all shadow-sm">
           <Download className="w-5 h-5" />
@@ -86,18 +99,14 @@ export const EEGRecordsPage: React.FC = () => {
         </div>
         <div className="relative flex-1 md:max-w-md w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input 
-            type="text" 
-            placeholder="Search by patient name..." 
+          <input
+            type="text"
+            placeholder="Search by patient ID..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
           />
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 text-slate-500 font-bold text-xs uppercase tracking-widest hover:bg-slate-50 rounded-xl transition-colors">
-          <Calendar className="w-4 h-4" />
-          Date Range
-        </button>
       </div>
 
       {/* RECORDS TABLE */}
@@ -115,19 +124,20 @@ export const EEGRecordsPage: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-slate-50">
               {filteredRecords.map((record, i) => (
-                <motion.tr 
-                  key={record.id} 
+                <motion.tr
+                  key={record.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="hover:bg-slate-50/50 transition-colors group"
+                  className="hover:bg-slate-50/50 transition-colors group cursor-pointer"
+                  onClick={() => setSelectedRecord(record)}
                 >
                   <td className="px-6 py-5">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center">
-                         <User className="w-6 h-6 text-slate-400" />
+                        <User className="w-6 h-6 text-slate-400" />
                       </div>
-                      <span className="text-sm font-bold text-slate-900 block">{record.patient_id}</span>
+                        <span className="text-sm font-bold text-slate-900 block">{record.patient_name || record.patient_id}</span>
                     </div>
                   </td>
                   <td className="px-6 py-5">
@@ -137,7 +147,7 @@ export const EEGRecordsPage: React.FC = () => {
                   <td className="px-6 py-5">
                     <div className="flex items-center gap-4">
                       <div className="w-32 h-2 bg-slate-100 rounded-full overflow-hidden">
-                        <div 
+                        <div
                           className={clsx(
                             "h-full rounded-full transition-all",
                             record.risk_score > 75 ? "bg-orange-500" : record.risk_score > 40 ? "bg-amber-500" : "bg-emerald-500"
@@ -152,22 +162,19 @@ export const EEGRecordsPage: React.FC = () => {
                     <span className={clsx(
                       "text-[10px] font-black px-2.5 py-1 rounded-lg uppercase tracking-wider border",
                       record.risk_status === "HIGH" ? "bg-orange-50 text-orange-600 border-orange-100" :
-                      record.risk_status === "MEDIUM" ? "bg-amber-50 text-amber-700 border-amber-100" :
-                      "bg-emerald-50 text-emerald-600 border-emerald-100"
+                        record.risk_status === "MEDIUM" ? "bg-amber-50 text-amber-700 border-amber-100" :
+                          "bg-emerald-50 text-emerald-600 border-emerald-100"
                     )}>
                       {record.risk_status}
                     </span>
                   </td>
                   <td className="px-6 py-5 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <Link 
-                        to={`/patients/${record.id}`}
-                        className="p-2.5 bg-slate-50 text-slate-400 hover:text-emerald-600 transition-all rounded-xl border border-slate-100 hover:bg-emerald-50 hover:border-emerald-100"
-                      >
+                      <button className="p-2.5 bg-slate-50 text-slate-400 hover:text-emerald-600 transition-all rounded-xl border border-slate-100 hover:bg-emerald-50 hover:border-emerald-100">
                         <Activity className="w-4 h-4" />
-                      </Link>
+                      </button>
                       <button className="p-2 text-slate-300 hover:text-slate-600 transition-colors">
-                        <MoreVertical className="w-4 h-4" />
+                        <ChevronRight className="w-5 h-5" />
                       </button>
                     </div>
                   </td>
@@ -175,8 +182,257 @@ export const EEGRecordsPage: React.FC = () => {
               ))}
             </tbody>
           </table>
+          {filteredRecords.length === 0 && (
+            <div className="p-20 text-center">
+              <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 mx-auto mb-4 border border-slate-100">
+                <Search className="w-8 h-8" />
+              </div>
+              <h3 className="text-slate-900 font-black">No records found</h3>
+              <p className="text-slate-500 text-sm">Try adjusting your filters or search term.</p>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* DETAIL MODAL/DRAWER */}
+      <AnimatePresence>
+        {selectedRecord && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 md:p-8"
+              onClick={() => setSelectedRecord(null)}
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                className="bg-white w-full max-w-6xl max-h-full overflow-y-auto rounded-[3rem] shadow-2xl relative"
+                key={selectedRecord.id}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* MODAL HEADER */}
+                <div className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-slate-100 px-8 py-6 flex items-center justify-between z-10">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 border border-emerald-100">
+                      <Brain className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-black text-slate-900 leading-tight">EEG Record Details</h2>
+                      <p className="text-sm text-slate-400 font-medium">Record ID: {selectedRecord.id.slice(0, 8)}... • Patient: {selectedRecord.patient_name || selectedRecord.patient_id}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSelectedRecord(null)}
+                    className="p-3 hover:bg-slate-50 rounded-2xl text-slate-400 hover:text-slate-600 transition-all border border-transparent hover:border-slate-100"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+
+                <div className="p-8 space-y-8">
+                  {/* TOP STATS GRID */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-slate-400 shadow-sm border border-slate-100">
+                          <Activity className="w-5 h-5" />
+                        </div>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Risk Score</span>
+                      </div>
+                      <div className="flex items-end gap-2">
+                        <span className={clsx(
+                          "text-4xl font-black",
+                          selectedRecord.risk_score > 75 ? "text-orange-600" : selectedRecord.risk_score > 40 ? "text-amber-600" : "text-emerald-600"
+                        )}>{selectedRecord.risk_score}%</span>
+                        <span className="text-sm font-bold text-slate-400 mb-1">Probability</span>
+                      </div>
+                    </div>
+
+                    <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-slate-400 shadow-sm border border-slate-100">
+                          <Zap className="w-5 h-5" />
+                        </div>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Hjorth Activity</span>
+                      </div>
+                      <div className="flex items-end gap-2">
+                        <span className="text-4xl font-black text-slate-900">{selectedRecord.hjorth_activity?.toFixed(1) || "0.0"}</span>
+                        <span className="text-sm font-bold text-slate-400 mb-1">μV²</span>
+                      </div>
+                    </div>
+
+                    <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-slate-400 shadow-sm border border-slate-100">
+                          <Waves className="w-5 h-5" />
+                        </div>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">RMS Amplitude</span>
+                      </div>
+                      <div className="flex items-end gap-2">
+                        <span className="text-4xl font-black text-slate-900">{selectedRecord.rms?.toFixed(1) || "0.0"}</span>
+                        <span className="text-sm font-bold text-slate-400 mb-1">μV</span>
+                      </div>
+                    </div>
+
+                    <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-slate-400 shadow-sm border border-slate-100">
+                          <Shield className="w-5 h-5" />
+                        </div>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Risk Status</span>
+                      </div>
+                      <div className="pt-1">
+                        <span className={clsx(
+                          "px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest",
+                          selectedRecord.risk_status === "HIGH" ? "bg-orange-100 text-orange-700" :
+                            selectedRecord.risk_status === "MEDIUM" ? "bg-amber-100 text-amber-700" :
+                              "bg-emerald-100 text-emerald-700"
+                        )}>{selectedRecord.risk_status}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* CHARTS SECTION */}
+                  <div className="grid lg:grid-cols-2 gap-8">
+                    {/* TIME DOMAIN CHART */}
+                    <div className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm">
+                      <div className="flex items-center justify-between mb-8">
+                        <div>
+                          <h3 className="text-lg font-black text-slate-900">Time Domain Visualization</h3>
+                          <p className="text-xs text-slate-400 font-medium">Waveform representation of raw EEG signal (μV / Sample)</p>
+                        </div>
+                        <div className="p-3 bg-slate-50 rounded-2xl text-slate-400 border border-slate-100">
+                          <Activity className="w-5 h-5" />
+                        </div>
+                      </div>
+                      <div className="h-[300px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={getRecordDetails(selectedRecord).timeData}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                            <XAxis dataKey="time" hide />
+                            <YAxis domain={['auto', 'auto']} stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
+                            <Tooltip
+                              contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                              labelStyle={{ display: 'none' }}
+                            />
+                            <Line
+                              type="monotone"
+                              dataKey="value"
+                              stroke="#059669"
+                              strokeWidth={1.5}
+                              dot={false}
+                              animationDuration={1500}
+                            />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+
+                    {/* FREQUENCY DOMAIN CHART */}
+                    <div className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm">
+                      <div className="flex items-center justify-between mb-8">
+                        <div>
+                          <h3 className="text-lg font-black text-slate-900">Spectral Domain Analysis</h3>
+                          <p className="text-xs text-slate-400 font-medium">Power spectral density via FFT decomposition</p>
+                        </div>
+                        <div className="p-3 bg-slate-50 rounded-2xl text-slate-400 border border-slate-100">
+                          <Brain className="w-5 h-5" />
+                        </div>
+                      </div>
+                      <div className="h-[300px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={getRecordDetails(selectedRecord).spectralData}>
+                            <defs>
+                              <linearGradient id="colorMag" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                            <XAxis dataKey="frequency" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
+                            <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
+                            <Tooltip
+                              contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                            />
+                            <Area
+                              type="monotone"
+                              dataKey="magnitude"
+                              stroke="#3b82f6"
+                              fillOpacity={1}
+                              fill="url(#colorMag)"
+                              animationDuration={2000}
+                            />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* DOCTOR NOTES */}
+                  <div className="bg-white rounded-[3rem] border border-slate-100 p-8 space-y-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
+                        <MessageSquare className="w-5 h-5" />
+                      </div>
+                      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Doctor's Clinical Notes</h4>
+                    </div>
+                    <textarea
+                      className="w-full p-6 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-sm resize-none"
+                      rows={4}
+                      placeholder="Add clinical observations for this specific recording..."
+                      defaultValue={selectedRecord.doctor_note || ""}
+                      onBlur={async (e) => {
+                        try {
+                          await apiService.updateEEGRecordNote(selectedRecord.id, e.target.value);
+                          toast.success("Note updated");
+                        } catch (err) {
+                          toast.error("Failed to update note");
+                        }
+                      }}
+                    />
+                  </div>
+
+                  {/* AI INTERPRETATION & FULL FEATURES */}
+                  <div className="grid lg:grid-cols-3 gap-8">
+                    <div className="lg:col-span-2 bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm">
+                      <div className="flex items-center gap-3 mb-6">
+                        <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 border border-emerald-100">
+                          <FileText className="w-5 h-5" />
+                        </div>
+                        <h3 className="text-lg font-black text-slate-900 uppercase tracking-widest text-xs">AI Clinical Interpretation</h3>
+                      </div>
+                      <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
+                        <p className="text-slate-600 leading-relaxed italic">"{selectedRecord.interpretation}"</p>
+                      </div>
+                    </div>
+
+                    <div className="bg-slate-900 p-8 rounded-[3rem] text-white">
+                      <h3 className="text-sm font-black uppercase tracking-widest text-slate-500 mb-6">Feature Metrics</h3>
+                      <div className="space-y-4">
+                        {[
+                          { label: "Complexity", value: selectedRecord.hjorth_complexity?.toFixed(3) },
+                          { label: "Mobility", value: selectedRecord.hjorth_mobility?.toFixed(3) },
+                          { label: "Zero Crossing", value: selectedRecord.zcr?.toFixed(4) },
+                          { label: "Envelope Max", value: selectedRecord.envelope_max?.toFixed(1) },
+                          { label: "Deriv1 SD", value: selectedRecord.deriv1_std?.toFixed(2) }
+                        ].map((item) => (
+                          <div key={item.label} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
+                            <span className="text-xs font-bold text-slate-400">{item.label}</span>
+                            <span className="text-sm font-black font-mono">{item.value || "0.000"}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

@@ -1,10 +1,10 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from api import models, schemas
-from datetime import datetime
+from uuid import UUID
 
-def create_note(db: Session, note_data: schemas.MedicalNoteCreate, doctor_id: str):
+def create_medical_note(db: Session, note_data: schemas.MedicalNoteCreate, doctor_id: UUID):
     """
-    Създава нова медицинска бележка от лекар за конкретен пациент.
+    Създава нова клинична бележка за пациент.
     """
     new_note = models.MedicalNote(
         patient_id=note_data.patient_id,
@@ -18,25 +18,31 @@ def create_note(db: Session, note_data: schemas.MedicalNoteCreate, doctor_id: st
 
 def get_patient_notes(db: Session, patient_id: str):
     """
-    Връща всички бележки за даден пациент, подредени по време.
+    Връща всички бележки за конкретен пациент.
     """
     return db.query(models.MedicalNote)\
-             .filter(models.MedicalNote.patient_id == patient_id)\
+             .options(joinedload(models.MedicalNote.patient))\
+             .filter(models.MedicalNote.patient_id == UUID(patient_id))\
              .order_by(models.MedicalNote.timestamp.desc())\
              .all()
 
-def delete_note(db: Session, note_id: str, doctor_id: str):
+def get_doctor_notes(db: Session, doctor_id: UUID):
     """
-    Изтрива бележка (само ако лекарят е авторът).
+    Връща всички бележки, написани от конкретен лекар.
     """
-    note = db.query(models.MedicalNote).filter(
-        models.MedicalNote.id == note_id,
-        models.MedicalNote.doctor_id == doctor_id
-    ).first()
-    
-    if not note:
-        raise Exception("Бележката не е намерена или нямате права за изтриване!")
-    
-    db.delete(note)
-    db.commit()
-    return True
+    return db.query(models.MedicalNote)\
+             .options(joinedload(models.MedicalNote.patient))\
+             .filter(models.MedicalNote.doctor_id == doctor_id)\
+             .order_by(models.MedicalNote.timestamp.desc())\
+             .all()
+
+def update_eeg_record_note(db: Session, record_id: str, note: str):
+    """
+    Обновява персоналната бележка към конкретен ЕЕГ запис.
+    """
+    record = db.query(models.EEGRecord).filter(models.EEGRecord.id == UUID(record_id)).first()
+    if record:
+        record.doctor_note = note
+        db.commit()
+        db.refresh(record)
+    return record

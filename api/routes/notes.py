@@ -3,22 +3,18 @@ from api import schemas, database
 from api.services import notes
 from api.utils.auth import token_required, role_required
 from pydantic import ValidationError
+from uuid import UUID
 
 notes_bp = Blueprint('notes', __name__)
 
 @notes_bp.route('/', methods=['POST'])
 @token_required
 @role_required('doctor')
-def add_note(current_user):
+def create_note(current_user):
     """
-    Ендпойнт за добавяне на медицинска бележка.
+    Създава нова медицинска бележка от лекаря.
     """
     data = request.get_json()
-    doctor_id = current_user.id
-
-    if not doctor_id:
-        return jsonify({"detail": "Липсва doctor_id"}), 400
-
     try:
         note_in = schemas.MedicalNoteCreate(**data)
     except ValidationError as e:
@@ -26,22 +22,53 @@ def add_note(current_user):
 
     db = next(database.get_db())
     try:
-        new_note = notes.create_note(db=db, note_data=note_in, doctor_id=doctor_id)
+        new_note = notes.create_medical_note(db, note_in, current_user.id)
         return jsonify(schemas.MedicalNote.model_validate(new_note).model_dump()), 201
-    except Exception as e:
-        return jsonify({"detail": str(e)}), 400
     finally:
         db.close()
 
-@notes_bp.route('/<patient_id>', methods=['GET'])
+@notes_bp.route('/', methods=['GET'])
 @token_required
-def get_notes(current_user, patient_id):
+@role_required('doctor')
+def get_notes(current_user):
     """
-    Връща списък с всички бележки за пациента.
+    Връща списък с бележките, написани от текущия лекар.
     """
     db = next(database.get_db())
     try:
-        all_notes = notes.get_patient_notes(db=db, patient_id=patient_id)
+        all_notes = notes.get_doctor_notes(db, current_user.id)
         return jsonify([schemas.MedicalNote.model_validate(n).model_dump() for n in all_notes]), 200
+    finally:
+        db.close()
+
+@notes_bp.route('/patient/<patient_id>', methods=['GET'])
+@token_required
+def get_patient_notes(current_user, patient_id):
+    """
+    Връща бележките за конкретен пациент.
+    """
+    db = next(database.get_db())
+    try:
+        all_notes = notes.get_patient_notes(db, patient_id)
+        return jsonify([schemas.MedicalNote.model_validate(n).model_dump() for n in all_notes]), 200
+    finally:
+        db.close()
+
+@notes_bp.route('/record/<record_id>', methods=['PUT'])
+@token_required
+@role_required('doctor')
+def update_record_note(current_user, record_id):
+    """
+    Обновява бележката към конкретен ЕЕГ запис.
+    """
+    data = request.get_json()
+    note_content = data.get('note', '')
+    
+    db = next(database.get_db())
+    try:
+        updated_record = notes.update_eeg_record_note(db, record_id, note_content)
+        if not updated_record:
+            return jsonify({"detail": "Записът не е намерен"}), 404
+        return jsonify(schemas.EEGRecord.model_validate(updated_record).model_dump()), 200
     finally:
         db.close()

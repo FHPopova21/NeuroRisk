@@ -61,10 +61,20 @@ export const PatientProfilePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"eeg" | "history" | "notes">("eeg");
   const [patient, setPatient] = useState<Patient | null>(null);
   const [eegHistory, setEegHistory] = useState<EEGRecord[]>([]);
+  const latestRecord = eegHistory[0] || null;
   const [medicalNotes, setMedicalNotes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+
+  // Static chart data
+  const chartData = useMemo(() => {
+    return Array.from({ length: 60 }, (_, i) => ({
+      time: i,
+      ch1: Math.sin(i * 0.4) * 40 + Math.random() * 20 - 10,
+      ch2: Math.cos(i * 0.3) * 30 + Math.random() * 15 - 7,
+    }));
+  }, []);
 
   useEffect(() => {
     if (id) {
@@ -106,17 +116,6 @@ export const PatientProfilePage: React.FC = () => {
       </div>
     );
   }
-
-  const latestRecord = eegHistory[0] || null;
-
-  // Static chart data
-  const chartData = useMemo(() => {
-    return Array.from({ length: 60 }, (_, i) => ({
-      time: i,
-      ch1: Math.sin(i * 0.4) * 40 + Math.random() * 20 - 10,
-      ch2: Math.cos(i * 0.3) * 30 + Math.random() * 15 - 7,
-    }));
-  }, []);
 
   return (
     <div className="space-y-8">

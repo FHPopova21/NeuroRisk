@@ -9,13 +9,28 @@ import {
   ChevronRight,
   MoreVertical,
   ArrowUpRight,
-  User
+  User,
+  Shield,
+  TrendingUp
 } from "lucide-react";
 import { clsx } from "clsx";
 import { motion } from "motion/react";
 import { Link } from "react-router";
 import { apiService, Patient, EEGRecord } from "../services/api";
 import { useState, useEffect, useMemo } from "react";
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer, 
+  Cell,
+  PieChart,
+  Pie,
+  Legend
+} from "recharts";
 
 export const DashboardHome: React.FC = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -37,22 +52,75 @@ export const DashboardHome: React.FC = () => {
     });
   }, []);
 
-  const stats = useMemo(() => [
-    { label: "Total Patients", value: patients.length.toString(), icon: Users, color: "bg-emerald-100 text-emerald-700", trend: "Live" },
-    { label: "Patients with App", value: patients.filter(p => p.is_active).length.toString(), icon: Smartphone, color: "bg-blue-100 text-blue-700", trend: "Live" },
-    { label: "High Risk Patients", value: patients.filter(p => p.status === "HIGH").length.toString(), icon: AlertCircle, color: "bg-orange-100 text-orange-700", trend: "Live" },
-    { label: "Total Recordings", value: history.length.toString(), icon: Activity, color: "bg-purple-100 text-purple-700", trend: "Live" },
-  ], [patients, history]);
+  const stats = useMemo(() => {
+    // Determine each patient's current risk by looking at their latest EEG record
+    const patientLatestStatus = patients.map(p => {
+      const patientHistory = history.filter(h => h.patient_id === p.id)
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      return patientHistory[0]?.risk_status || p.status || "INACTIVE";
+    });
+
+    const highRiskCount = patientLatestStatus.filter(s => s === "HIGH").length;
+
+    return [
+      { label: "Total Patients", value: patients.length.toString(), icon: Users, color: "bg-emerald-100 text-emerald-700", trend: "Live" },
+      { label: "Patients with App", value: patients.filter(p => p.is_active).length.toString(), icon: Smartphone, color: "bg-blue-100 text-blue-700", trend: "Live" },
+      { label: "High Risk Patients", value: highRiskCount.toString(), icon: AlertCircle, color: "bg-orange-100 text-orange-700", trend: "Live" },
+      { label: "Total Recordings", value: history.length.toString(), icon: Activity, color: "bg-purple-100 text-purple-700", trend: "Live" },
+    ];
+  }, [patients, history]);
 
   const recentAnalyses = useMemo(() => history.slice(0, 5), [history]);
   const highRiskAlerts = useMemo(() => alerts.slice(0, 3), [alerts]);
+
+  const riskData = useMemo(() => {
+    const patientLatestStatus = patients.map(p => {
+      const patientHistory = history.filter(h => h.patient_id === p.id)
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      return patientHistory[0]?.risk_status || p.status || "INACTIVE";
+    });
+
+    const counts = { LOW: 0, MEDIUM: 0, HIGH: 0, INACTIVE: 0 };
+    patientLatestStatus.forEach(status => {
+      if (status === "HIGH") counts.HIGH++;
+      else if (status === "MEDIUM") counts.MEDIUM++;
+      else if (status === "LOW") counts.LOW++;
+      else counts.INACTIVE++;
+    });
+
+    return [
+      { name: "High Risk", value: counts.HIGH, color: "#f97316" },
+      { name: "Medium Risk", value: counts.MEDIUM, color: "#f59e0b" },
+      { name: "Low Risk", value: counts.LOW, color: "#10b981" },
+    ];
+  }, [patients, history]);
+
+  const activityData = useMemo(() => {
+    // Group records by day for the last 7 days
+    const days = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      return d.toISOString().split('T')[0];
+    }).reverse();
+
+    return days.map(day => ({
+      name: new Date(day).toLocaleDateString(undefined, { weekday: 'short' }),
+      count: history.filter(r => {
+        const rDay = new Date(r.timestamp).toISOString().split('T')[0];
+        return rDay === day;
+      }).length
+    }));
+  }, [history]);
+
+  const activePatientsCount = useMemo(() => patients.filter(p => p.is_active).length, [patients]);
+
   return (
     <div className="space-y-8">
       {/* TOP BAR */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-black text-slate-900">Clinical Dashboard</h1>
-          <p className="text-slate-500 font-medium">Tuesday, March 17, 2026</p>
+          <p className="text-slate-500 font-medium">{new Date().toLocaleDateString('bg-BG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
         </div>
         <div className="flex items-center gap-4">
           <div className="relative hidden md:block">
@@ -67,9 +135,9 @@ export const DashboardHome: React.FC = () => {
             <Bell className="w-5 h-5 text-slate-600" />
             <span className="absolute top-2 right-2 w-2 h-2 bg-orange-500 rounded-full border-2 border-white" />
           </button>
-          <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center border border-emerald-200 shadow-sm overflow-hidden">
-             <img src="https://images.unsplash.com/photo-1645066928295-2506defde470?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBkb2N0b3IlMjBhdmF0YXIlMjBwb3J0cmFpdHxlbnwxfHx8fDE3Njk3NTg1MDZ8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral" alt="Doctor" className="w-full h-full object-cover" />
-          </div>
+          <Link to="/profile" className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center border border-emerald-200 shadow-sm overflow-hidden">
+             <User className="w-6 h-6 text-emerald-600" />
+          </Link>
         </div>
       </div>
 
@@ -100,6 +168,77 @@ export const DashboardHome: React.FC = () => {
         ))}
       </div>
 
+      {/* CHARTS SECTION */}
+      <div className="grid lg:grid-cols-2 gap-8">
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6"
+        >
+          <div className="flex justify-between items-center">
+            <h3 className="font-black text-slate-900 uppercase tracking-widest text-xs">Patient Risk Distribution</h3>
+            <Shield className="w-4 h-4 text-emerald-600" />
+          </div>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={riskData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {riskData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </motion.div>
+
+        <motion.div 
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6"
+        >
+          <div className="flex justify-between items-center">
+            <h3 className="font-black text-slate-900 uppercase tracking-widest text-xs">Weekly Activity Trends</h3>
+            <TrendingUp className="w-4 h-4 text-blue-600" />
+          </div>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={activityData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis 
+                  dataKey="name" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 10, fontWeight: 700, fill: '#64748b' }} 
+                />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 10, fontWeight: 700, fill: '#64748b' }} 
+                />
+                <Tooltip 
+                  cursor={{ fill: '#f8fafc' }}
+                  contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                />
+                <Bar dataKey="count" fill="#10b981" radius={[4, 4, 0, 0]} barSize={30} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </motion.div>
+      </div>
+
       <div className="grid lg:grid-cols-3 gap-8">
         {/* RECENT ANALYSES TABLE */}
         <div className="lg:col-span-2 bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden">
@@ -128,7 +267,7 @@ export const DashboardHome: React.FC = () => {
                         <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400">
                           <User className="w-5 h-5" />
                         </div>
-                        <span className="text-sm font-bold text-slate-900">{analysis.patient_id}</span>
+                        <span className="text-sm font-bold text-slate-900">{analysis.patient_name || analysis.patient_id}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -173,7 +312,7 @@ export const DashboardHome: React.FC = () => {
             {highRiskAlerts.map((alert) => (
               <div key={alert.id} className="relative pl-6 border-l-2 border-orange-500 py-1">
                 <div className="flex justify-between items-start mb-1">
-                  <h4 className="text-sm font-black text-slate-900">{alert.patient_id}</h4>
+                  <h4 className="text-sm font-black text-slate-900">{alert.patient_name || alert.patient_id}</h4>
                   <span className="text-[10px] font-bold text-slate-400">{new Date(alert.timestamp).toLocaleTimeString()}</span>
                 </div>
                 <p className="text-xs text-slate-500 mb-3 leading-relaxed">{alert.message}</p>
@@ -194,7 +333,7 @@ export const DashboardHome: React.FC = () => {
                   <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">All Systems Operational</p>
                 </div>
               </div>
-              <p className="text-xs text-slate-500 leading-relaxed">AI analysis models are processing data from 8 active patient monitors.</p>
+              <p className="text-xs text-slate-500 leading-relaxed">AI analysis models are processing data from {activePatientsCount} active patient monitors.</p>
             </div>
           </div>
           <div className="p-4 border-t border-slate-50">

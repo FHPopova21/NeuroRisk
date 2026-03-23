@@ -1,12 +1,12 @@
 import React from "react";
 import { Link, useLocation } from "react-router";
-import { 
-  LayoutDashboard, 
-  Users, 
-  Activity, 
-  Bell, 
-  FileEdit, 
-  User, 
+import {
+  LayoutDashboard,
+  Users,
+  Activity,
+  Bell,
+  FileEdit,
+  User,
   LogOut,
   PlusCircle,
   Brain,
@@ -71,8 +71,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole, onLogout }) => {
               to={item.path}
               className={clsx(
                 "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 group",
-                isActive 
-                  ? "bg-emerald-50 text-emerald-700 shadow-sm border border-emerald-100/50" 
+                isActive
+                  ? "bg-emerald-50 text-emerald-700 shadow-sm border border-emerald-100/50"
                   : "text-slate-500 hover:bg-slate-50 hover:text-emerald-600"
               )}
             >
@@ -91,8 +91,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole, onLogout }) => {
               to="/patients/add"
               className={clsx(
                 "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 group",
-                currentPath === "/patients/add" 
-                  ? "bg-emerald-50 text-emerald-700 shadow-sm border border-emerald-100/50" 
+                currentPath === "/patients/add"
+                  ? "bg-emerald-50 text-emerald-700 shadow-sm border border-emerald-100/50"
                   : "text-slate-500 hover:bg-slate-50 hover:text-emerald-600"
               )}
             >
@@ -101,7 +101,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole, onLogout }) => {
             </Link>
           </>
         )}
-        
+
         {userRole === 'admin' && (
           <>
             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mt-8 mb-4 px-3">
@@ -111,8 +111,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole, onLogout }) => {
               to="/admin/settings"
               className={clsx(
                 "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 group",
-                currentPath === "/admin/settings" 
-                  ? "bg-blue-50 text-blue-700 shadow-sm border border-blue-100/50" 
+                currentPath === "/admin/settings"
+                  ? "bg-blue-50 text-blue-700 shadow-sm border border-blue-100/50"
                   : "text-slate-500 hover:bg-slate-50 hover:text-blue-600"
               )}
             >
@@ -124,16 +124,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole, onLogout }) => {
       </div>
 
       <div className="p-4 border-t border-slate-100 bg-slate-50/50">
-        <Link 
+        <Link
           to="/profile"
           className={clsx(
             "flex items-center gap-3 p-2 rounded-xl mb-3 transition-colors",
             currentPath === "/profile" ? "bg-white shadow-sm ring-1 ring-slate-200" : "hover:bg-white/80"
           )}
         >
-          <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold overflow-hidden border border-emerald-200 shadow-sm">
-             <img src="https://images.unsplash.com/photo-1645066928295-2506defde470?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBkb2N0b3IlMjBhdmF0YXIlMjBwb3J0cmFpdHxlbnwxfHx8fDE3Njk3NTg1MDZ8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral" alt="User" className="w-full h-full object-cover" />
-          </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-bold text-slate-900 truncate">
               {user?.name || user?.username || "Admin User"}
@@ -143,7 +140,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole, onLogout }) => {
             </p>
           </div>
         </Link>
-        <button 
+        <button
           onClick={onLogout}
           className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 text-sm font-bold hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-all shadow-sm"
         >
