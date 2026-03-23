@@ -1,13 +1,15 @@
 from flask import Blueprint, request, jsonify
 from api import schemas, database
 from api.services import monitoring
+from api.utils.auth import token_required, role_required
 from pydantic import ValidationError
 from uuid import UUID
 
 monitoring_bp = Blueprint('monitoring', __name__)
 
 @monitoring_bp.route('/eeg', methods=['POST'])
-def add_eeg_record():
+@token_required
+def add_eeg_record(current_user):
     """
     Ендпойнт за изпращане на нов ЕЕГ анализ (обикновено от AI модела).
     """
@@ -25,7 +27,8 @@ def add_eeg_record():
         db.close()
 
 @monitoring_bp.route('/process', methods=['POST'])
-def process_signal():
+@token_required
+def process_signal(current_user):
     """
     Ендпойнт за изпращане на суров ЕЕГ сигнал за автоматична обработка.
     """
@@ -43,7 +46,8 @@ def process_signal():
         db.close()
 
 @monitoring_bp.route('/history/<patient_id>', methods=['GET'])
-def get_history(patient_id):
+@token_required
+def get_history(current_user, patient_id):
     """
     Връща историята на записите за конкретен пациент.
     """
@@ -55,7 +59,8 @@ def get_history(patient_id):
         db.close()
 
 @monitoring_bp.route('/alerts', methods=['GET'])
-def get_alerts():
+@token_required
+def get_alerts(current_user):
     """
     Връща списък с активните аларми. Може да се филтрира по patient_id през query параметър.
     """
@@ -68,7 +73,9 @@ def get_alerts():
         db.close()
 
 @monitoring_bp.route('/history', methods=['GET'])
-def get_all_history():
+@token_required
+@role_required('doctor')
+def get_all_history(current_user):
     """
     Връща списък с последните анализи за всички пациенти.
     """

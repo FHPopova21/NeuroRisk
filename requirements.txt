@@ -13,6 +13,7 @@ torch
 flask
 sqlalchemy
 psycopg2-binary
+flask-cors
 passlib
 bcrypt
 pydantic

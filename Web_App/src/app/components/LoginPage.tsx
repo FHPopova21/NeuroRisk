@@ -3,17 +3,28 @@ import { useNavigate, Link } from "react-router";
 import { Activity, Mail, Lock, ArrowRight } from "lucide-react";
 import { motion } from "motion/react";
 import { toast } from "sonner";
+import { useAuth } from "../context/AuthContext";
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (email && password) {
-      toast.success("Login successful");
-      navigate("/dashboard");
+      setLoading(true);
+      try {
+        await login(email, password);
+        toast.success("Login successful");
+        navigate("/dashboard");
+      } catch (error: any) {
+        toast.error(error.message || "Login failed");
+      } finally {
+        setLoading(false);
+      }
     } else {
       toast.error("Please fill in all fields");
     }
@@ -39,15 +50,15 @@ export const LoginPage: React.FC = () => {
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
-              Email Address
+              Email or Username
             </label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
               <input
-                type="email"
+                type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="doctor@neurorisk.edu"
+                placeholder="email or username"
                 className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all outline-none"
                 required
               />
@@ -83,17 +94,18 @@ export const LoginPage: React.FC = () => {
 
           <button
             type="submit"
-            className="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl hover:bg-emerald-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-200"
+            disabled={loading}
+            className="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl hover:bg-emerald-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Login to Dashboard
-            <ArrowRight className="w-5 h-5" />
+            {loading ? "Logging in..." : "Login to Dashboard"}
+            {!loading && <ArrowRight className="w-5 h-5" />}
           </button>
         </form>
 
         <div className="mt-8 text-center">
           <p className="text-slate-500 text-sm">
             Don't have an account?{" "}
-            <Link to="/" className="text-emerald-600 font-bold hover:underline">
+            <Link to="/register" className="text-emerald-600 font-bold hover:underline">
               Register now
             </Link>
           </p>

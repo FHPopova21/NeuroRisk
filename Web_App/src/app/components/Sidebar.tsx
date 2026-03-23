@@ -9,13 +9,17 @@ import {
   User, 
   LogOut,
   PlusCircle,
-  Brain
+  Brain,
+  ShieldCheck,
+  History,
+  Settings
 } from "lucide-react";
 import { clsx } from "clsx";
+import { useAuth } from "../context/AuthContext";
 
 interface SidebarProps {
   currentView: string;
-  userRole: "student" | "doctor";
+  userRole: "admin" | "doctor" | "student";
   onChangeView: (view: string) => void;
   onLogout: () => void;
 }
@@ -23,14 +27,25 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ userRole, onLogout }) => {
   const location = useLocation();
   const currentPath = location.pathname;
+  const { user } = useAuth();
 
-  const menuItems = [
+  const doctorMenuItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
     { id: "patients", label: "Patients", icon: Users, path: "/patients" },
     { id: "eeg-records", label: "EEG Records", icon: Activity, path: "/eeg-records" },
     { id: "alerts", label: "Alerts", icon: Bell, path: "/alerts" },
     { id: "notes", label: "Medical Notes", icon: FileEdit, path: "/notes" },
   ];
+
+  const adminMenuItems = [
+    { id: "admin-dashboard", label: "System Overview", icon: LayoutDashboard, path: "/admin/dashboard" },
+    { id: "manage-doctors", label: "Doctors Management", icon: ShieldCheck, path: "/admin/doctors" },
+    { id: "monitor-patients", label: "Patients Monitor", icon: Users, path: "/admin/patients" },
+    { id: "monitor-alerts", label: "Global Alerts", icon: Bell, path: "/admin/alerts" },
+    { id: "activity-logs", label: "Activity Logs", icon: History, path: "/admin/logs" },
+  ];
+
+  const menuItems = userRole === 'admin' ? adminMenuItems : doctorMenuItems;
 
   return (
     <aside className="w-64 bg-white border-r border-slate-200 flex flex-col h-screen fixed left-0 top-0 z-20">
@@ -67,21 +82,45 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole, onLogout }) => {
           );
         })}
 
-        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mt-8 mb-4 px-3">
-          Management
-        </div>
-        <Link
-          to="/patients/add"
-          className={clsx(
-            "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 group",
-            currentPath === "/patients/add" 
-              ? "bg-emerald-50 text-emerald-700 shadow-sm border border-emerald-100/50" 
-              : "text-slate-500 hover:bg-slate-50 hover:text-emerald-600"
-          )}
-        >
-          <PlusCircle className={clsx("w-5 h-5", currentPath === "/patients/add" ? "text-emerald-600" : "text-slate-400 group-hover:text-emerald-500")} />
-          Add Patient
-        </Link>
+        {userRole === 'doctor' && (
+          <>
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mt-8 mb-4 px-3">
+              Management
+            </div>
+            <Link
+              to="/patients/add"
+              className={clsx(
+                "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 group",
+                currentPath === "/patients/add" 
+                  ? "bg-emerald-50 text-emerald-700 shadow-sm border border-emerald-100/50" 
+                  : "text-slate-500 hover:bg-slate-50 hover:text-emerald-600"
+              )}
+            >
+              <PlusCircle className={clsx("w-5 h-5", currentPath === "/patients/add" ? "text-emerald-600" : "text-slate-400 group-hover:text-emerald-500")} />
+              Add Patient
+            </Link>
+          </>
+        )}
+        
+        {userRole === 'admin' && (
+          <>
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mt-8 mb-4 px-3">
+              Settings
+            </div>
+            <Link
+              to="/admin/settings"
+              className={clsx(
+                "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 group",
+                currentPath === "/admin/settings" 
+                  ? "bg-blue-50 text-blue-700 shadow-sm border border-blue-100/50" 
+                  : "text-slate-500 hover:bg-slate-50 hover:text-blue-600"
+              )}
+            >
+              <Settings className={clsx("w-5 h-5", currentPath === "/admin/settings" ? "text-blue-600" : "text-slate-400 group-hover:text-blue-500")} />
+              System Settings
+            </Link>
+          </>
+        )}
       </div>
 
       <div className="p-4 border-t border-slate-100 bg-slate-50/50">
@@ -97,10 +136,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole, onLogout }) => {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-bold text-slate-900 truncate">
-              Dr. Alex Silva
+              {user?.name || user?.username || "Admin User"}
             </p>
             <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">
-              Lead Neurologist
+              {userRole === 'admin' ? "System Administrator" : (user?.specialization || "Medical Staff")}
             </p>
           </div>
         </Link>

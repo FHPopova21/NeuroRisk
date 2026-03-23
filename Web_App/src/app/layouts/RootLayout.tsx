@@ -1,13 +1,16 @@
 import React from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
-import { Sidebar } from "@/app/components/Sidebar";
+import { Sidebar } from "../components/Sidebar";
 import { motion, AnimatePresence } from "motion/react";
+import { useAuth } from "../context/AuthContext";
 
 export const RootLayout: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { logout, user } = useAuth();
 
   const handleLogout = () => {
+    logout();
     navigate("/");
   };
 
@@ -15,7 +18,7 @@ export const RootLayout: React.FC = () => {
     <div className="flex min-h-screen bg-slate-50 font-sans text-slate-900">
       <Sidebar 
         currentView={location.pathname.substring(1)} 
-        userRole="doctor" 
+        userRole={user?.role || "doctor"} 
         onChangeView={(view) => navigate(`/${view}`)}
         onLogout={handleLogout}
       />

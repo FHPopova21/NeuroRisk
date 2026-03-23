@@ -6,11 +6,12 @@ import {
   Info, ChevronDown, BarChart2
 } from "lucide-react";
 
-interface LandingPageProps {
-  onLogin: (role: "student" | "doctor") => void;
-}
+import { useNavigate } from "react-router";
+import { useAuth } from "../context/AuthContext";
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
+export const LandingPage: React.FC = () => {
+  const navigate = useNavigate();
+  // We can use useAuth here if we want to redirect if already logged in
   const [activeChannel, setActiveChannel] = useState<number | null>(null);
   
   // Fake live data state
@@ -118,7 +119,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
               <motion.button 
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => onLogin("student")}
+                onClick={() => navigate("/login")}
                 className="group relative px-8 py-4 bg-emerald-600 text-white rounded-xl font-medium shadow-lg shadow-emerald-200/50 overflow-hidden"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
@@ -130,7 +131,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
               <motion.button 
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => onLogin("doctor")}
+                onClick={() => navigate("/login")}
                 className="px-8 py-4 bg-white border border-slate-200 text-slate-700 rounded-xl font-medium hover:border-emerald-200 hover:text-emerald-700 hover:bg-emerald-50/30 transition-colors"
               >
                 Instructor Login

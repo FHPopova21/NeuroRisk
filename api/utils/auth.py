@@ -36,7 +36,9 @@ def token_required(f):
             db = next(database.get_db())
             
             # В зависимост от ролята търсим в различна таблица
-            if data['role'] == 'doctor':
+            if data['role'] == 'admin':
+                current_user = db.query(models.Admin).filter(models.Admin.id == data['sub']).first()
+            elif data['role'] == 'doctor':
                 current_user = db.query(models.Doctor).filter(models.Doctor.id == data['sub']).first()
             else:
                 current_user = db.query(models.Patient).filter(models.Patient.id == data['sub']).first()
@@ -58,7 +60,12 @@ def role_required(required_role):
         def decorated(current_user, *args, **kwargs):
             # Проверяваме ролята. Лекарят има атрибут 'specialization', Пациентът има 'patient_id'
             # Можем да добавим изрично поле role в моделите или да проверяваме тип
-            actual_role = 'doctor' if hasattr(current_user, 'specialization') else 'patient'
+            if hasattr(current_user, 'username'):
+                actual_role = 'admin'
+            elif hasattr(current_user, 'specialization'):
+                actual_role = 'doctor'
+            else:
+                actual_role = 'patient'
             
             if actual_role != required_role:
                 return jsonify({'detail': 'Access denied: insufficient permissions!'}), 403

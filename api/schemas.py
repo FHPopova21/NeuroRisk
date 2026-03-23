@@ -18,10 +18,15 @@ class DoctorCreate(DoctorBase):
 class Doctor(DoctorBase):
     id: UUID
     is_verified: bool
+    status: str
     created_at: datetime
 
     class Config:
         from_attributes = True
+
+class DoctorUpdate(BaseModel):
+    is_verified: Optional[bool] = None
+    status: Optional[str] = None
 
 # --- ПАЦИЕНТИ ---
 
@@ -101,9 +106,29 @@ class Alert(AlertBase):
     id: UUID
     timestamp: datetime
     is_read: bool
+    patient: Optional[Patient] = None
+    doctor: Optional[Doctor] = None
 
     class Config:
         from_attributes = True
+
+class ActivityLog(BaseModel):
+    id: UUID
+    user_id: UUID
+    user_role: str
+    action: str
+    details: Optional[str] = None
+    timestamp: datetime
+    class Config:
+        from_attributes = True
+
+class AdminStats(BaseModel):
+    total_doctors: int
+    total_patients: int
+    active_sessions: int
+    high_risk_alerts: int
+    analyses_over_time: list[dict]
+    recent_activity: list[ActivityLog]
 
 # --- МЕДИЦИНСКИ БЕЛЕЖКИ ---
 

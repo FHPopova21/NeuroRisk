@@ -1,17 +1,20 @@
 from flask import Blueprint, request, jsonify
 from api import schemas, database
 from api.services import notes
+from api.utils.auth import token_required, role_required
 from pydantic import ValidationError
 
 notes_bp = Blueprint('notes', __name__)
 
 @notes_bp.route('/', methods=['POST'])
-def add_note():
+@token_required
+@role_required('doctor')
+def add_note(current_user):
     """
     Ендпойнт за добавяне на медицинска бележка.
     """
     data = request.get_json()
-    doctor_id = request.args.get('doctor_id') # Демо: взимаме от URL
+    doctor_id = current_user.id
 
     if not doctor_id:
         return jsonify({"detail": "Липсва doctor_id"}), 400
@@ -31,7 +34,8 @@ def add_note():
         db.close()
 
 @notes_bp.route('/<patient_id>', methods=['GET'])
-def get_notes(patient_id):
+@token_required
+def get_notes(current_user, patient_id):
     """
     Връща списък с всички бележки за пациента.
     """

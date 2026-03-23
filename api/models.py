@@ -30,6 +30,7 @@ class Doctor(Base):
     password_hash = Column(Text, nullable=False)
     specialization = Column(String(100))
     is_verified = Column(Boolean, default=False)
+    status = Column(String(20), default="PENDING") # PENDING, ACTIVE, SUSPENDED
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Връзки
@@ -123,3 +124,16 @@ class MedicalNote(Base):
     # Връзки
     patient = relationship("Patient", back_populates="notes")
     doctor = relationship("Doctor", back_populates="notes")
+
+class ActivityLog(Base):
+    """
+    Модел за системни логове - кой админ/лекар какво е направил.
+    """
+    __tablename__ = "activity_logs"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True)) # Може да е админ или лекар
+    user_role = Column(String(20)) # 'admin', 'doctor'
+    action = Column(String(100), nullable=False)
+    details = Column(Text)
+    timestamp = Column(DateTime(timezone=True), server_default=func.now())

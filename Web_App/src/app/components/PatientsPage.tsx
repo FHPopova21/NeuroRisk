@@ -13,25 +13,30 @@ import { clsx } from "clsx";
 import { motion } from "motion/react";
 import { Link } from "react-router";
 import { apiService, Patient } from "../services/api";
+import { useAuth } from "../context/AuthContext";
 
 export const PatientsPage: React.FC = () => {
   const [filter, setFilter] = useState<"All" | "Active" | "Inactive">("All");
   const [searchTerm, setSearchTerm] = useState("");
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
 
   useEffect(() => {
-    setLoading(true);
-    apiService.getPatients()
-      .then(data => {
+    const fetchPatients = async () => {
+      setLoading(true);
+      try {
+        const data = isAdmin ? await apiService.getAdminPatients() : await apiService.getPatients();
         setPatients(data);
-        setLoading(false);
-      })
-      .catch(err => {
+      } catch (err) {
         console.error("Error fetching patients:", err);
+      } finally {
         setLoading(false);
-      });
-  }, []);
+      }
+    };
+    fetchPatients();
+  }, [isAdmin]);
 
   const filteredPatients = patients.filter(p => {
     const matchesFilter = filter === "All" || (filter === "Active" ? p.is_active : !p.is_active);
@@ -44,16 +49,24 @@ export const PatientsPage: React.FC = () => {
       {/* HEADER */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-slate-900">Patient Database</h1>
-          <p className="text-slate-500 font-medium">Manage and monitor all your patients in one place.</p>
+          <h1 className="text-2xl font-black text-slate-900">
+            {isAdmin ? "Global Patient Monitor" : "Patient Database"}
+          </h1>
+          <p className="text-slate-500 font-medium">
+            {isAdmin 
+              ? "Read-only access to all registered patients in the network." 
+              : "Manage and monitor all your patients in one place."}
+          </p>
         </div>
-        <Link 
-          to="/patients/add"
-          className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-2xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200"
-        >
-          <Plus className="w-5 h-5" />
-          Add New Patient
-        </Link>
+        {!isAdmin && (
+          <Link 
+            to="/patients/add"
+            className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-2xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200"
+          >
+            <Plus className="w-5 h-5" />
+            Add New Patient
+          </Link>
+        )}
       </div>
 
       {/* FILTERS & SEARCH */}

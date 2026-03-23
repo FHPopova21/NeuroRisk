@@ -44,3 +44,35 @@ def create_doctor(db: Session, doctor_data: schemas.DoctorCreate):
     db.refresh(new_doctor) # Вземане на генерираното ID и други полета
     
     return new_doctor
+
+def authenticate_user(db: Session, username_or_email: str, password: str):
+    """
+    Проверява паролата за администратор, лекар или пациент.
+    Връща потребителя и неговата роля.
+    """
+    # 1. Първо за администратор (по потребителско име)
+    admin = db.query(models.Admin).filter(models.Admin.username == username_or_email).first()
+    if admin and verify_password(password, admin.password_hash):
+        return admin, 'admin'
+
+    # 2. После търсим за лекар (по имейл или служебен ID)
+    doctor = db.query(models.Doctor).filter(
+        (models.Doctor.email == username_or_email) | 
+        (models.Doctor.admin_assigned_id == username_or_email)
+    ).first()
+    
+    if doctor and verify_password(password, doctor.password_hash):
+        return doctor, 'doctor'
+    
+    # 3. После за пациент (по имейл или пациентски ID)
+    patient = db.query(models.Patient).filter(
+        (models.Patient.email == username_or_email) | 
+        (models.Patient.patient_id == username_or_email)
+    ).first()
+    
+    if patient and verify_password(password, patient.password_hash):
+        if not patient.is_active:
+            raise Exception("Профилът още не е активиран!")
+        return patient, 'patient'
+        
+    return None, None

@@ -1,17 +1,20 @@
 from flask import Blueprint, request, jsonify
 from api import schemas, database
 from api.services import patients
+from api.utils.auth import token_required, role_required
 from pydantic import ValidationError
 
 patients_bp = Blueprint('patients', __name__)
 
 @patients_bp.route('/', methods=['POST'])
-def register_new_patient():
+@token_required
+@role_required('doctor')
+def register_new_patient(current_user):
     """
     Ендпойнт за създаване на нов пациент от лекар.
     """
     data = request.get_json()
-    doctor_id = request.args.get('doctor_id') # Вземаме от URL параметри за демото
+    doctor_id = current_user.id
 
     if not doctor_id:
         return jsonify({"detail": "Липсва doctor_id"}), 400
@@ -54,7 +57,8 @@ def activate_account(token):
         db.close()
 
 @patients_bp.route('/<patient_id>', methods=['GET'])
-def get_patient_details(patient_id):
+@token_required
+def get_patient_details(current_user, patient_id):
     """
     Връща детайли за конкретен пациент.
     """
@@ -68,7 +72,9 @@ def get_patient_details(patient_id):
         db.close()
 
 @patients_bp.route('/doctor/<doctor_id>', methods=['GET'])
-def get_doctor_patients(doctor_id):
+@token_required
+@role_required('doctor')
+def get_doctor_patients(current_user, doctor_id):
     """
     Връща списък с пациенти за конкретен лекар.
     """

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Bell, 
   Search, 
@@ -7,14 +7,15 @@ import {
   AlertCircle, 
   Clock, 
   Activity,
-  ArrowRight
+  ArrowRight,
+  User,
+  Shield
 } from "lucide-react";
 import { clsx } from "clsx";
 import { motion } from "motion/react";
 import { Link } from "react-router";
 import { apiService } from "../services/api";
-import { useState, useEffect } from "react";
-import { User } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 const alerts = [
   { id: 1, patient: "Sarah Jenkins", risk: "92%", time: "10:24 AM", message: "Significant spike-wave activity detected in the left temporal lobe. Immediate review recommended.", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop" },
@@ -26,15 +27,25 @@ const alerts = [
 export const AlertsPage: React.FC = () => {
   const [alerts, setAlerts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
 
   useEffect(() => {
-    setLoading(true);
-    apiService.getAlerts()
-      .then(data => {
+    const fetchAlerts = async () => {
+      setLoading(true);
+      try {
+        const data = isAdmin
+          ? await apiService.getAdminAlerts()
+          : await apiService.getAlerts();
         setAlerts(data);
+      } catch (error) {
+        console.error("Failed to load alerts", error);
+      } finally {
         setLoading(false);
-      });
-  }, []);
+      }
+    };
+    fetchAlerts();
+  }, [isAdmin]);
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       {/* HEADER */}
@@ -44,8 +55,14 @@ export const AlertsPage: React.FC = () => {
             <Bell className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-slate-900">Critical Alerts</h1>
-            <p className="text-slate-500 font-medium tracking-tight">Real-time clinical warnings detected by the AI analysis system.</p>
+            <h1 className="text-2xl font-black text-slate-900">
+              {isAdmin ? "Global System Alerts" : "Critical Alerts"}
+            </h1>
+            <p className="text-slate-500 font-medium tracking-tight">
+              {isAdmin 
+                ? "Monitoring all clinical warnings across the entire system network." 
+                : "Real-time clinical warnings detected by the AI analysis system."}
+            </p>
           </div>
         </div>
         <button className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] hover:text-slate-600 transition-colors">
