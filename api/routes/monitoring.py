@@ -24,6 +24,24 @@ def add_eeg_record():
     finally:
         db.close()
 
+@monitoring_bp.route('/process', methods=['POST'])
+def process_signal():
+    """
+    Ендпойнт за изпращане на суров ЕЕГ сигнал за автоматична обработка.
+    """
+    data = request.get_json()
+    try:
+        signal_in = schemas.EEGSignalIn(**data)
+    except ValidationError as e:
+        return jsonify({"detail": e.errors()}), 400
+
+    db = next(database.get_db())
+    try:
+        new_record = monitoring.process_eeg_signal(db=db, signal_data=signal_in)
+        return jsonify(schemas.EEGRecord.from_attributes(new_record).dict()), 201
+    finally:
+        db.close()
+
 @monitoring_bp.route('/history/<patient_id>', methods=['GET'])
 def get_history(patient_id):
     """

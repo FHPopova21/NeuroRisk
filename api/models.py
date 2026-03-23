@@ -78,7 +78,13 @@ class EEGRecord(Base):
     amplitude = Column(Float)
     frequency = Column(Float)
     hjorth_activity = Column(Float)
-    complexity = Column(Float)
+    hjorth_mobility = Column(Float)
+    hjorth_complexity = Column(Float)
+    rms = Column(Float)
+    zcr = Column(Float)
+    envelope_max = Column(Float)
+    deriv1_std = Column(Float)
+    deriv2_std = Column(Float)
     ai_metadata = Column(JSONB) # Гъвкаво съхранение на метаданни
 
     # Връзки

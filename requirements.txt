@@ -1,3 +1,4 @@
+#ML
 numpy
 matplotlib
 seaborn
@@ -7,3 +8,16 @@ scikit-learn
 joblib
 tensorflow
 torch
+
+#API
+flask
+sqlalchemy
+psycopg2-binary
+passlib
+bcrypt
+pydantic
+email-validator
+pytest
+requests
+python-dotenv
+

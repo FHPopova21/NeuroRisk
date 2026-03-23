@@ -61,11 +61,23 @@ class EEGRecordBase(BaseModel):
     amplitude: Optional[float] = None
     frequency: Optional[float] = None
     hjorth_activity: Optional[float] = None
-    complexity: Optional[float] = None
+    hjorth_mobility: Optional[float] = None
+    hjorth_complexity: Optional[float] = None
+    rms: Optional[float] = None
+    zcr: Optional[float] = None
+    envelope_max: Optional[float] = None
+    deriv1_std: Optional[float] = None
+    deriv2_std: Optional[float] = None
     ai_metadata: Optional[dict] = None
 
 class EEGRecordCreate(EEGRecordBase):
     patient_id: UUID
+
+class EEGSignalIn(BaseModel):
+    """Схема за входящ суров ЕЕГ сигнал."""
+    patient_id: UUID
+    signal: List[float]
+    sampling_rate: float = 256.0
 
 class EEGRecord(EEGRecordBase):
     id: UUID

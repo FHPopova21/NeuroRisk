@@ -52,7 +52,13 @@ CREATE TABLE eeg_records (
     amplitude FLOAT,
     frequency FLOAT,
     hjorth_activity FLOAT,
-    complexity FLOAT,
+    hjorth_mobility FLOAT,
+    hjorth_complexity FLOAT,
+    rms FLOAT,
+    zcr FLOAT,
+    envelope_max FLOAT,
+    deriv1_std FLOAT,
+    deriv2_std FLOAT,
     ai_metadata JSONB -- Гъвкаво съхранение на метаданни
 );
 
