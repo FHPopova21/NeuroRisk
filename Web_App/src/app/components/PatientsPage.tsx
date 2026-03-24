@@ -7,11 +7,12 @@ import {
   MoreVertical, 
   Smartphone, 
   Filter,
-  User
+  User,
+  X
 } from "lucide-react";
 import { clsx } from "clsx";
-import { motion } from "motion/react";
-import { Link } from "react-router";
+import { motion, AnimatePresence } from "motion/react";
+import { Link, useNavigate } from "react-router";
 import { apiService, Patient } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
@@ -20,8 +21,10 @@ export const PatientsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedModalPatient, setSelectedModalPatient] = useState<Patient | null>(null);
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPatients = async () => {
@@ -124,13 +127,13 @@ export const PatientsPage: React.FC = () => {
                   transition={{ delay: i * 0.05 }}
                   className="hover:bg-slate-50/50 transition-colors group"
                 >
-                  <td className="px-6 py-5">
+                  <td className="px-6 py-5 cursor-pointer" onClick={() => setSelectedModalPatient(patient)}>
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center">
                         <User className="w-6 h-6 text-slate-400" />
                       </div>
                       <div>
-                        <span className="text-sm font-bold text-slate-900 block">{patient.name}</span>
+                        <span className="text-sm font-bold text-slate-900 block group-hover:text-emerald-600 transition-colors">{patient.name}</span>
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ID: #{patient.patient_id}</span>
                       </div>
                     </div>
@@ -158,12 +161,12 @@ export const PatientsPage: React.FC = () => {
                   </td>
                   <td className="px-6 py-5 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <Link 
-                        to={`/patients/${patient.id}`}
+                      <button 
+                        onClick={() => setSelectedModalPatient(patient)}
                         className="px-4 py-2 bg-slate-50 text-slate-600 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-50 hover:text-emerald-700 transition-all border border-slate-100"
                       >
-                        View Profile
-                      </Link>
+                        Quick Info
+                      </button>
                       <button className="p-2 text-slate-300 hover:text-slate-600 transition-colors">
                         <MoreVertical className="w-4 h-4" />
                       </button>
@@ -184,6 +187,112 @@ export const PatientsPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* PATIENT OVERVIEW MODAL */}
+      <AnimatePresence>
+        {selectedModalPatient && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm"
+              onClick={() => setSelectedModalPatient(null)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-sm bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden flex flex-col"
+            >
+              {/* Modal Header */}
+              <div className="px-8 pt-8 pb-4 flex items-center justify-between">
+                <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Patient Overview</h3>
+                <button
+                  onClick={() => setSelectedModalPatient(null)}
+                  className="p-2 -mr-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Data Content */}
+              <div className="px-8 space-y-6">
+                <div>
+                  <h2 className="text-2xl font-black text-slate-900">{selectedModalPatient.name}</h2>
+                  <p className="text-sm font-bold text-slate-400">ID: {selectedModalPatient.patient_id}</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-y-6">
+                  <div>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Birth Date</span>
+                    <span className="text-sm font-bold text-slate-900">
+                      {selectedModalPatient.birth_date ? new Date(selectedModalPatient.birth_date!).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Unknown'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Gender</span>
+                    <span className="text-sm font-bold text-slate-900 capitalize">{selectedModalPatient.gender || 'Unknown'}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Epilepsy</span>
+                    <span className="text-sm font-bold text-slate-900">
+                      {selectedModalPatient.medical_history?.toLowerCase().includes('epilepsy') ? 'Yes' : 'None Recorded'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Joined</span>
+                    <span className="text-sm font-bold text-slate-900">
+                      {new Date(selectedModalPatient.created_at).toLocaleDateString('en-GB')}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Mobile App Status */}
+                <div>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Mobile App Status</span>
+                  <div className={clsx(
+                    "flex items-center gap-3 p-4 rounded-2xl border transition-colors",
+                    selectedModalPatient.is_active ? "bg-emerald-50/50 border-emerald-100" : "bg-slate-50 border-slate-100"
+                  )}>
+                    <div className={clsx(
+                      "w-10 h-10 rounded-xl flex items-center justify-center",
+                      selectedModalPatient.is_active ? "bg-emerald-100 text-emerald-600" : "bg-slate-200 text-slate-500"
+                    )}>
+                      <Smartphone className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className={clsx(
+                        "text-sm font-bold block",
+                        selectedModalPatient.is_active ? "text-emerald-700" : "text-slate-600"
+                      )}>
+                        {selectedModalPatient.is_active ? "Connected" : "No Device"}
+                      </span>
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        {selectedModalPatient.is_active ? "Syncing Live" : "Inactive"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Medical Note Summary (Dark Block) */}
+              <div className="mt-8 bg-slate-900 p-8 rounded-t-[2rem]">
+                <h4 className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-3">Medical Note Summary</h4>
+                <p className="text-slate-300 text-sm font-medium italic mb-6">
+                  {selectedModalPatient.medical_history || "Няма специални бележки."}
+                </p>
+                <button 
+                  onClick={() => navigate(`/patients/${selectedModalPatient.id}?tab=notes`)}
+                  className="flex items-center gap-2 text-white text-[11px] font-black uppercase tracking-widest hover:text-emerald-400 transition-colors"
+                >
+                  View All Notes <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

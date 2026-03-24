@@ -105,3 +105,36 @@ def analyze_existing_record(current_user, record_id):
         return jsonify({"detail": str(e)}), 400
     finally:
         db.close()
+from api import models
+
+@monitoring_bp.route('/eeg-records/<record_id>', methods=['PUT'])
+@token_required
+@role_required('doctor')
+def update_eeg_record(current_user, record_id):
+    """
+    Ендпойнт за обновяване на информацията в ЕЕГ запис (бележки и валидация).
+    """
+    data = request.get_json()
+    try:
+        update_data = schemas.EEGRecordUpdate(**data)
+    except ValidationError as e:
+        return jsonify({"detail": e.errors()}), 400
+
+    db = next(database.get_db())
+    try:
+        record = db.query(models.EEGRecord).filter(models.EEGRecord.id == UUID(record_id)).first()
+        if not record:
+            return jsonify({"detail": "Записът не е намерен"}), 404
+        
+        if update_data.doctor_note is not None:
+            record.doctor_note = update_data.doctor_note
+        if update_data.doctor_validation is not None:
+            record.doctor_validation = update_data.doctor_validation
+        
+        db.commit()
+        return jsonify(schemas.EEGRecord.model_validate(record).model_dump()), 200
+    except Exception as e:
+        db.rollback()
+        return jsonify({"detail": str(e)}), 400
+    finally:
+        db.close()

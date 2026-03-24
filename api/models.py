@@ -88,6 +88,7 @@ class EEGRecord(Base):
     deriv2_std = Column(Float)
     ai_metadata = Column(JSONB) # Гъвкаво съхранение на метаданни
     doctor_note = Column(Text) # Лична бележка от лекаря
+    doctor_validation = Column(String(20), default="PENDING") # PENDING, VALIDATED, FALSE_ALARM
 
     @property
     def patient_name(self):

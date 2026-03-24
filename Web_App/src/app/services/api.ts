@@ -26,6 +26,7 @@ export interface EEGRecord {
   deriv1_std?: number | null;
   deriv2_std?: number | null;
   doctor_note?: string;
+  doctor_validation?: string;
   patient_name?: string;
   ai_metadata?: any;
 }
@@ -102,15 +103,15 @@ export const apiService = {
     return response.json();
   },
 
-  async updateEEGRecordNote(recordId: string, note: string): Promise<EEGRecord> {
-    const response = await fetch(`${API_BASE_URL}/notes/record/${recordId}`, {
+  async updateEEGRecord(recordId: string, data: { doctor_note?: string, doctor_validation?: string }): Promise<EEGRecord> {
+    const response = await fetch(`${API_BASE_URL}/monitoring/eeg-records/${recordId}`, {
       method: "PUT",
       headers: getHeaders(),
-      body: JSON.stringify({ note })
+      body: JSON.stringify(data)
     });
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.detail || "Failed to update EEG record note");
+      throw new Error(errorData.detail || "Failed to update EEG record");
     }
     return response.json();
   },

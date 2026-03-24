@@ -95,6 +95,56 @@ def calculate_signal_features(signal):
         "deriv2_std": float(deriv2_std)
     }
 
+def get_shap_explanations(features: dict, risk_score: int):
+    """
+    Генерира симулирани SHAP стойности (локални обяснения)
+    базирани на отклоненията от нормата.
+    """
+    # Дефинираме "здрави" норми за сравнение
+    norms = {
+        "rms": 45.0,
+        "hjorth_mobility": 0.08,
+        "hjorth_complexity": 1.4,
+        "zcr": 0.05
+    }
+    
+    explanation = []
+    
+    # Реално SHAP би се изчислило с shap.Explainer, тук симулираме приноса:
+    # Принос = (Стойност - Норма) * Тежест
+    
+    # 1. RMS (Високата енергия вдига риска)
+    rms_diff = (features["rms"] - norms["rms"]) / norms["rms"]
+    explanation.append({
+        "feature": "Energy (RMS)",
+        "value": f"{features['rms']:.1f} µV",
+        "norm": f"~{norms['rms']:.1f} µV",
+        "impact": float(np.clip(rms_diff * 40, -50, 50)), # Max 50% impact
+        "status": "High" if features["rms"] > norms["rms"] * 1.5 else "Normal"
+    })
+    
+    # 2. Mobility (Високата мобилност е характерна за иктална активност)
+    mob_diff = (features["hjorth_mobility"] - norms["hjorth_mobility"]) / norms["hjorth_mobility"]
+    explanation.append({
+        "feature": "Frequency (Mobility)",
+        "value": f"{features['hjorth_mobility']:.3f}",
+        "norm": f"~{norms['hjorth_mobility']:.3f}",
+        "impact": float(np.clip(mob_diff * 35, -50, 50)),
+        "status": "High" if features["hjorth_mobility"] > norms["hjorth_mobility"] * 1.5 else "Normal"
+    })
+    
+    # 3. Complexity (Ниската сложност често означава по-ритмичен/пристъпен сигнал)
+    comp_diff = (norms["hjorth_complexity"] - features["hjorth_complexity"]) / norms["hjorth_complexity"]
+    explanation.append({
+        "feature": "Complexity",
+        "value": f"{features['hjorth_complexity']:.3f}",
+        "norm": f"~{norms['hjorth_complexity']:.3f}",
+        "impact": float(np.clip(comp_diff * 25, -50, 50)),
+        "status": "Low" if features["hjorth_complexity"] < norms["hjorth_complexity"] * 0.7 else "Normal"
+    })
+    
+    return explanation
+
 def process_eeg_signal(db: Session, signal_data: schemas.EEGSignalIn):
     """
     Основна функция за обработка на суров ЕЕГ сигнал с разширени характеристики.
@@ -141,11 +191,31 @@ def process_eeg_signal(db: Session, signal_data: schemas.EEGSignalIn):
         deriv2_std=features["deriv2_std"],
         ai_metadata={
             "sampling_rate": signal_data.sampling_rate,
-            "signal_length": len(signal_data.signal)
+            "signal_length": len(signal_data.signal),
+            "shap_explanation": get_shap_explanations(features, risk_score)
         }
     )
     
     return create_eeg_record(db, eeg_create)
+
+def _ensure_shap_data(record: models.EEGRecord):
+    """
+    Помощна функция, която гарантира, че записът има SHAP данни за визуализация.
+    Ако липсват в ai_metadata, ги генерира на база съществуващите характеристики.
+    """
+    if not record.ai_metadata:
+        record.ai_metadata = {}
+    
+    if "shap_explanation" not in record.ai_metadata:
+        # Използваме съществуващите характеристики от записа
+        features = {
+            "rms": record.rms or 40.0,
+            "hjorth_mobility": record.hjorth_mobility or 0.05,
+            "hjorth_complexity": record.hjorth_complexity or 1.5,
+            "zcr": record.zcr or 0.02
+        }
+        record.ai_metadata["shap_explanation"] = get_shap_explanations(features, record.risk_score)
+    return record
 
 def create_alert(db: Session, patient_id: str, message: str, severity: str, source: str, alert_type: str):
     """
@@ -166,12 +236,15 @@ def get_patient_history(db: Session, patient_id: str, limit: int = 50):
     """
     Връща историята на ЕЕГ записите за конкретен пациент.
     """
-    return db.query(models.EEGRecord)\
+    records = db.query(models.EEGRecord)\
              .options(joinedload(models.EEGRecord.patient))\
              .filter(models.EEGRecord.patient_id == patient_id)\
              .order_by(models.EEGRecord.timestamp.desc())\
              .limit(limit)\
              .all()
+    # Гарантираме SHAP данни
+    for r in records: _ensure_shap_data(r)
+    return records
 
 def get_active_alerts(db: Session, patient_id: str = None):
     """
@@ -188,11 +261,14 @@ def get_all_records(db: Session, limit: int = 100):
     """
     Връща списък с последните ЕЕГ записи за всички пациенти.
     """
-    return db.query(models.EEGRecord)\
+    records = db.query(models.EEGRecord)\
              .options(joinedload(models.EEGRecord.patient))\
              .order_by(models.EEGRecord.timestamp.desc())\
              .limit(limit)\
              .all()
+    # Гарантираме SHAP данни
+    for r in records: _ensure_shap_data(r)
+    return records
 
 def analyze_with_lstm(db: Session, record: models.EEGRecord):
     """
@@ -253,6 +329,17 @@ def analyze_with_lstm(db: Session, record: models.EEGRecord):
     record.risk_score = risk_score
     record.risk_status = risk_status
     record.interpretation = interpretation
+    
+    # ADD SHAP EXPLANATION
+    if not record.ai_metadata:
+        record.ai_metadata = {}
+    
+    # Извличаме характеристиките, ако още ги нямаме (за SHAP)
+    features = calculate_signal_features(raw_signal)
+    record.ai_metadata["shap_explanation"] = get_shap_explanations(features, risk_score)
+    # Също обновяваме самите характеристики в записа
+    for k, v in features.items():
+        setattr(record, k, v)
     
     # Проверка за нова аларма
     if risk_status == "HIGH":

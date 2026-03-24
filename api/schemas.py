@@ -96,9 +96,14 @@ class EEGRecordBase(BaseModel):
     deriv2_std: Optional[float] = None
     ai_metadata: Optional[dict] = None
     doctor_note: Optional[str] = None
+    doctor_validation: str = "PENDING"
 
 class EEGRecordCreate(EEGRecordBase):
     patient_id: UUID
+
+class EEGRecordUpdate(BaseModel):
+    doctor_note: Optional[str] = None
+    doctor_validation: Optional[str] = None
 
 class EEGSignalIn(BaseModel):
     """Схема за входящ суров ЕЕГ сигнал."""
