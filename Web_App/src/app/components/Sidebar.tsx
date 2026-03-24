@@ -48,19 +48,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole, onLogout }) => {
   const menuItems = userRole === 'admin' ? adminMenuItems : doctorMenuItems;
 
   return (
-    <aside className="w-64 bg-white border-r border-slate-200 flex flex-col h-screen fixed left-0 top-0 z-20">
-      <div className="p-6 border-b border-slate-100 flex items-center gap-3 text-emerald-700">
-        <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-200">
+    <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col h-screen fixed left-0 top-0 z-20">
+      <div className="p-6 border-b border-slate-800 flex items-center gap-3 text-emerald-400">
+        <div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-400 shadow-lg shadow-emerald-500/10 border border-emerald-500/20">
           <Brain className="w-6 h-6" />
         </div>
         <div className="flex flex-col">
-          <span className="font-bold text-lg leading-tight tracking-tight">NeuroRisk</span>
-          <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600/60">Educational Platform</span>
+          <span className="font-bold text-lg leading-tight tracking-tight text-white">NeuroRisk</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-400/80">Educational Platform</span>
         </div>
       </div>
 
       <div className="flex-1 py-6 px-4 space-y-1 overflow-y-auto">
-        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-4 px-3">
+        <div className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.15em] mb-4 px-3">
           Clinical Menu
         </div>
         {menuItems.map((item) => {
@@ -72,11 +72,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole, onLogout }) => {
               className={clsx(
                 "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 group",
                 isActive
-                  ? "bg-emerald-50 text-emerald-700 shadow-sm border border-emerald-100/50"
-                  : "text-slate-500 hover:bg-slate-50 hover:text-emerald-600"
+                  ? "bg-emerald-500/10 text-emerald-400 shadow-sm border border-emerald-500/20"
+                  : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"
               )}
             >
-              <item.icon className={clsx("w-5 h-5 transition-colors", isActive ? "text-emerald-600" : "text-slate-400 group-hover:text-emerald-500")} />
+              <item.icon className={clsx("w-5 h-5 transition-colors", isActive ? "text-emerald-400" : "text-slate-500 group-hover:text-slate-300")} />
               {item.label}
             </Link>
           );
@@ -84,7 +84,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole, onLogout }) => {
 
         {userRole === 'doctor' && (
           <>
-            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mt-8 mb-4 px-3">
+            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.15em] mt-8 mb-4 px-3">
               Management
             </div>
             <Link
@@ -92,11 +92,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole, onLogout }) => {
               className={clsx(
                 "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 group",
                 currentPath === "/patients/add"
-                  ? "bg-emerald-50 text-emerald-700 shadow-sm border border-emerald-100/50"
-                  : "text-slate-500 hover:bg-slate-50 hover:text-emerald-600"
+                  ? "bg-emerald-500/10 text-emerald-400 shadow-sm border border-emerald-500/20"
+                  : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"
               )}
             >
-              <PlusCircle className={clsx("w-5 h-5", currentPath === "/patients/add" ? "text-emerald-600" : "text-slate-400 group-hover:text-emerald-500")} />
+              <PlusCircle className={clsx("w-5 h-5", currentPath === "/patients/add" ? "text-emerald-400" : "text-slate-500 group-hover:text-slate-300")} />
               Add Patient
             </Link>
           </>
@@ -104,7 +104,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole, onLogout }) => {
 
         {userRole === 'admin' && (
           <>
-            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mt-8 mb-4 px-3">
+            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.15em] mt-8 mb-4 px-3">
               Settings
             </div>
             <Link
@@ -112,37 +112,37 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole, onLogout }) => {
               className={clsx(
                 "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 group",
                 currentPath === "/admin/settings"
-                  ? "bg-blue-50 text-blue-700 shadow-sm border border-blue-100/50"
-                  : "text-slate-500 hover:bg-slate-50 hover:text-blue-600"
+                  ? "bg-blue-500/10 text-blue-400 shadow-sm border border-blue-500/20"
+                  : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"
               )}
             >
-              <Settings className={clsx("w-5 h-5", currentPath === "/admin/settings" ? "text-blue-600" : "text-slate-400 group-hover:text-blue-500")} />
+              <Settings className={clsx("w-5 h-5", currentPath === "/admin/settings" ? "text-blue-400" : "text-slate-500 group-hover:text-slate-300")} />
               System Settings
             </Link>
           </>
         )}
       </div>
 
-      <div className="p-4 border-t border-slate-100 bg-slate-50/50">
+      <div className="p-4 border-t border-slate-800 bg-slate-900/50">
         <Link
           to="/profile"
           className={clsx(
             "flex items-center gap-3 p-2 rounded-xl mb-3 transition-colors",
-            currentPath === "/profile" ? "bg-white shadow-sm ring-1 ring-slate-200" : "hover:bg-white/80"
+            currentPath === "/profile" ? "bg-slate-800 shadow-sm ring-1 ring-slate-700" : "hover:bg-slate-800/80"
           )}
         >
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-slate-900 truncate">
+            <p className="text-sm font-bold text-slate-200 truncate">
               {user?.name || user?.username || "Admin User"}
             </p>
-            <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">
+            <p className="text-[10px] font-bold text-emerald-400/80 uppercase tracking-wider">
               {userRole === 'admin' ? "System Administrator" : (user?.specialization || "Medical Staff")}
             </p>
           </div>
         </Link>
         <button
           onClick={onLogout}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 text-sm font-bold hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-all shadow-sm"
+          className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-slate-800 bg-slate-800/50 text-slate-300 text-sm font-bold hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20 transition-all shadow-sm"
         >
           <LogOut className="w-4 h-4" />
           Sign Out

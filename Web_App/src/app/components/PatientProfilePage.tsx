@@ -244,52 +244,9 @@ export const PatientProfilePage: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-4 gap-8">
-        {/* LEFT COLUMN: PATIENT INFO */}
-        <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-8">
-            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6">Patient Overview</h3>
-            <div className="space-y-6">
-              <InfoItem label="Birth Date" value={patient.birth_date || "N/A"} />
-              <InfoItem label="Gender" value={patient.gender || "N/A"} />
-              <InfoItem label="Joined" value={new Date(patient.created_at).toLocaleDateString()} />
-              <div className="pt-4 border-t border-slate-50">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Mobile App Status</label>
-                <div className={clsx(
-                  "flex items-center gap-3 p-3 rounded-xl border",
-                  patient.is_active ? "bg-emerald-50/50 border-emerald-100/50" : "bg-slate-50 border-slate-100"
-                )}>
-                  <Smartphone className={clsx("w-5 h-5", patient.is_active ? "text-emerald-600" : "text-slate-400")} />
-                  <div>
-                    <span className={clsx("text-sm font-bold block", patient.is_active ? "text-emerald-700" : "text-slate-500")}>
-                      {patient.is_active ? "Connected" : "Inactive"}
-                    </span>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase">
-                      {patient.is_active ? "Syncing Live" : "Last seen N/A"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-slate-900 rounded-[2rem] p-8 text-white relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-emerald-500/20 transition-all" />
-            <h3 className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em] mb-4">Medical Note Summary</h3>
-            <p className="text-sm text-slate-300 leading-relaxed mb-6 italic">
-              {patient.medical_history || "No medical history recorded for this patient."}
-            </p>
-            <button 
-              onClick={() => setActiveTab("notes")}
-              className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2 hover:gap-3 transition-all"
-            >
-              View All Notes <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        {/* RIGHT COLUMN: MAIN CONTENT */}
-        <div className="lg:col-span-3 space-y-8">
+      <div className="w-full">
+        {/* MAIN CONTENT */}
+        <div className="w-full space-y-8">
           {/* TABS */}
           <div className="flex items-center gap-6 border-b border-slate-200">
             <TabButton active={activeTab === "eeg"} onClick={() => { setActiveTab("eeg"); setSelectedHistoryRecord(null); }} label="EEG Monitoring" icon={Activity} />
@@ -345,12 +302,17 @@ export const PatientProfilePage: React.FC = () => {
                           <span className="text-[9px] font-bold text-slate-400 uppercase">Live Analysis Active</span>
                         </div>
                       </div>
-                      <div className="h-48 w-full">
+                      <div className="h-[400px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                           <LineChart data={selectedRecordData.timeData.length > 0 ? selectedRecordData.timeData : chartData}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={latestRecord?.risk_score > 75 ? "#fee2e2" : "#e2e8f0"} />
                             <XAxis dataKey="time" hide />
-                            <YAxis domain={['auto', 'auto']} hide />
+                            <YAxis domain={['auto', 'auto']} tick={{fontSize: 10, fill: '#64748b'}} axisLine={false} tickLine={false} tickFormatter={(val) => `${val} µV`} width={60} />
+                            <Tooltip 
+                              contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                              formatter={(value: any) => [`${Number(value).toFixed(2)} µV`, 'Voltage']}
+                              labelFormatter={() => 'Simulated Time Stream'}
+                            />
                             <Line 
                               type="monotone" 
                               dataKey="value" 
@@ -375,7 +337,7 @@ export const PatientProfilePage: React.FC = () => {
                         </h4>
                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">FFT Approximation</span>
                       </div>
-                      <div className="h-28 w-full">
+                      <div className="h-64 w-full">
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart data={selectedRecordData.spectralData}>
                             <defs>
@@ -385,8 +347,8 @@ export const PatientProfilePage: React.FC = () => {
                               </linearGradient>
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                            <XAxis dataKey="freq" hide />
-                            <YAxis hide />
+                            <XAxis dataKey="freq" tick={{fontSize: 10, fill: '#64748b'}} axisLine={false} tickLine={false} tickFormatter={(val) => `${val}Hz`} />
+                            <YAxis tick={{fontSize: 10, fill: '#64748b'}} axisLine={false} tickLine={false} tickFormatter={(val) => `${val.toFixed(1)}`} width={40} />
                             <Tooltip 
                               contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                               formatter={(value: any) => [`${Number(value).toFixed(2)} µV²/Hz`, 'Power']}
@@ -605,12 +567,17 @@ export const PatientProfilePage: React.FC = () => {
                           )}>Time Domain: Historical Waveform</h4>
                           <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{new Date(selectedHistoryRecord.timestamp).toLocaleString()}</span>
                         </div>
-                        <div className="h-48 w-full">
+                        <div className="h-[400px] w-full">
                           <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={selectedRecordData.timeData}>
                               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={selectedHistoryRecord.risk_score > 75 ? "#fee2e2" : "#e2e8f0"} />
                               <XAxis dataKey="time" hide />
-                              <YAxis domain={['auto', 'auto']} hide />
+                              <YAxis domain={['auto', 'auto']} tick={{fontSize: 10, fill: '#64748b'}} axisLine={false} tickLine={false} tickFormatter={(val) => `${val} µV`} width={60} />
+                              <Tooltip 
+                                contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                formatter={(value: any) => [`${Number(value).toFixed(2)} µV`, 'Voltage']}
+                                labelFormatter={() => 'Historical Time Record'}
+                              />
                               <Line 
                                 type="monotone" 
                                 dataKey="value" 
@@ -632,7 +599,7 @@ export const PatientProfilePage: React.FC = () => {
                           </h4>
                           <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">FFT</span>
                         </div>
-                        <div className="h-28 w-full">
+                        <div className="h-64 w-full">
                           <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={selectedRecordData.spectralData}>
                               <defs>
@@ -642,8 +609,8 @@ export const PatientProfilePage: React.FC = () => {
                                 </linearGradient>
                               </defs>
                               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                              <XAxis dataKey="freq" hide />
-                              <YAxis hide />
+                              <XAxis dataKey="freq" tick={{fontSize: 10, fill: '#64748b'}} axisLine={false} tickLine={false} tickFormatter={(val) => `${val}Hz`} />
+                              <YAxis tick={{fontSize: 10, fill: '#64748b'}} axisLine={false} tickLine={false} tickFormatter={(val) => `${val.toFixed(1)}`} width={40} />
                               <Tooltip 
                                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                 formatter={(value: any) => [`${Number(value).toFixed(2)} µV²/Hz`, 'Power']}

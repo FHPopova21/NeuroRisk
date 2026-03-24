@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import { 
   ArrowRight, ShieldAlert, Activity, BookOpen, Scale, 
   Cpu, UserCheck, AlertCircle, Stethoscope, GraduationCap, UserCog,
-  Info, ChevronDown, BarChart2
+  Info, ChevronDown, BarChart2, Smartphone, Zap, Brain, LayoutDashboard, CheckCircle
 } from "lucide-react";
 
 import { useNavigate } from "react-router";
@@ -241,91 +241,50 @@ export const LandingPage: React.FC = () => {
         </motion.div>
       </section>
 
-      {/* ================= ABOUT THE PLATFORM ================= */}
-      <section className="py-24 px-8 bg-white relative z-10">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: ShieldAlert,
-                title: "Risk Assessment",
-                text: "Supports clinicians by highlighting potentially risky EEG patterns for review."
-              },
-              {
-                icon: BookOpen,
-                title: "Educational Analysis",
-                text: "Allows students to explore signal characteristics and explain their interpretation."
-              },
-              {
-                icon: Scale,
-                title: "Ethical AI Design",
-                text: "No diagnosis, no prediction — strictly decision support for human experts."
-              }
-            ].map((card, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.1, duration: 0.5 }}
-                viewport={{ once: true }}
-                whileHover={{ y: -5, boxShadow: "0 10px 30px -10px rgba(0,0,0,0.05)" }}
-                className="p-8 rounded-2xl bg-slate-50 border border-slate-100 hover:border-emerald-100 transition-colors"
-              >
-                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-emerald-600 shadow-sm mb-6">
-                  <card.icon className="w-6 h-6" />
-                </div>
-                <h3 className="text-xl font-bold text-slate-800 mb-3">{card.title}</h3>
-                <p className="text-slate-600 leading-relaxed">{card.text}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ================= HOW IT WORKS ================= */}
-      <section className="py-24 px-8 bg-slate-50 border-t border-slate-200">
+      <section className="py-32 px-6 lg:px-8 bg-white overflow-hidden relative border-t border-slate-100">
         <div className="max-w-7xl mx-auto">
-          <motion.h2 
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-3xl font-bold text-slate-900 text-center mb-16"
-          >
-            How the Model Works
-          </motion.h2>
+          <div className="text-center mb-24 relative z-10">
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6 tracking-tight">How NeuroRisk Works</h2>
+            <p className="text-xl text-slate-500 max-w-2xl mx-auto">From raw neurological data to actionable clinical insights in three seamless steps.</p>
+          </div>
 
           <div className="relative">
-            {/* Connecting Line (Desktop) */}
-            <div className="hidden md:block absolute top-1/2 left-0 w-full h-0.5 bg-emerald-100 -translate-y-1/2 z-0" />
+            {/* Animated Tracking Line */}
+            <div className="hidden md:block absolute top-[4.5rem] left-0 w-full h-1 bg-slate-100 rounded-full z-0 overflow-hidden">
+              <motion.div 
+                className="h-full w-1/3 bg-gradient-to-r from-transparent via-emerald-400 to-transparent rounded-full"
+                animate={{ x: ["-100%", "300%"] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+              />
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative z-10">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative z-10">
               {[
-                { title: "EEG Input", icon: Activity, desc: "Raw signal data ingestion" },
-                { title: "Feature Extraction", icon: Cpu, desc: "Mathematical analysis of waves" },
-                { title: "Risk Indicators", icon: AlertCircle, desc: "Pattern matching & scoring" },
-                { title: "Human Review", icon: UserCheck, desc: "Expert clinical interpretation" },
-              ].map((step, idx) => (
+                { step: "01", title: "Patient Data Collection", icon: Smartphone, desc: "Continuous EEG monitoring via connected clinical devices and the patient mobile app." },
+                { step: "02", title: "AI Analysis Engine", icon: Cpu, desc: "Our proprietary models extract features and evaluate seizure risk in real-time." },
+                { step: "03", title: "Doctor Dashboard", icon: LayoutDashboard, desc: "Clinicians receive structured insights to support faster, more accurate decisions." },
+              ].map((item, idx) => (
                 <motion.div
                   key={idx}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: idx * 0.2 }}
-                  viewport={{ once: true }}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.2, duration: 0.6 }}
+                  viewport={{ once: true, margin: "-100px" }}
                   className="flex flex-col items-center text-center group"
                 >
                   <motion.div 
-                    whileHover={{ scale: 1.1, borderColor: "#10b981" }}
-                    className="w-20 h-20 bg-white rounded-full border-4 border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-emerald-600 transition-colors shadow-sm mb-6 relative cursor-help"
+                    whileHover={{ scale: 1.05, translateY: -5 }}
+                    className="w-36 h-36 bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex items-center justify-center text-emerald-600 mb-8 border border-slate-100 transition-all duration-300 relative group-hover:shadow-[0_8px_30px_rgb(16,185,129,0.12)] group-hover:border-emerald-100"
                   >
-                    <step.icon className="w-8 h-8" />
-                    
-                    {/* Tooltip */}
-                    <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity bottom-full mb-3 px-3 py-1 bg-slate-800 text-white text-xs rounded whitespace-nowrap pointer-events-none shadow-lg">
-                      Assists, does not diagnose
-                    </div>
+                    <div className="absolute inset-0 bg-emerald-50/50 rounded-[2rem] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <item.icon className="w-12 h-12 relative z-10" />
+                    <span className="absolute -top-4 -right-4 w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center text-sm font-bold border-4 border-white shadow-sm z-20">
+                      {item.step}
+                    </span>
                   </motion.div>
-                  <h4 className="font-bold text-slate-800 text-lg mb-2">{step.title}</h4>
-                  <p className="text-sm text-slate-500">{step.desc}</p>
+                  <h3 className="text-xl font-bold text-slate-800 mb-4">{item.title}</h3>
+                  <p className="text-slate-500 leading-relaxed max-w-sm">{item.desc}</p>
                 </motion.div>
               ))}
             </div>
@@ -333,133 +292,288 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* ================= INFLUENCE FACTORS ================= */}
-      <section className="py-24 px-8 bg-white">
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-16">
-          <div className="flex-1">
-            <h2 className="text-3xl font-bold text-slate-900 mb-6">What Influences the <br/> Risk Assessment?</h2>
-            <p className="text-slate-600 mb-8 leading-relaxed">
-              Our educational model analyzes four key signal characteristics. 
-              These factors are weighted to provide a risk probability score, 
-              which must always be verified by a human expert.
-            </p>
-            <div className="bg-amber-50 border border-amber-100 p-4 rounded-lg flex gap-3">
-               <Info className="w-5 h-5 text-amber-600 shrink-0" />
-               <p className="text-sm text-amber-900">
-                 <strong>Note:</strong> High values in these metrics correlate with but do not guarantee seizure risk.
-               </p>
-            </div>
+      {/* ================= FEATURES ================= */}
+      <section className="py-32 px-6 lg:px-8 bg-slate-50/80 border-t border-slate-200/50">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-20 space-y-4">
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight">Platform Capabilities</h2>
+            <p className="text-xl text-slate-500 max-w-2xl">A comprehensive suite designed for clinical precision and continuous oversight.</p>
           </div>
 
-          <div className="flex-1 w-full bg-slate-50 p-8 rounded-3xl border border-slate-100 shadow-sm">
-            {[
-              { label: "Signal Energy (RMS)", width: "75%" },
-              { label: "Frequency Stability", width: "45%" },
-              { label: "Temporal Variability", width: "85%" },
-              { label: "Signal Complexity", width: "60%" },
-            ].map((item, idx) => (
-              <div key={idx} className="mb-6 last:mb-0 group cursor-default">
-                <div className="flex justify-between text-sm font-medium text-slate-700 mb-2">
-                  <span>{item.label}</span>
-                  <span className="opacity-0 group-hover:opacity-100 transition-opacity text-emerald-600 text-xs">Analysis Factor</span>
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
+            <motion.div 
+              whileHover={{ scale: 1.01, translateY: -4 }}
+              className="md:col-span-4 bg-white p-10 lg:p-12 rounded-[2.5rem] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300"
+            >
+              <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 mb-8 border border-emerald-100/50">
+                <Activity className="w-8 h-8" />
+              </div>
+              <h3 className="text-3xl font-bold text-slate-900 mb-4">Real-Time EEG Visualization</h3>
+              <p className="text-slate-500 text-lg leading-relaxed max-w-xl">Stream, monitor, and analyze live brainwave activity with sub-millisecond latency. Interactive time and spectral domains built exclusively for rigorous clinical review.</p>
+            </motion.div>
+
+            <motion.div 
+              whileHover={{ scale: 1.02, translateY: -4 }}
+              className="md:col-span-2 bg-gradient-to-br from-slate-900 to-slate-800 p-10 lg:p-12 rounded-[2.5rem] border border-slate-700 shadow-xl transition-all duration-300 text-white"
+            >
+              <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center text-emerald-400 mb-8 border border-white/10">
+                <Brain className="w-8 h-8" />
+              </div>
+              <h3 className="text-2xl font-bold mb-4">AI Risk Detection</h3>
+              <p className="text-slate-300 text-lg opacity-90">Machine learning algorithms flag high-risk anomalies instantly for human review.</p>
+            </motion.div>
+
+            <motion.div whileHover={{ scale: 1.02 }} className="md:col-span-2 bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-sm transition-all duration-300 group">
+               <div className="w-14 h-14 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 mb-6 group-hover:scale-110 transition-transform">
+                <LayoutDashboard className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">Doctor Dashboard</h3>
+              <p className="text-slate-500 text-md">Centralized hub for tracking patient risk and medical history.</p>
+            </motion.div>
+
+            <motion.div whileHover={{ scale: 1.02 }} className="md:col-span-2 bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-sm transition-all duration-300 group">
+              <div className="w-14 h-14 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600 mb-6 group-hover:scale-110 transition-transform">
+                <Zap className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">Continuous Tracking</h3>
+              <p className="text-slate-500 text-md">Constant background processing ensures no critical anomaly is missed.</p>
+            </motion.div>
+
+            <motion.div whileHover={{ scale: 1.02 }} className="md:col-span-2 bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-sm transition-all duration-300 group">
+              <div className="w-14 h-14 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600 mb-6 group-hover:scale-110 transition-transform">
+                <Smartphone className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">Mobile Integration</h3>
+              <p className="text-slate-500 text-md">Patients sync their devices via a straightforward mobile application.</p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ================= USERS SPLIT LAYOUT ================= */}
+      <section className="flex flex-col lg:flex-row min-h-[600px] border-y border-slate-200/50">
+        {/* Left: Patient */}
+        <div className="flex-1 bg-gradient-to-br from-slate-900 to-slate-800 text-white p-16 lg:p-24 flex flex-col justify-center relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl opacity-50 group-hover:opacity-100 transition-opacity duration-1000" />
+          <Smartphone className="w-14 h-14 text-emerald-400 mb-10 opacity-90" />
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">For Patients</h2>
+          <p className="text-xl text-slate-300 max-w-md leading-relaxed font-light">A simple mobile application to sync your wearable device, view monitoring status, and seamlessly share data with your doctor.</p>
+        </div>
+        
+        {/* Right: Doctor */}
+        <div className="flex-1 bg-gradient-to-br from-emerald-50 to-teal-50 text-emerald-950 p-16 lg:p-24 flex flex-col justify-center relative overflow-hidden group">
+           <div className="absolute bottom-0 left-0 w-96 h-96 bg-white/60 rounded-full blur-3xl opacity-50 group-hover:opacity-100 transition-opacity duration-1000" />
+           <Stethoscope className="w-14 h-14 text-emerald-600 mb-10 opacity-90" />
+           <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight text-emerald-900">For Doctors</h2>
+           <p className="text-xl text-emerald-800/80 max-w-md leading-relaxed font-light">A robust web dashboard featuring live AI inference streaming, comprehensive historical charting, and centralized clinical note management.</p>
+        </div>
+      </section>
+
+      {/* ================= PLATFORM PREVIEW (MOCKUPS) ================= */}
+      <section className="py-32 px-6 lg:px-8 bg-slate-50/50 overflow-hidden border-b border-slate-100">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-24">
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6 tracking-tight">Experience the Interface</h2>
+            <p className="text-xl text-slate-500 max-w-2xl mx-auto">Clean, accessible, and structured perfectly for both clinical velocity and patient ease of use.</p>
+          </div>
+
+          <div className="flex flex-col lg:flex-row items-center justify-center gap-16 lg:gap-24">
+            {/* Mobile Mockup Abstraction */}
+            <motion.div 
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="relative w-[300px] h-[600px] bg-white rounded-[3rem] border-[8px] border-slate-900 shadow-2xl shadow-slate-300 overflow-hidden flex flex-col"
+            >
+              {/* iPhone Notch */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-slate-900 rounded-b-3xl z-20" />
+              {/* Mobile Header */}
+              <div className="pt-12 pb-6 px-6 bg-emerald-500 text-white rounded-b-[2rem] shadow-sm relative z-10">
+                <div className="flex justify-between items-center mb-6">
+                  <div className="w-8 h-8 rounded-full bg-white/20" />
+                  <div className="w-8 h-8 rounded-full bg-white/20" />
                 </div>
-                <div className="h-3 w-full bg-slate-200 rounded-full overflow-hidden">
-                  <motion.div 
-                    initial={{ width: 0 }}
-                    whileInView={{ width: item.width }}
-                    transition={{ duration: 1.5, ease: "easeOut", delay: 0.2 }}
-                    viewport={{ once: true }}
-                    className="h-full bg-emerald-500 rounded-full relative"
-                  >
-                    <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </motion.div>
+                <h3 className="text-2xl font-bold tracking-tight mb-2">Hello, Sarah</h3>
+                <p className="text-white/80 text-sm">Your connection is active.</p>
+              </div>
+              {/* Mobile Content */}
+              <div className="p-6 space-y-4 flex-1 bg-slate-50">
+                <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
+                    <Activity className="w-6 h-6 text-emerald-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-800 text-sm">Sync Status</h4>
+                    <p className="text-xs text-emerald-600 font-medium">Live Streaming</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 h-28 flex flex-col justify-between">
+                    <div className="w-8 h-8 rounded-full bg-blue-50" />
+                    <div className="space-y-2">
+                       <div className="h-2 w-16 bg-slate-200 rounded-full" />
+                       <div className="h-2 w-10 bg-slate-200 rounded-full" />
+                    </div>
+                  </div>
+                  <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 h-28 flex flex-col justify-between">
+                    <div className="w-8 h-8 rounded-full bg-amber-50" />
+                    <div className="space-y-2">
+                       <div className="h-2 w-20 bg-slate-200 rounded-full" />
+                       <div className="h-2 w-12 bg-slate-200 rounded-full" />
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex-1 flex flex-col justify-between mt-4">
+                   <div className="h-3 w-32 bg-slate-200 rounded-full mb-4" />
+                   <div className="flex-1 w-full bg-slate-50 rounded-xl flex items-end p-2 gap-1">
+                     <div className="w-full h-[40%] bg-emerald-200 rounded-t-md opacity-50" />
+                     <div className="w-full h-[60%] bg-emerald-300 rounded-t-md opacity-50" />
+                     <div className="w-full h-[30%] bg-emerald-200 rounded-t-md opacity-50" />
+                     <div className="w-full h-[80%] bg-emerald-400 rounded-t-md opacity-50" />
+                     <div className="w-full h-[50%] bg-emerald-300 rounded-t-md opacity-50" />
+                   </div>
                 </div>
               </div>
-            ))}
+            </motion.div>
+
+            {/* Dashboard Mockup Abstraction */}
+            <motion.div 
+              initial={{ opacity: 0, x: 40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="relative w-full max-w-[700px] h-[500px] bg-white rounded-2xl border border-slate-200 shadow-2xl flex flex-col overflow-hidden"
+            >
+              {/* Browser Header */}
+              <div className="h-10 bg-slate-100 border-b border-slate-200 flex items-center px-4 gap-2">
+                <div className="w-3 h-3 rounded-full bg-red-400" />
+                <div className="w-3 h-3 rounded-full bg-amber-400" />
+                <div className="w-3 h-3 rounded-full bg-emerald-400" />
+              </div>
+              {/* Dashboard Layout */}
+              <div className="flex flex-1">
+                {/* Sidebar */}
+                <div className="w-48 bg-slate-900 p-6 flex flex-col gap-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Activity className="w-6 h-6 text-emerald-400" />
+                    <div className="h-3 w-20 bg-slate-700 rounded-full" />
+                  </div>
+                  <div className="h-8 w-full bg-emerald-500/20 rounded-lg" />
+                  <div className="h-4 w-3/4 bg-slate-800 rounded-full" />
+                  <div className="h-4 w-5/6 bg-slate-800 rounded-full" />
+                  <div className="h-4 w-full bg-slate-800 rounded-full" />
+                </div>
+                {/* Main Content */}
+                <div className="flex-1 bg-slate-50 p-6 flex flex-col gap-6">
+                  <div className="flex justify-between items-center mb-2">
+                    <div className="h-6 w-48 bg-slate-200 rounded-full" />
+                    <div className="h-8 w-24 bg-emerald-100 rounded-full" />
+                  </div>
+                  <div className="flex gap-4 h-24">
+                     <div className="flex-1 bg-white rounded-xl shadow-sm border border-slate-100 p-4" />
+                     <div className="flex-1 bg-white rounded-xl shadow-sm border border-slate-100 p-4" />
+                     <div className="flex-1 bg-white rounded-xl shadow-sm border border-slate-100 p-4" />
+                  </div>
+                  <div className="flex-1 bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex flex-col">
+                    <div className="h-4 w-32 bg-slate-200 rounded-full mb-6" />
+                    <div className="flex-1 border-t border-b border-dashed border-slate-200 relative flex items-center justify-center">
+                       {/* Abstract Waveform */}
+                       <svg viewBox="0 0 400 100" className="w-full h-full text-emerald-500 stroke-current fill-none stroke-2 opacity-60">
+                         <path d="M0,50 Q20,20 40,50 T80,50 T120,50 Q140,10 160,50 T200,50 T240,50 Q260,90 280,50 T320,50 T360,50 T400,50" vectorEffect="non-scaling-stroke" />
+                       </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
 
-      {/* ================= ROLES ================= */}
-      <section className="py-24 px-8 bg-slate-50 border-t border-slate-200">
-        <div className="max-w-7xl mx-auto">
-           <div className="text-center mb-16">
-             <h2 className="text-3xl font-bold text-slate-900 mb-4">Who Is This Platform For?</h2>
-             <p className="text-slate-600">Tailored views for every stage of medical education.</p>
-           </div>
-
-           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-             {[
-               { 
-                 role: "Clinicians", 
-                 icon: Stethoscope, 
-                 actions: ["Review detailed risk reports", "Verify signal anomalies", "Make final assessments"] 
-               },
-               { 
-                 role: "Students", 
-                 icon: GraduationCap, 
-                 actions: ["Practice signal interpretation", "Submit analysis for review", "Compare features to risk"] 
-               },
-               { 
-                 role: "Supervisors", 
-                 icon: UserCog, 
-                 actions: ["Monitor student progress", "Annotate case studies", "Manage patient cohorts"] 
-               },
-             ].map((card, idx) => (
-               <motion.div
-                 key={idx}
-                 whileHover={{ height: "auto", scale: 1.02 }}
-                 className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-default group h-full"
-               >
-                 <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center mb-6 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-                   <card.icon className="w-7 h-7" />
-                 </div>
-                 <h3 className="text-xl font-bold text-slate-900 mb-4">{card.role}</h3>
-                 <ul className="space-y-3">
-                   {card.actions.map((action, i) => (
-                     <li key={i} className="flex items-start gap-2 text-sm text-slate-600">
-                       <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 shrink-0" />
-                       {action}
-                     </li>
-                   ))}
-                 </ul>
-               </motion.div>
-             ))}
-           </div>
+      {/* ================= WHY IT MATTERS ================= */}
+      <section className="py-32 px-6 lg:px-8 bg-white overflow-hidden">
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-20 items-center">
+          <div className="flex-1 space-y-10">
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight leading-tight">Why Contextual<br/>Monitoring Matters</h2>
+            
+            <div className="space-y-8">
+              {[
+                { title: "Early Risk Awareness", desc: "Spots subtle baseline deviations in EEG waveforms before physical manifestations occur." },
+                { title: "Supports Decision-Making", desc: "Provides empirical, structured data to back up clinical suspicions." },
+                { title: "Long-term Continuous Tracking", desc: "Logs historical events over months to define accurate patient patterns." },
+              ].map((item, idx) => (
+                <motion.div 
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  viewport={{ once: true }}
+                  key={idx} 
+                  className="flex gap-5"
+                >
+                  <div className="mt-1">
+                    <CheckCircle className="w-7 h-7 text-emerald-500 bg-emerald-50 rounded-full" />
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-bold text-slate-800 mb-2">{item.title}</h4>
+                    <p className="text-slate-500 leading-relaxed max-w-md">{item.desc}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+          
+          <div className="flex-1 w-full relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-amber-200 to-orange-200 rounded-[3rem] blur-2xl opacity-20 transform rotate-3" />
+            <motion.div 
+              whileHover={{ scale: 1.02 }}
+              className="relative bg-amber-50 border border-amber-200/50 p-12 rounded-[3rem] shadow-xl shadow-amber-900/5"
+            >
+              <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-amber-500 mb-8 shadow-sm border border-amber-100">
+                <AlertCircle className="w-8 h-8" />
+              </div>
+              <h3 className="text-3xl font-bold text-amber-950 mb-6 font-serif tracking-tight">A Clear Ethical Boundary</h3>
+              <p className="text-xl text-amber-900/80 leading-relaxed italic">
+                "NeuroRisk is engineered specifically as a decision-support and educational tool. It is strictly <strong className="text-amber-950 border-b-2 border-amber-300">not a diagnostic engine</strong>. The algorithmic risk probability serves only one purpose: to guide human clinical expertise."
+              </p>
+            </motion.div>
+          </div>
         </div>
       </section>
 
-      {/* ================= ETHICS CLOSING ================= */}
-      <section className="relative py-32 px-8 flex items-center justify-center overflow-hidden">
-        {/* Calm Animated Gradient Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-emerald-50/30 to-slate-100 z-0">
-          <motion.div 
-            animate={{ opacity: [0.3, 0.6, 0.3] }} 
-            transition={{ duration: 5, repeat: Infinity }}
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent w-full h-full transform -skew-x-12"
-          />
+      {/* ================= CTA SECTION ================= */}
+      <section className="py-32 px-6 lg:px-8 bg-slate-900 relative overflow-hidden">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-[800px] h-[400px] bg-emerald-500/20 blur-[150px] rounded-full" />
         </div>
-
-        <div className="relative z-10 text-center max-w-2xl">
-           <Scale className="w-10 h-10 text-emerald-700 mx-auto mb-6 opacity-80" />
-           <h2 className="text-3xl md:text-4xl font-serif text-slate-800 mb-6 tracking-wide">
-             "This system supports clinical judgment.<br/>
-             It does not replace medical expertise."
-           </h2>
-           <p className="text-sm text-slate-500 uppercase tracking-widest font-semibold">
-             Responsible AI in Medicine
-           </p>
+        
+        <div className="max-w-4xl mx-auto text-center relative z-10">
+          <h2 className="text-5xl md:text-7xl font-bold text-white mb-8 tracking-tight">
+            Start monitoring smarter.
+          </h2>
+          <p className="text-2xl text-slate-400 mb-12 max-w-2xl mx-auto font-light">
+            Deploy real-time analysis for your clinical environment. Experience interpretable monitoring today.
+          </p>
+          <motion.button 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => navigate("/login")}
+            className="px-12 py-5 bg-emerald-500 text-white text-lg rounded-2xl font-bold shadow-2xl shadow-emerald-500/30 hover:bg-emerald-400 border border-emerald-400 transition-all font-sans tracking-wide uppercase"
+          >
+            Access the Platform
+          </motion.button>
         </div>
       </section>
 
-      {/* Footer Details */}
-      <footer className="bg-white border-t border-slate-200 py-12 px-8">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6 text-sm text-slate-500">
-          <p>© 2026 Dept. of Neurology Education.</p>
-          <div className="flex gap-6">
-            <span className="hover:text-emerald-600 cursor-pointer">Privacy Protocol</span>
-            <span className="hover:text-emerald-600 cursor-pointer">Research Guidelines</span>
-            <span className="hover:text-emerald-600 cursor-pointer">System Status</span>
+      {/* ================= FOOTER ================= */}
+      <footer className="bg-white border-t border-slate-100 py-12 px-8">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6 text-sm text-slate-400 font-medium">
+          <p>© 2026 NeuroRisk Medical AI Tech.</p>
+          <div className="flex flex-wrap justify-center gap-8">
+            <span className="hover:text-emerald-600 outline-none cursor-pointer transition-colors">About</span>
+            <span className="hover:text-emerald-600 outline-none cursor-pointer transition-colors">Contact</span>
+            <span className="hover:text-emerald-600 outline-none cursor-pointer transition-colors">Privacy Protocol</span>
+            <span className="hover:text-emerald-600 outline-none cursor-pointer transition-colors">Terms of Use</span>
           </div>
         </div>
       </footer>
