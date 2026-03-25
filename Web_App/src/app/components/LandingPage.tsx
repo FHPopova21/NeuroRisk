@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { 
-  ArrowRight, ShieldAlert, Activity, BookOpen, Scale, 
+import {
+  ArrowRight, ShieldAlert, Activity, BookOpen, Scale,
   Cpu, UserCheck, AlertCircle, Stethoscope, GraduationCap, UserCog,
   Info, ChevronDown, BarChart2, Smartphone, Zap, Brain, LayoutDashboard, CheckCircle
 } from "lucide-react";
@@ -13,11 +13,11 @@ export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   // We can use useAuth here if we want to redirect if already logged in
   const [activeChannel, setActiveChannel] = useState<number | null>(null);
-  
+
   // Fake live data state
   const [liveRiskScore, setLiveRiskScore] = useState(42);
   const [liveHjorth, setLiveHjorth] = useState(1.24);
-  
+
   // Simulate live data changes
   useEffect(() => {
     const interval = setInterval(() => {
@@ -29,38 +29,38 @@ export const LandingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-800 overflow-x-hidden selection:bg-emerald-100">
-      
+
       {/* ================= HERO SECTION ================= */}
       <section className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-20 pb-20 overflow-hidden">
-        
+
         {/* --- FIX 1: Multi-channel Living Background --- */}
         <div className="absolute inset-0 pointer-events-none z-0 opacity-10">
-           {[0, 1, 2].map((i) => (
-             <div key={i} className="absolute w-full h-32" style={{ top: `${20 + i * 25}%` }}>
-               <motion.svg 
-                  className="w-[200%] h-full absolute left-0 top-0"
-                  viewBox="0 0 2000 200"
-                  preserveAspectRatio="none"
-                  animate={{ x: ["0%", "-50%"] }}
-                  transition={{ repeat: Infinity, duration: 20 + i * 5, ease: "linear" }}
-               >
-                  <path
-                    d={`M0,100 
-                       Q50,${80 + i*10} 100,100 T200,100 T300,100 
-                       Q450,${50 - i*10} 500,100 T600,100 T700,100 
-                       Q850,${150 + i*5} 900,100 T1000,100 T1100,100 
-                       Q1250,${80 - i*5} 1300,100 T1400,100 T1500,100 
-                       Q1650,${50 + i*10} 1700,100 T1800,100 T1900,100 T2000,100`}
-                    fill="none"
-                    stroke={i === 1 ? "#059669" : "#34d399"} // Middle one is darker teal
-                    strokeWidth={2}
-                    vectorEffect="non-scaling-stroke"
-                  />
-               </motion.svg>
-             </div>
-           ))}
-           <div className="absolute inset-0 bg-gradient-to-b from-slate-50 via-transparent to-slate-50" />
-           <div className="absolute inset-0 bg-gradient-to-r from-slate-50 via-transparent to-slate-50" />
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="absolute w-full h-32" style={{ top: `${20 + i * 25}%` }}>
+              <motion.svg
+                className="w-[200%] h-full absolute left-0 top-0"
+                viewBox="0 0 2000 200"
+                preserveAspectRatio="none"
+                animate={{ x: ["0%", "-50%"] }}
+                transition={{ repeat: Infinity, duration: 20 + i * 5, ease: "linear" }}
+              >
+                <path
+                  d={`M0,100 
+                       Q50,${80 + i * 10} 100,100 T200,100 T300,100 
+                       Q450,${50 - i * 10} 500,100 T600,100 T700,100 
+                       Q850,${150 + i * 5} 900,100 T1000,100 T1100,100 
+                       Q1250,${80 - i * 5} 1300,100 T1400,100 T1500,100 
+                       Q1650,${50 + i * 10} 1700,100 T1800,100 T1900,100 T2000,100`}
+                  fill="none"
+                  stroke={i === 1 ? "#059669" : "#34d399"} // Middle one is darker teal
+                  strokeWidth={2}
+                  vectorEffect="non-scaling-stroke"
+                />
+              </motion.svg>
+            </div>
+          ))}
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-50 via-transparent to-slate-50" />
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-50 via-transparent to-slate-50" />
         </div>
 
         {/* Header (Absolute) */}
@@ -76,9 +76,9 @@ export const LandingPage: React.FC = () => {
 
         {/* Hero Content Grid */}
         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto w-full items-center">
-          
+
           {/* Left: Text & CTA */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
@@ -86,19 +86,18 @@ export const LandingPage: React.FC = () => {
           >
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 text-slate-600 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              Live Educational System
+              AI-powered EEG Risk Monitoring
             </div>
-            
+
             <h1 className="text-5xl md:text-7xl font-bold text-slate-900 leading-[1.1] tracking-tight">
               Interpretable <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">
                 EEG Analysis
               </span>
             </h1>
-            
+
             <p className="text-lg md:text-xl text-slate-600 leading-relaxed max-w-lg">
-               A decision-support system designed to teach, not diagnose. 
-               Explore real-time feature extraction and risk assessment in a safe environment.
+              Real-time brain signal analysis for early risk detection.
             </p>
 
             {/* FIX 2: Explainability Teaser (List) */}
@@ -116,7 +115,7 @@ export const LandingPage: React.FC = () => {
 
             {/* FIX 4: Micro-interaction Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <motion.button 
+              <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => navigate("/login")}
@@ -127,8 +126,8 @@ export const LandingPage: React.FC = () => {
                 </span>
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
               </motion.button>
-              
-              <motion.button 
+
+              <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => navigate("/login")}
@@ -140,7 +139,7 @@ export const LandingPage: React.FC = () => {
           </motion.div>
 
           {/* Right: FIX "Fake Live Analysis" Card (New) */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
@@ -148,77 +147,77 @@ export const LandingPage: React.FC = () => {
           >
             {/* Main Card */}
             <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl shadow-slate-200/50 p-6 max-w-md ml-auto relative z-10">
-               {/* Card Header */}
-               <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
-                 <div className="flex items-center gap-3">
-                   <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600">
-                     <Activity className="w-5 h-5" />
-                   </div>
-                   <div>
-                     <h3 className="font-bold text-slate-800 text-sm">Simulation Monitor</h3>
-                     <p className="text-xs text-slate-500 flex items-center gap-1">
-                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                       Processing Stream
-                     </p>
-                   </div>
-                 </div>
-                 <span className="text-xs font-mono text-slate-400">CH-02: ACTIVE</span>
-               </div>
+              {/* Card Header */}
+              <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600">
+                    <Activity className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-800 text-sm">Simulation Monitor</h3>
+                    <p className="text-xs text-slate-500 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      Processing Stream
+                    </p>
+                  </div>
+                </div>
+                <span className="text-xs font-mono text-slate-400">CH-02: ACTIVE</span>
+              </div>
 
-               {/* Live Stats */}
-               <div className="space-y-4 mb-6">
-                 <div>
-                   <div className="flex justify-between text-xs font-semibold text-slate-500 mb-1">
-                     <span>RISK PROBABILITY</span>
-                     <span className="text-emerald-600 transition-all duration-500">{Math.round(liveRiskScore)}%</span>
-                   </div>
-                   <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                     <motion.div 
-                       className="h-full bg-emerald-500 rounded-full"
-                       animate={{ width: `${liveRiskScore}%` }}
-                       transition={{ duration: 2, ease: "easeInOut" }}
-                     />
-                   </div>
-                 </div>
+              {/* Live Stats */}
+              <div className="space-y-4 mb-6">
+                <div>
+                  <div className="flex justify-between text-xs font-semibold text-slate-500 mb-1">
+                    <span>RISK PROBABILITY</span>
+                    <span className="text-emerald-600 transition-all duration-500">{Math.round(liveRiskScore)}%</span>
+                  </div>
+                  <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <motion.div
+                      className="h-full bg-emerald-500 rounded-full"
+                      animate={{ width: `${liveRiskScore}%` }}
+                      transition={{ duration: 2, ease: "easeInOut" }}
+                    />
+                  </div>
+                </div>
 
-                 <div className="grid grid-cols-2 gap-4">
-                   <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                     <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Hjorth Mobility</p>
-                     <p className="font-mono font-medium text-slate-700">{liveHjorth}</p>
-                   </div>
-                   <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                     <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Spectral Entropy</p>
-                     <p className="font-mono font-medium text-slate-700">0.85</p>
-                   </div>
-                 </div>
-               </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+                    <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Hjorth Mobility</p>
+                    <p className="font-mono font-medium text-slate-700">{liveHjorth}</p>
+                  </div>
+                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+                    <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Spectral Entropy</p>
+                    <p className="font-mono font-medium text-slate-700">0.85</p>
+                  </div>
+                </div>
+              </div>
 
-               {/* Mini Sparkline */}
-               <div className="h-16 w-full bg-slate-50 rounded-lg border border-slate-100 overflow-hidden relative flex items-end">
-                  <motion.div 
-                    className="absolute inset-0 flex items-center"
-                    animate={{ x: [-100, 0] }}
-                    transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-                  >
-                     <svg viewBox="0 0 200 50" className="w-full h-full text-emerald-400 stroke-current fill-none stroke-2">
-                       <path d="M0,25 Q10,20 20,25 T40,25 T60,25 Q70,5 80,25 T100,25 T120,25 Q130,45 140,25 T160,25 T180,25 T200,25" vectorEffect="non-scaling-stroke" />
-                     </svg>
-                     <svg viewBox="0 0 200 50" className="w-full h-full text-emerald-400 stroke-current fill-none stroke-2 ml-[-1px]">
-                       <path d="M0,25 Q10,20 20,25 T40,25 T60,25 Q70,5 80,25 T100,25 T120,25 Q130,45 140,25 T160,25 T180,25 T200,25" vectorEffect="non-scaling-stroke" />
-                     </svg>
-                  </motion.div>
-               </div>
+              {/* Mini Sparkline */}
+              <div className="h-16 w-full bg-slate-50 rounded-lg border border-slate-100 overflow-hidden relative flex items-end">
+                <motion.div
+                  className="absolute inset-0 flex items-center"
+                  animate={{ x: [-100, 0] }}
+                  transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+                >
+                  <svg viewBox="0 0 200 50" className="w-full h-full text-emerald-400 stroke-current fill-none stroke-2">
+                    <path d="M0,25 Q10,20 20,25 T40,25 T60,25 Q70,5 80,25 T100,25 T120,25 Q130,45 140,25 T160,25 T180,25 T200,25" vectorEffect="non-scaling-stroke" />
+                  </svg>
+                  <svg viewBox="0 0 200 50" className="w-full h-full text-emerald-400 stroke-current fill-none stroke-2 ml-[-1px]">
+                    <path d="M0,25 Q10,20 20,25 T40,25 T60,25 Q70,5 80,25 T100,25 T120,25 Q130,45 140,25 T160,25 T180,25 T200,25" vectorEffect="non-scaling-stroke" />
+                  </svg>
+                </motion.div>
+              </div>
             </div>
 
             {/* Floating Elements (Decoration) */}
-            <motion.div 
+            <motion.div
               animate={{ y: [0, -10, 0] }}
               transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
               className="absolute -top-6 -right-6 bg-white p-3 rounded-lg shadow-lg border border-slate-100 z-0 opacity-80"
             >
               <Cpu className="w-5 h-5 text-amber-500" />
             </motion.div>
-            <motion.div 
+            <motion.div
               animate={{ y: [0, 10, 0] }}
               transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 1 }}
               className="absolute -bottom-6 -left-6 bg-white p-3 rounded-lg shadow-lg border border-slate-100 z-20"
@@ -229,12 +228,12 @@ export const LandingPage: React.FC = () => {
         </div>
 
         {/* FIX 3: Scroll Hint */}
-        <motion.div 
-           initial={{ opacity: 0 }}
-           animate={{ opacity: 1, y: [0, 10, 0] }}
-           transition={{ delay: 1.5, duration: 2, repeat: Infinity }}
-           className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 cursor-pointer text-slate-400 hover:text-emerald-600 transition-colors"
-           onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1, y: [0, 10, 0] }}
+          transition={{ delay: 1.5, duration: 2, repeat: Infinity }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 cursor-pointer text-slate-400 hover:text-emerald-600 transition-colors"
+          onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
         >
           <span className="text-xs font-medium uppercase tracking-widest">How it works</span>
           <ChevronDown className="w-5 h-5" />
@@ -252,7 +251,7 @@ export const LandingPage: React.FC = () => {
           <div className="relative">
             {/* Animated Tracking Line */}
             <div className="hidden md:block absolute top-[4.5rem] left-0 w-full h-1 bg-slate-100 rounded-full z-0 overflow-hidden">
-              <motion.div 
+              <motion.div
                 className="h-full w-1/3 bg-gradient-to-r from-transparent via-emerald-400 to-transparent rounded-full"
                 animate={{ x: ["-100%", "300%"] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
@@ -273,7 +272,7 @@ export const LandingPage: React.FC = () => {
                   viewport={{ once: true, margin: "-100px" }}
                   className="flex flex-col items-center text-center group"
                 >
-                  <motion.div 
+                  <motion.div
                     whileHover={{ scale: 1.05, translateY: -5 }}
                     className="w-36 h-36 bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex items-center justify-center text-emerald-600 mb-8 border border-slate-100 transition-all duration-300 relative group-hover:shadow-[0_8px_30px_rgb(16,185,129,0.12)] group-hover:border-emerald-100"
                   >
@@ -301,7 +300,7 @@ export const LandingPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
-            <motion.div 
+            <motion.div
               whileHover={{ scale: 1.01, translateY: -4 }}
               className="md:col-span-4 bg-white p-10 lg:p-12 rounded-[2.5rem] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300"
             >
@@ -312,7 +311,7 @@ export const LandingPage: React.FC = () => {
               <p className="text-slate-500 text-lg leading-relaxed max-w-xl">Stream, monitor, and analyze live brainwave activity with sub-millisecond latency. Interactive time and spectral domains built exclusively for rigorous clinical review.</p>
             </motion.div>
 
-            <motion.div 
+            <motion.div
               whileHover={{ scale: 1.02, translateY: -4 }}
               className="md:col-span-2 bg-gradient-to-br from-slate-900 to-slate-800 p-10 lg:p-12 rounded-[2.5rem] border border-slate-700 shadow-xl transition-all duration-300 text-white"
             >
@@ -324,7 +323,7 @@ export const LandingPage: React.FC = () => {
             </motion.div>
 
             <motion.div whileHover={{ scale: 1.02 }} className="md:col-span-2 bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-sm transition-all duration-300 group">
-               <div className="w-14 h-14 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 mb-6 group-hover:scale-110 transition-transform">
+              <div className="w-14 h-14 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 mb-6 group-hover:scale-110 transition-transform">
                 <LayoutDashboard className="w-6 h-6" />
               </div>
               <h3 className="text-xl font-bold text-slate-900 mb-3">Doctor Dashboard</h3>
@@ -359,13 +358,13 @@ export const LandingPage: React.FC = () => {
           <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">For Patients</h2>
           <p className="text-xl text-slate-300 max-w-md leading-relaxed font-light">A simple mobile application to sync your wearable device, view monitoring status, and seamlessly share data with your doctor.</p>
         </div>
-        
+
         {/* Right: Doctor */}
         <div className="flex-1 bg-gradient-to-br from-emerald-50 to-teal-50 text-emerald-950 p-16 lg:p-24 flex flex-col justify-center relative overflow-hidden group">
-           <div className="absolute bottom-0 left-0 w-96 h-96 bg-white/60 rounded-full blur-3xl opacity-50 group-hover:opacity-100 transition-opacity duration-1000" />
-           <Stethoscope className="w-14 h-14 text-emerald-600 mb-10 opacity-90" />
-           <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight text-emerald-900">For Doctors</h2>
-           <p className="text-xl text-emerald-800/80 max-w-md leading-relaxed font-light">A robust web dashboard featuring live AI inference streaming, comprehensive historical charting, and centralized clinical note management.</p>
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-white/60 rounded-full blur-3xl opacity-50 group-hover:opacity-100 transition-opacity duration-1000" />
+          <Stethoscope className="w-14 h-14 text-emerald-600 mb-10 opacity-90" />
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight text-emerald-900">For Doctors</h2>
+          <p className="text-xl text-emerald-800/80 max-w-md leading-relaxed font-light">A robust web dashboard featuring live AI inference streaming, comprehensive historical charting, and centralized clinical note management.</p>
         </div>
       </section>
 
@@ -379,7 +378,7 @@ export const LandingPage: React.FC = () => {
 
           <div className="flex flex-col lg:flex-row items-center justify-center gap-16 lg:gap-24">
             {/* Mobile Mockup Abstraction */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
@@ -412,33 +411,33 @@ export const LandingPage: React.FC = () => {
                   <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 h-28 flex flex-col justify-between">
                     <div className="w-8 h-8 rounded-full bg-blue-50" />
                     <div className="space-y-2">
-                       <div className="h-2 w-16 bg-slate-200 rounded-full" />
-                       <div className="h-2 w-10 bg-slate-200 rounded-full" />
+                      <div className="h-2 w-16 bg-slate-200 rounded-full" />
+                      <div className="h-2 w-10 bg-slate-200 rounded-full" />
                     </div>
                   </div>
                   <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 h-28 flex flex-col justify-between">
                     <div className="w-8 h-8 rounded-full bg-amber-50" />
                     <div className="space-y-2">
-                       <div className="h-2 w-20 bg-slate-200 rounded-full" />
-                       <div className="h-2 w-12 bg-slate-200 rounded-full" />
+                      <div className="h-2 w-20 bg-slate-200 rounded-full" />
+                      <div className="h-2 w-12 bg-slate-200 rounded-full" />
                     </div>
                   </div>
                 </div>
                 <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex-1 flex flex-col justify-between mt-4">
-                   <div className="h-3 w-32 bg-slate-200 rounded-full mb-4" />
-                   <div className="flex-1 w-full bg-slate-50 rounded-xl flex items-end p-2 gap-1">
-                     <div className="w-full h-[40%] bg-emerald-200 rounded-t-md opacity-50" />
-                     <div className="w-full h-[60%] bg-emerald-300 rounded-t-md opacity-50" />
-                     <div className="w-full h-[30%] bg-emerald-200 rounded-t-md opacity-50" />
-                     <div className="w-full h-[80%] bg-emerald-400 rounded-t-md opacity-50" />
-                     <div className="w-full h-[50%] bg-emerald-300 rounded-t-md opacity-50" />
-                   </div>
+                  <div className="h-3 w-32 bg-slate-200 rounded-full mb-4" />
+                  <div className="flex-1 w-full bg-slate-50 rounded-xl flex items-end p-2 gap-1">
+                    <div className="w-full h-[40%] bg-emerald-200 rounded-t-md opacity-50" />
+                    <div className="w-full h-[60%] bg-emerald-300 rounded-t-md opacity-50" />
+                    <div className="w-full h-[30%] bg-emerald-200 rounded-t-md opacity-50" />
+                    <div className="w-full h-[80%] bg-emerald-400 rounded-t-md opacity-50" />
+                    <div className="w-full h-[50%] bg-emerald-300 rounded-t-md opacity-50" />
+                  </div>
                 </div>
               </div>
             </motion.div>
 
             {/* Dashboard Mockup Abstraction */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, x: 40 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
@@ -471,17 +470,17 @@ export const LandingPage: React.FC = () => {
                     <div className="h-8 w-24 bg-emerald-100 rounded-full" />
                   </div>
                   <div className="flex gap-4 h-24">
-                     <div className="flex-1 bg-white rounded-xl shadow-sm border border-slate-100 p-4" />
-                     <div className="flex-1 bg-white rounded-xl shadow-sm border border-slate-100 p-4" />
-                     <div className="flex-1 bg-white rounded-xl shadow-sm border border-slate-100 p-4" />
+                    <div className="flex-1 bg-white rounded-xl shadow-sm border border-slate-100 p-4" />
+                    <div className="flex-1 bg-white rounded-xl shadow-sm border border-slate-100 p-4" />
+                    <div className="flex-1 bg-white rounded-xl shadow-sm border border-slate-100 p-4" />
                   </div>
                   <div className="flex-1 bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex flex-col">
                     <div className="h-4 w-32 bg-slate-200 rounded-full mb-6" />
                     <div className="flex-1 border-t border-b border-dashed border-slate-200 relative flex items-center justify-center">
-                       {/* Abstract Waveform */}
-                       <svg viewBox="0 0 400 100" className="w-full h-full text-emerald-500 stroke-current fill-none stroke-2 opacity-60">
-                         <path d="M0,50 Q20,20 40,50 T80,50 T120,50 Q140,10 160,50 T200,50 T240,50 Q260,90 280,50 T320,50 T360,50 T400,50" vectorEffect="non-scaling-stroke" />
-                       </svg>
+                      {/* Abstract Waveform */}
+                      <svg viewBox="0 0 400 100" className="w-full h-full text-emerald-500 stroke-current fill-none stroke-2 opacity-60">
+                        <path d="M0,50 Q20,20 40,50 T80,50 T120,50 Q140,10 160,50 T200,50 T240,50 Q260,90 280,50 T320,50 T360,50 T400,50" vectorEffect="non-scaling-stroke" />
+                      </svg>
                     </div>
                   </div>
                 </div>
@@ -495,20 +494,20 @@ export const LandingPage: React.FC = () => {
       <section className="py-32 px-6 lg:px-8 bg-white overflow-hidden">
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-20 items-center">
           <div className="flex-1 space-y-10">
-            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight leading-tight">Why Contextual<br/>Monitoring Matters</h2>
-            
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight leading-tight">Why Contextual<br />Monitoring Matters</h2>
+
             <div className="space-y-8">
               {[
                 { title: "Early Risk Awareness", desc: "Spots subtle baseline deviations in EEG waveforms before physical manifestations occur." },
                 { title: "Supports Decision-Making", desc: "Provides empirical, structured data to back up clinical suspicions." },
                 { title: "Long-term Continuous Tracking", desc: "Logs historical events over months to define accurate patient patterns." },
               ].map((item, idx) => (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   transition={{ delay: idx * 0.1 }}
                   viewport={{ once: true }}
-                  key={idx} 
+                  key={idx}
                   className="flex gap-5"
                 >
                   <div className="mt-1">
@@ -522,10 +521,10 @@ export const LandingPage: React.FC = () => {
               ))}
             </div>
           </div>
-          
+
           <div className="flex-1 w-full relative">
             <div className="absolute inset-0 bg-gradient-to-r from-amber-200 to-orange-200 rounded-[3rem] blur-2xl opacity-20 transform rotate-3" />
-            <motion.div 
+            <motion.div
               whileHover={{ scale: 1.02 }}
               className="relative bg-amber-50 border border-amber-200/50 p-12 rounded-[3rem] shadow-xl shadow-amber-900/5"
             >
@@ -546,7 +545,7 @@ export const LandingPage: React.FC = () => {
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="w-[800px] h-[400px] bg-emerald-500/20 blur-[150px] rounded-full" />
         </div>
-        
+
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <h2 className="text-5xl md:text-7xl font-bold text-white mb-8 tracking-tight">
             Start monitoring smarter.
@@ -554,7 +553,7 @@ export const LandingPage: React.FC = () => {
           <p className="text-2xl text-slate-400 mb-12 max-w-2xl mx-auto font-light">
             Deploy real-time analysis for your clinical environment. Experience interpretable monitoring today.
           </p>
-          <motion.button 
+          <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate("/login")}

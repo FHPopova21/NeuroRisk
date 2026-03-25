@@ -40,6 +40,15 @@ export interface MedicalNote {
   timestamp: string;
 }
 
+export interface LabAnalysis {
+  id: string;
+  file_name: string;
+  file_url: string;
+  file_type: string;
+  notes?: string | null;
+  timestamp: string;
+}
+
 export interface Patient {
   id: string;
   doctor_id: string | null;
@@ -99,6 +108,38 @@ export const apiService = {
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.detail || "Failed to create medical note");
+    }
+    return response.json();
+  },
+
+  // --- LAB ANALYSES ---
+  async getLabAnalyses(patientId: string): Promise<LabAnalysis[]> {
+    const response = await fetch(`${API_BASE_URL}/patients/${patientId}/lab-analyses`, { headers: getHeaders() });
+    if (!response.ok) throw new Error("Failed to fetch lab analyses");
+    return response.json();
+  },
+
+  async uploadLabAnalysis(patientId: string, file: File, notes: string = ""): Promise<LabAnalysis> {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("notes", notes);
+
+    // NOTE: Do not set Content-Type for FormData, browser sets it automatically with the boundary
+    const token = localStorage.getItem("token");
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/patients/${patientId}/lab-analysis`, {
+      method: 'POST',
+      headers,
+      body: formData
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Failed to upload lab analysis");
     }
     return response.json();
   },

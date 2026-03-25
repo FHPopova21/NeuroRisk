@@ -17,13 +17,16 @@ import {
   Waves,
   TrendingUp,
   TrendingDown,
-  X
+  X,
+  Microscope,
+  UploadCloud,
+  FileCheck
 } from "lucide-react";
 import { motion } from "motion/react";
 import { Link, useParams } from "react-router";
 import { LineChart, Line, AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { clsx } from "clsx";
-import { apiService, Patient, EEGRecord } from "../services/api";
+import { apiService, Patient, EEGRecord, LabAnalysis } from "../services/api";
 
 // Risk Gauge Component (extracted from AnalysisPage)
 const RiskGauge = ({ score }: { score: number }) => {
@@ -63,16 +66,22 @@ const RiskGauge = ({ score }: { score: number }) => {
 
 export const PatientProfilePage: React.FC = () => {
   const { id } = useParams();
-  const [activeTab, setActiveTab] = useState<"eeg" | "history" | "notes">("eeg");
+  const [activeTab, setActiveTab] = useState<"eeg" | "history" | "notes" | "lab">("eeg");
   const [patient, setPatient] = useState<Patient | null>(null);
   const [eegHistory, setEegHistory] = useState<EEGRecord[]>([]);
   const [medicalNotes, setMedicalNotes] = useState<any[]>([]);
+  const [labAnalyses, setLabAnalyses] = useState<LabAnalysis[]>([]);
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [selectedHistoryRecord, setSelectedHistoryRecord] = useState<EEGRecord | null>(null);
   const [doctorNote, setDoctorNote] = useState("");
   const [updating, setUpdating] = useState(false);
+  
+  // Lab upload state
+  const [labFile, setLabFile] = useState<File | null>(null);
+  const [labNotes, setLabNotes] = useState("");
+  const [uploadingLab, setUploadingLab] = useState(false);
 
   const latestRecord = eegHistory[0] || null;
 
@@ -165,14 +174,16 @@ export const PatientProfilePage: React.FC = () => {
       if (!id) return;
       setLoading(true);
       try {
-        const [patientData, historyData, notesData] = await Promise.all([
+        const [patientData, historyData, notesData, labData] = await Promise.all([
           apiService.getPatient(id),
           apiService.getEEGHistory(id),
-          apiService.getMedicalNotes(id)
+          apiService.getMedicalNotes(id),
+          apiService.getLabAnalyses(id)
         ]);
         setPatient(patientData);
         setEegHistory(historyData);
         setMedicalNotes(notesData);
+        setLabAnalyses(labData);
         if (historyData.length > 0) {
           setDoctorNote(historyData[0].doctor_note || "");
         }
@@ -248,10 +259,11 @@ export const PatientProfilePage: React.FC = () => {
         {/* MAIN CONTENT */}
         <div className="w-full space-y-8">
           {/* TABS */}
-          <div className="flex items-center gap-6 border-b border-slate-200">
+          <div className="flex flex-wrap items-center gap-6 border-b border-slate-200">
             <TabButton active={activeTab === "eeg"} onClick={() => { setActiveTab("eeg"); setSelectedHistoryRecord(null); }} label="EEG Monitoring" icon={Activity} />
             <TabButton active={activeTab === "history"} onClick={() => setActiveTab("history")} label="Analysis History" icon={Clock} />
             <TabButton active={activeTab === "notes"} onClick={() => setActiveTab("notes")} label="Medical Notes" icon={FileText} />
+            <TabButton active={activeTab === "lab"} onClick={() => setActiveTab("lab")} label="Lab Analysis" icon={Microscope} />
           </div>
 
           <motion.div
@@ -749,6 +761,135 @@ export const PatientProfilePage: React.FC = () => {
                     <p className="text-slate-600 text-sm leading-relaxed">{note.content}</p>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {activeTab === "lab" && (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* UPLOAD FORM */}
+                <div className="lg:col-span-1 space-y-6">
+                  <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-6 overflow-hidden relative">
+                    <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-emerald-400 to-emerald-600" />
+                    <h3 className="font-black text-slate-900 mb-6 flex items-center gap-2">
+                      <UploadCloud className="w-5 h-5 text-emerald-600" />
+                      Upload New Analysis
+                    </h3>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-1">File (TXT, CSV)</label>
+                        <input
+                          type="file"
+                          accept=".txt,.csv"
+                          onChange={(e) => setLabFile(e.target.files ? e.target.files[0] : null)}
+                          className="w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 transition-all border border-slate-200 rounded-xl p-2 focus:ring-4 focus:ring-emerald-500/10 cursor-pointer"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-1">Clinical Notes (Optional)</label>
+                        <textarea
+                          value={labNotes}
+                          onChange={(e) => setLabNotes(e.target.value)}
+                          placeholder="e.g. Brain MRI indicates structural normalities, but continuous slowing..."
+                          className="w-full h-24 p-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all resize-none"
+                        />
+                      </div>
+                      
+                      <button
+                        onClick={async () => {
+                          if (!labFile) {
+                            toast.error("Please select a file to upload.");
+                            return;
+                          }
+                          setUploadingLab(true);
+                          try {
+                            const newAnalysis = await apiService.uploadLabAnalysis(id!, labFile, labNotes);
+                            setLabAnalyses([newAnalysis, ...labAnalyses]);
+                            setLabFile(null);
+                            setLabNotes("");
+                            toast.success("Lab analysis uploaded successfully");
+                          } catch (err: any) {
+                            toast.error(err.message || "Failed to upload file");
+                          } finally {
+                            setUploadingLab(false);
+                          }
+                        }}
+                        disabled={uploadingLab || !labFile}
+                        className={clsx(
+                          "w-full py-3.5 px-6 rounded-2xl font-black text-xs uppercase tracking-wider transition-all shadow-md mt-4 flex justify-center items-center gap-2",
+                          uploadingLab || !labFile 
+                            ? "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none" 
+                            : "bg-emerald-600 text-white hover:bg-emerald-700 hover:shadow-emerald-200"
+                        )}
+                      >
+                        {uploadingLab ? (
+                          <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            Uploading...
+                          </div>
+                        ) : "Submit Upload"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* RESULTS LIST */}
+                <div className="lg:col-span-2 space-y-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest">Laboratory History</h3>
+                    <span className="text-[10px] font-black bg-slate-100 text-slate-500 px-3 py-1 rounded-full uppercase tracking-wider">
+                      {labAnalyses.length} Documents
+                    </span>
+                  </div>
+                  
+                  {labAnalyses.length === 0 ? (
+                    <div className="bg-slate-50/50 border border-slate-100 border-dashed rounded-[2rem] p-12 text-center">
+                      <Microscope className="w-12 h-12 text-slate-300 mx-auto mb-4 opacity-50" />
+                      <h4 className="text-slate-500 font-black mb-1">No Lab Results Available</h4>
+                      <p className="text-xs text-slate-400 font-medium">Upload external assessments (.txt, .csv) here.</p>
+                    </div>
+                  ) : (
+                    labAnalyses.map((lab: LabAnalysis) => (
+                      <div key={lab.id} className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 flex flex-col md:flex-row gap-6 hover:shadow-md transition-all">
+                        <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shrink-0">
+                          <FileCheck className="w-6 h-6" />
+                        </div>
+                        <div className="flex-1 space-y-2">
+                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+                            <h4 className="text-sm font-black text-slate-900 break-words">{lab.file_name}</h4>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                              {new Date(lab.timestamp).toLocaleString()}
+                            </span>
+                          </div>
+                          
+                          <div className="flex gap-2 mb-2">
+                            <span className="text-[9px] font-black bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md uppercase tracking-widest border border-slate-200">
+                              {lab.file_type.split('/').pop() || 'Unknown'}
+                            </span>
+                          </div>
+
+                          {lab.notes && (
+                            <p className="text-xs text-slate-600 font-medium italic bg-slate-50 p-3 rounded-xl border border-slate-100 leading-relaxed mt-2">
+                              "{lab.notes}"
+                            </p>
+                          )}
+                          
+                          <div className="mt-4 pt-4 border-t border-slate-100">
+                            <a 
+                              href={`http://127.0.0.1:5000${lab.file_url}`} 
+                              target="_blank" 
+                              rel="noreferrer"
+                              className="inline-flex items-center justify-center px-6 py-2 bg-blue-50 text-blue-700 text-xs font-black uppercase tracking-wider rounded-xl hover:bg-blue-100 transition-colors"
+                            >
+                              View Document
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             )}
           </motion.div>

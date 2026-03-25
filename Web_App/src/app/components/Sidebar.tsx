@@ -55,7 +55,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole, onLogout }) => {
         </div>
         <div className="flex flex-col">
           <span className="font-bold text-lg leading-tight tracking-tight text-white">NeuroRisk</span>
-          <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-400/80">Educational Platform</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-400/80">EEG Risk Monitoring</span>
         </div>
       </div>
 

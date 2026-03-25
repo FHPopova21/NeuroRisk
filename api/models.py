@@ -36,6 +36,7 @@ class Doctor(Base):
     # Връзки
     patients = relationship("Patient", back_populates="doctor")
     notes = relationship("MedicalNote", back_populates="doctor")
+    lab_analyses = relationship("LabAnalysis", back_populates="doctor")
 
 class Patient(Base):
     """
@@ -63,6 +64,7 @@ class Patient(Base):
     eeg_records = relationship("EEGRecord", back_populates="patient", cascade="all, delete-orphan")
     alerts = relationship("Alert", back_populates="patient", cascade="all, delete-orphan")
     notes = relationship("MedicalNote", back_populates="patient", cascade="all, delete-orphan")
+    lab_analyses = relationship("LabAnalysis", back_populates="patient", cascade="all, delete-orphan")
 
 class EEGRecord(Base):
     """
@@ -134,6 +136,25 @@ class MedicalNote(Base):
     # Връзки
     patient = relationship("Patient", back_populates="notes")
     doctor = relationship("Doctor", back_populates="notes")
+
+class LabAnalysis(Base):
+    """
+    Модел за външни клинични и лабораторни анализи (качени файлове).
+    """
+    __tablename__ = "lab_analyses"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    patient_id = Column(UUID(as_uuid=True), ForeignKey("patients.id", ondelete="CASCADE"), nullable=False)
+    doctor_id = Column(UUID(as_uuid=True), ForeignKey("doctors.id", ondelete="SET NULL"))
+    file_url = Column(String(500), nullable=False)
+    file_name = Column(String(255), nullable=False)
+    file_type = Column(String(100), nullable=False)
+    notes = Column(Text, nullable=True)
+    timestamp = Column(DateTime(timezone=True), server_default=func.now())
+
+    # Връзки
+    patient = relationship("Patient", back_populates="lab_analyses")
+    doctor = relationship("Doctor", back_populates="lab_analyses")
 
 class ActivityLog(Base):
     """

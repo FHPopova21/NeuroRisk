@@ -20,3 +20,5 @@ venv/
 
 #Node.js
 Web_App/node_modules/
+Web_App/dist/
+Web_App/build/

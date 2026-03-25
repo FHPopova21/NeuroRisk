@@ -74,6 +74,32 @@ def create_patient(db: Session, patient_data: schemas.PatientCreate, doctor_id: 
 
     return new_patient, token
 
+def create_lab_analysis(db: Session, patient_id: str, doctor_id: str, file_url: str, file_name: str, file_type: str, notes: str = None):
+    """
+    Създава запис за качен лабораторен анализ.
+    """
+    new_analysis = models.LabAnalysis(
+        patient_id=patient_id,
+        doctor_id=doctor_id,
+        file_url=file_url,
+        file_name=file_name,
+        file_type=file_type,
+        notes=notes
+    )
+    db.add(new_analysis)
+    db.commit()
+    db.refresh(new_analysis)
+    return new_analysis
+
+def get_lab_analyses_by_patient(db: Session, patient_id: str):
+    """
+    Връща всички лабораторни анализи за даден пациент, сортирани по най-нови.
+    """
+    return db.query(models.LabAnalysis)\
+             .filter(models.LabAnalysis.patient_id == patient_id)\
+             .order_by(models.LabAnalysis.timestamp.desc())\
+             .all()
+
 def activate_patient(db: Session, token: str, activation_data: schemas.PatientActivate):
     """
     Пациентът активира акаунта си чрез токен и си поставя парола.

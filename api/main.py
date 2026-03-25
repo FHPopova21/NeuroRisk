@@ -29,6 +29,11 @@ def create_app():
     # Конфигурация
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     
+    # Конфигурация за качване на файлове
+    UPLOAD_FOLDER = os.path.join(base_dir, 'uploads', 'lab_results')
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+    
     # Регистрация на Blueprints
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(patients_bp, url_prefix='/api/patients')
@@ -39,6 +44,11 @@ def create_app():
     @app.route('/')
     def index():
         return jsonify({"message": "Добре дошли в NeuroRisk Edu API (Flask Version)!"})
+
+    from flask import send_from_directory
+    @app.route('/api/uploads/lab_results/<filename>')
+    def uploaded_file(filename):
+        return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
     return app
 
