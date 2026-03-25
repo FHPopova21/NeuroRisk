@@ -163,18 +163,30 @@ export const apiService = {
       ? `${API_BASE_URL}/monitoring/history/${patientId}`
       : `${API_BASE_URL}/monitoring/history`;
     const response = await fetch(url, { headers: getHeaders() });
-    if (!response.ok) throw new Error("Failed to fetch EEG history");
+    if (!response.ok) throw new Error("Failed to load history");
     return response.json();
   },
 
   async analyzeRecord(recordId: string): Promise<EEGRecord> {
     const response = await fetch(`${API_BASE_URL}/monitoring/analyze/${recordId}`, {
-      method: 'POST',
+      method: "POST",
       headers: getHeaders()
     });
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.detail || "Analysis failed");
+    }
+    return response.json();
+  },
+
+  async analyzeLabFile(labId: string): Promise<EEGRecord> {
+    const response = await fetch(`${API_BASE_URL}/monitoring/analyze-file/${labId}`, {
+      method: "POST",
+      headers: getHeaders()
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "File Analysis failed");
     }
     return response.json();
   },
@@ -187,6 +199,15 @@ export const apiService = {
     if (!response.ok) throw new Error("Failed to fetch alerts");
     const data = await response.json();
     return data;
+  },
+
+  async dismissAlert(alertId: string): Promise<any> {
+    const response = await fetch(`${API_BASE_URL}/monitoring/alerts/${alertId}/dismiss`, {
+      method: "PATCH",
+      headers: getHeaders()
+    });
+    if (!response.ok) throw new Error("Failed to dismiss alert");
+    return response.json();
   },
 
 

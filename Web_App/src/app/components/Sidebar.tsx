@@ -12,7 +12,8 @@ import {
   Brain,
   ShieldCheck,
   History,
-  Settings
+  Settings,
+  X
 } from "lucide-react";
 import { clsx } from "clsx";
 import { useAuth } from "../context/AuthContext";
@@ -20,11 +21,13 @@ import { useAuth } from "../context/AuthContext";
 interface SidebarProps {
   currentView: string;
   userRole: "admin" | "doctor" | "student";
+  isOpen: boolean;
   onChangeView: (view: string) => void;
   onLogout: () => void;
+  onClose: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ userRole, onLogout }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ userRole, isOpen, onLogout, onClose }) => {
   const location = useLocation();
   const currentPath = location.pathname;
   const { user } = useAuth();
@@ -48,16 +51,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole, onLogout }) => {
   const menuItems = userRole === 'admin' ? adminMenuItems : doctorMenuItems;
 
   return (
-    <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col h-screen fixed left-0 top-0 z-20">
-      <div className="p-6 border-b border-slate-800 flex items-center gap-3 text-emerald-400">
-        <div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-400 shadow-lg shadow-emerald-500/10 border border-emerald-500/20">
-          <Brain className="w-6 h-6" />
+    <>
+      <aside className={clsx(
+        "bg-slate-900 border-r border-slate-800 flex flex-col h-screen fixed left-0 top-0 z-40 transition-transform duration-300 w-64",
+        isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+      )}>
+        <div className="p-6 border-b border-slate-800 flex items-center justify-between gap-3 text-emerald-400">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-400 shadow-lg shadow-emerald-500/10 border border-emerald-500/20">
+              <Brain className="w-6 h-6" />
+            </div>
+            <div className="flex flex-col">
+              <span className="font-bold text-lg leading-tight tracking-tight text-white">NeuroRisk</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-400/80">EEG Risk Monitoring</span>
+            </div>
+          </div>
+          <button onClick={onClose} className="md:hidden text-slate-400 hover:text-white p-2 -mr-2">
+            <X className="w-5 h-5" />
+          </button>
         </div>
-        <div className="flex flex-col">
-          <span className="font-bold text-lg leading-tight tracking-tight text-white">NeuroRisk</span>
-          <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-400/80">EEG Risk Monitoring</span>
-        </div>
-      </div>
 
       <div className="flex-1 py-6 px-4 space-y-1 overflow-y-auto">
         <div className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.15em] mb-4 px-3">
@@ -148,6 +160,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole, onLogout }) => {
           Sign Out
         </button>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 };

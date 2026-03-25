@@ -20,9 +20,10 @@ import {
   X,
   Microscope,
   UploadCloud,
-  FileCheck
+  FileCheck,
+  ChevronDown
 } from "lucide-react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { Link, useParams } from "react-router";
 import { LineChart, Line, AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { clsx } from "clsx";
@@ -82,6 +83,26 @@ export const PatientProfilePage: React.FC = () => {
   const [labFile, setLabFile] = useState<File | null>(null);
   const [labNotes, setLabNotes] = useState("");
   const [uploadingLab, setUploadingLab] = useState(false);
+
+  // New Note State
+  const [newNoteContent, setNewNoteContent] = useState("");
+  const [isAddingNote, setIsAddingNote] = useState(false);
+  const [savingNote, setSavingNote] = useState(false);
+
+  // EEG Analysis File Selection
+  const [selectedLabAnalysis, setSelectedLabAnalysis] = useState<string>("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const latestRecord = eegHistory[0] || null;
 
@@ -145,6 +166,14 @@ export const PatientProfilePage: React.FC = () => {
       });
       setEegHistory(prev => prev.map(r => r.id === updated.id ? updated : r));
       if (selectedHistoryRecord?.id === updated.id) setSelectedHistoryRecord(updated);
+      
+      // Also sync it to Global Medical Notes if there is any content, so it appears everywhere
+      if (doctorNote && doctorNote.trim() !== "") {
+        const globalNoteStr = `[Clinical Analysis - Record ${recordToUpdate.id.slice(0,6)}]: ${doctorNote}`;
+        const newGlobalNote = await apiService.createMedicalNote(id!, globalNoteStr);
+        setMedicalNotes(prev => [newGlobalNote, ...prev]);
+      }
+      
       toast.success("Record updated successfully");
     } catch (err: any) {
       toast.error(err.message);
@@ -154,16 +183,26 @@ export const PatientProfilePage: React.FC = () => {
   };
 
   const handleAnalyze = async () => {
-    if (!eegHistory[0]) return;
+    if (!selectedLabAnalysis && !eegHistory[0]) return;
     
     setAnalyzing(true);
     setAnalysisError(null);
     try {
-      const updatedRecord = await apiService.analyzeRecord(eegHistory[0].id);
-      // Update history with the new analyzed record
-      setEegHistory(prev => [updatedRecord, ...prev.slice(1)]);
+      if (selectedLabAnalysis) {
+        const newRecord = await apiService.analyzeLabFile(selectedLabAnalysis);
+        setEegHistory(prev => [newRecord, ...prev]);
+        setSelectedHistoryRecord(newRecord); // Auto-select the newly analyzed record
+        setSelectedLabAnalysis(""); // Reset selection
+        toast.success("File Analysis Complete!");
+      } else {
+        const updatedRecord = await apiService.analyzeRecord(eegHistory[0].id);
+        // Update history with the new analyzed record
+        setEegHistory(prev => [updatedRecord, ...prev.slice(1)]);
+        toast.success("Record Re-analyzed!");
+      }
     } catch (err: any) {
       setAnalysisError(err.message);
+      toast.error(err.message || "Analysis failed");
     } finally {
       setAnalyzing(false);
     }
@@ -235,12 +274,76 @@ export const PatientProfilePage: React.FC = () => {
           </div>
         </div>
         <div className="flex items-center gap-3">
+          {activeTab === "eeg" && (
+            <div className="relative" ref={dropdownRef}>
+              <button
+                type="button"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="px-5 py-3.5 bg-white border border-slate-200 rounded-2xl text-[11px] font-black uppercase tracking-widest text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm hover:bg-slate-50 transition-colors flex items-center gap-3 w-72 justify-between"
+              >
+                <span className="truncate">
+                  {selectedLabAnalysis 
+                    ? labAnalyses.find(l => l.id === selectedLabAnalysis)?.file_name 
+                    : "- Select Analysis Data Source -"}
+                </span>
+                <ChevronDown className={clsx("w-4 h-4 text-slate-400 transition-transform", isDropdownOpen && "rotate-180")} />
+              </button>
+              
+              <AnimatePresence>
+                {isDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute top-full right-0 mt-2 w-80 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden"
+                  >
+                    <div className="max-h-64 overflow-y-auto hide-scrollbar py-2">
+                      <button
+                        onClick={() => { setSelectedLabAnalysis(""); setIsDropdownOpen(false); }}
+                        className="w-full text-left px-5 py-3 hover:bg-slate-50 transition-colors border-b border-slate-100"
+                      >
+                        <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                          - Default Live Stream -
+                        </span>
+                      </button>
+                      {labAnalyses.map(lab => (
+                        <button
+                          key={lab.id}
+                          onClick={() => { setSelectedLabAnalysis(lab.id); setIsDropdownOpen(false); }}
+                          className={clsx(
+                            "w-full text-left px-5 py-3 transition-colors flex flex-col gap-1 border-b border-slate-50 last:border-0",
+                            selectedLabAnalysis === lab.id ? "bg-emerald-50/50" : "hover:bg-slate-50"
+                          )}
+                        >
+                          <span className={clsx(
+                            "text-sm font-bold",
+                            selectedLabAnalysis === lab.id ? "text-emerald-700" : "text-slate-700"
+                          )}>
+                            {lab.file_name}
+                          </span>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                            Uploaded: {new Date(lab.timestamp).toLocaleDateString()}
+                          </span>
+                        </button>
+                      ))}
+                      {labAnalyses.length === 0 && (
+                        <div className="px-5 py-4 text-xs font-medium text-slate-400 text-center">
+                          No valid Lab files uploaded yet.
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
           <button 
             onClick={handleAnalyze}
-            disabled={analyzing || !eegHistory.length}
+            disabled={analyzing || (!eegHistory.length && !selectedLabAnalysis)}
             className={clsx(
               "px-6 py-3 font-bold text-sm rounded-2xl transition-all shadow-lg",
-              analyzing || !eegHistory.length 
+              analyzing || (!eegHistory.length && !selectedLabAnalysis)
                 ? "bg-slate-100 text-slate-400 cursor-not-allowed" 
                 : "bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-200"
             )}
@@ -738,10 +841,51 @@ export const PatientProfilePage: React.FC = () => {
               <div className="space-y-6">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest">Medical Log History</h3>
-                  <button className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200">
-                    <Plus className="w-4 h-4" /> Add Medical Note
+                  <button 
+                    onClick={() => setIsAddingNote(!isAddingNote)}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200"
+                  >
+                    {isAddingNote ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />} 
+                    {isAddingNote ? "Cancel" : "Add Medical Note"}
                   </button>
                 </div>
+
+                {isAddingNote && (
+                  <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-6 mb-6">
+                    <textarea
+                      value={newNoteContent}
+                      onChange={(e) => setNewNoteContent(e.target.value)}
+                      placeholder="Enter new medical observations here..."
+                      className="w-full h-32 p-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all resize-none mb-4"
+                    />
+                    <div className="flex justify-end">
+                      <button
+                        disabled={savingNote || !newNoteContent.trim()}
+                        onClick={async () => {
+                          setSavingNote(true);
+                          try {
+                            const newGlobalNote = await apiService.createMedicalNote(id!, newNoteContent);
+                            setMedicalNotes(prev => [newGlobalNote, ...prev]);
+                            setNewNoteContent("");
+                            setIsAddingNote(false);
+                            toast.success("Medical note added!");
+                          } catch (err: any) {
+                            toast.error(err.message || "Failed to add note");
+                          } finally {
+                            setSavingNote(false);
+                          }
+                        }}
+                        className={clsx(
+                          "px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all",
+                          savingNote || !newNoteContent.trim() ? "bg-slate-100 text-slate-400" : "bg-emerald-600 text-white hover:bg-emerald-700 shadow-md"
+                        )}
+                      >
+                        {savingNote ? "Saving..." : "Save Note"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {medicalNotes.map((note: any) => (
                   <div key={note.id} className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-8 group hover:border-emerald-100 transition-colors">
                     <div className="flex justify-between items-start mb-4">

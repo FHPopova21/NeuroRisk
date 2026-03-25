@@ -100,6 +100,20 @@ def get_lab_analyses_by_patient(db: Session, patient_id: str):
              .order_by(models.LabAnalysis.timestamp.desc())\
              .all()
 
+def create_medical_note(db: Session, patient_id: str, doctor_id: str, content: str):
+    """
+    Добавя нова медицинска бележка към профила на пациент.
+    """
+    new_note = models.MedicalNote(
+        patient_id=patient_id,
+        doctor_id=doctor_id,
+        content=content
+    )
+    db.add(new_note)
+    db.commit()
+    db.refresh(new_note)
+    return new_note
+
 def activate_patient(db: Session, token: str, activation_data: schemas.PatientActivate):
     """
     Пациентът активира акаунта си чрез токен и си поставя парола.

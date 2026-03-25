@@ -156,16 +156,15 @@ export const DashboardHome: React.FC = () => {
               placeholder="Search by ID, Name or Status..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-10 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none w-72 transition-all shadow-sm"
+              className="pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none w-72 transition-all shadow-sm"
             />
-            <button className="absolute right-2 p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors">
-              <Filter className="w-3.5 h-3.5" />
-            </button>
           </div>
-          <button className="p-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 relative">
+          <Link to="/alerts" className="p-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 relative">
             <Bell className="w-5 h-5 text-slate-600" />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-orange-500 rounded-full border-2 border-white" />
-          </button>
+            {highRiskAlerts.length > 0 && (
+              <span className="absolute top-2 right-2 w-2 h-2 bg-orange-500 rounded-full border-2 border-white animate-pulse" />
+            )}
+          </Link>
           <Link to="/profile" className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center border border-emerald-200 shadow-sm overflow-hidden">
             <User className="w-6 h-6 text-emerald-600" />
           </Link>
@@ -210,7 +209,7 @@ export const DashboardHome: React.FC = () => {
           </div>
 
           <div className="flex gap-4 overflow-x-auto pb-4 pt-2 -mx-2 px-2 snap-x hide-scrollbar">
-            {priorityPatients.map((p, idx) => (
+            {priorityPatients.filter(p => !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.id.toLowerCase().includes(searchQuery.toLowerCase())).map((p, idx) => (
               <motion.div
                 key={p.id}
                 initial={{ opacity: 0, scale: 0.95 }}

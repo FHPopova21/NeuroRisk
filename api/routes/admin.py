@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from api import schemas, models, database
 from api.utils.auth import token_required, role_required
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
 from datetime import datetime, timedelta
 import uuid
@@ -94,7 +94,7 @@ def get_all_alerts(current_user):
     db = next(database.get_db())
     try:
         severity = request.args.get('severity')
-        query = db.query(models.Alert)
+        query = db.query(models.Alert).options(joinedload(models.Alert.patient))
         if severity:
             query = query.filter(models.Alert.severity == severity)
         

@@ -188,3 +188,34 @@ def get_lab_analyses(current_user, patient_id):
         return jsonify(data), 200
     finally:
         db.close()
+
+@patients_bp.route('/<patient_id>/notes', methods=['POST'])
+@token_required
+@role_required('doctor')
+def add_medical_note(current_user, patient_id):
+    """
+    Ендпойнт за добавяне на медицинска бележка.
+    """
+    data = request.get_json()
+    if not data or not data.get('content'):
+        return jsonify({"detail": "Липсва съдържание"}), 400
+        
+    db = next(database.get_db())
+    try:
+        note = patients.create_medical_note(
+            db=db, 
+            patient_id=patient_id, 
+            doctor_id=current_user.id, 
+            content=data['content']
+        )
+        return jsonify({
+            "id": str(note.id),
+            "patient_id": str(note.patient_id),
+            "doctor_id": str(note.doctor_id),
+            "content": note.content,
+            "timestamp": note.timestamp.isoformat() if note.timestamp else None
+        }), 201
+    except Exception as e:
+        return jsonify({"detail": str(e)}), 400
+    finally:
+        db.close()

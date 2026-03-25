@@ -11,7 +11,7 @@ import { useAuth } from "../context/AuthContext";
 
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
-  // We can use useAuth here if we want to redirect if already logged in
+  const { user } = useAuth();
   const [activeChannel, setActiveChannel] = useState<number | null>(null);
 
   // Fake live data state
@@ -67,7 +67,7 @@ export const LandingPage: React.FC = () => {
         <header className="absolute top-0 left-0 right-0 px-8 py-6 flex items-center justify-between max-w-7xl mx-auto w-full z-20">
           <div className="flex items-center gap-2 text-emerald-700">
             <Activity className="w-8 h-8" />
-            <span className="font-semibold text-xl tracking-tight">NeuroRisk Edu</span>
+            <span className="font-semibold text-xl tracking-tight">NeuroRisk Clinical Platform</span>
           </div>
           <div className="hidden sm:block text-sm text-emerald-800/70 font-medium bg-emerald-50/80 backdrop-blur-sm border border-emerald-100 px-3 py-1 rounded-full">
             v1.1.0 Research Preview
@@ -113,28 +113,53 @@ export const LandingPage: React.FC = () => {
               </span>
             </div>
 
-            {/* FIX 4: Micro-interaction Buttons */}
+            {/* Dynamic Auth Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => navigate("/login")}
-                className="group relative px-8 py-4 bg-emerald-600 text-white rounded-xl font-medium shadow-lg shadow-emerald-200/50 overflow-hidden"
-              >
-                <span className="relative z-10 flex items-center justify-center gap-2">
-                  Start Analysis as Student <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </span>
-                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-              </motion.button>
-
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => navigate("/login")}
-                className="px-8 py-4 bg-white border border-slate-200 text-slate-700 rounded-xl font-medium hover:border-emerald-200 hover:text-emerald-700 hover:bg-emerald-50/30 transition-colors"
-              >
-                Instructor Login
-              </motion.button>
+              {user ? (
+                <>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => navigate(user.role === 'admin' ? '/admin' : '/dashboard')}
+                    className="group relative px-8 py-4 bg-emerald-600 text-white rounded-xl font-medium shadow-lg shadow-emerald-200/50 overflow-hidden"
+                  >
+                    <span className="relative z-10 flex items-center justify-center gap-2">
+                      Enter {user.role === 'admin' ? 'Admin Console' : 'Clinical Dashboard'} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </span>
+                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => navigate("/profile")}
+                    className="px-8 py-4 bg-white border border-slate-200 text-slate-700 rounded-xl font-medium hover:border-emerald-200 hover:text-emerald-700 hover:bg-emerald-50/30 transition-colors"
+                  >
+                    Signed in as {user.name || "Doctor"}
+                  </motion.button>
+                </>
+              ) : (
+                <>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => navigate("/login")}
+                    className="group relative px-8 py-4 bg-emerald-600 text-white rounded-xl font-medium shadow-lg shadow-emerald-200/50 overflow-hidden"
+                  >
+                    <span className="relative z-10 flex items-center justify-center gap-2">
+                      Clinical Dashboard Login <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </span>
+                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => navigate("/login")}
+                    className="px-8 py-4 bg-white border border-slate-200 text-slate-700 rounded-xl font-medium hover:border-emerald-200 hover:text-emerald-700 hover:bg-emerald-50/30 transition-colors"
+                  >
+                    System Admin Login
+                  </motion.button>
+                </>
+              )}
             </div>
           </motion.div>
 

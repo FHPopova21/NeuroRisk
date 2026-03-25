@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, model_validator
 from typing import Optional, List, Any
 from datetime import datetime, date
 from uuid import UUID
@@ -137,8 +137,6 @@ class Alert(AlertBase):
     patient_name: Optional[str] = None
     timestamp: datetime
     is_read: bool
-    patient: Optional[Patient] = None
-    doctor: Optional[Doctor] = None
 
     class Config:
         from_attributes = True

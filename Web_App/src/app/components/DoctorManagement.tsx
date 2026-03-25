@@ -68,8 +68,9 @@ export const DoctorManagement: React.FC = () => {
       </header>
 
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead>
+        <div className="overflow-x-auto hide-scrollbar">
+          <table className="w-full text-left border-collapse min-w-[800px]">
+            <thead>
             <tr className="bg-slate-50 border-b border-slate-100">
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Doctor</th>
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Specialization</th>
@@ -154,6 +155,7 @@ export const DoctorManagement: React.FC = () => {
             ))}
           </tbody>
         </table>
+        </div>
         {doctors.length === 0 && !loading && (
           <div className="p-12 text-center text-slate-400 font-medium">
             No doctors found matching the current filter.

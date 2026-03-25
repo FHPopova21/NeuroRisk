@@ -11,6 +11,7 @@ import {
   User,
   Shield
 } from "lucide-react";
+import { toast } from "sonner";
 import { clsx } from "clsx";
 import { motion } from "motion/react";
 import { Link } from "react-router";
@@ -21,6 +22,7 @@ import { useAuth } from "../context/AuthContext";
 export const AlertsPage: React.FC = () => {
   const [alerts, setAlerts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
 
@@ -40,6 +42,17 @@ export const AlertsPage: React.FC = () => {
     };
     fetchAlerts();
   }, [isAdmin]);
+
+  const handleDismiss = async (alertId: string) => {
+    try {
+      await apiService.dismissAlert(alertId);
+      setAlerts(prev => prev.filter(a => a.id !== alertId));
+      toast.success("Alert dismissed securely.");
+    } catch (error) {
+      toast.error("Failed to dismiss alert.");
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       {/* HEADER */}
@@ -69,6 +82,8 @@ export const AlertsPage: React.FC = () => {
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
         <input 
           type="text" 
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
           placeholder="Filter alerts by patient or condition..." 
           className="w-full pl-12 pr-4 py-4 bg-white border border-slate-100 rounded-[2rem] shadow-sm text-sm focus:ring-2 focus:ring-orange-500 outline-none transition-all"
         />
@@ -76,7 +91,15 @@ export const AlertsPage: React.FC = () => {
 
       {/* ALERT LIST */}
       <div className="space-y-4">
-        {alerts.map((alert, i) => (
+        {alerts.filter(alert => {
+          if (!searchQuery) return true;
+          const query = searchQuery.toLowerCase();
+          return (
+            (alert.patient_name || "").toLowerCase().includes(query) ||
+            (alert.message || "").toLowerCase().includes(query) ||
+            (alert.risk_status || "").toLowerCase().includes(query)
+          );
+        }).map((alert, i) => (
           <motion.div
             key={i}
             initial={{ opacity: 0, x: -20 }}
@@ -126,7 +149,10 @@ export const AlertsPage: React.FC = () => {
                 >
                   View Patient Analysis <ArrowRight className="w-3 h-3" />
                 </Link>
-                <button className="px-6 py-3 bg-white text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl border border-slate-100 hover:bg-slate-50 transition-all">
+                <button 
+                  onClick={() => handleDismiss(alert.id)}
+                  className="px-6 py-3 bg-white text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl border border-slate-100 hover:bg-slate-50 transition-all"
+                >
                   Dismiss Alert
                 </button>
               </div>

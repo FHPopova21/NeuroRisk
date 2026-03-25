@@ -48,12 +48,12 @@ export const RegisterPage: React.FC = () => {
         className="max-w-md w-full bg-white rounded-2xl shadow-xl shadow-emerald-900/5 p-8 border border-emerald-100"
       >
         <div className="flex flex-col items-center mb-8">
-          <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mb-4">
+          <Link to="/" className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mb-4 hover:bg-emerald-200 transition-colors shadow-sm cursor-pointer hover:-translate-y-0.5">
             <Activity className="w-8 h-8 text-emerald-600" />
-          </div>
+          </Link>
           <h1 className="text-2xl font-bold text-slate-900">Create Account</h1>
           <p className="text-slate-500 text-center mt-2">
-            Join the NeuroRisk Edu clinical network
+            Join the NeuroRisk clinical network
           </p>
         </div>
 

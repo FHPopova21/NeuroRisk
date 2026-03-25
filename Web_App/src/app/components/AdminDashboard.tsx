@@ -82,7 +82,7 @@ export const AdminDashboard: React.FC = () => {
             </select>
           </div>
           
-          <div className="h-64 flex items-end justify-between gap-4">
+          <div className="h-64 flex items-end justify-between gap-4 overflow-x-auto hide-scrollbar">
             {stats.analyses_over_time.map((day: any, i: number) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-2">
                 <motion.div 
