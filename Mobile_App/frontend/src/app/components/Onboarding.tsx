@@ -171,10 +171,10 @@ export function Onboarding() {
         className="text-center mb-16 z-10 px-4"
       >
         <h1 className="text-4xl font-bold text-white mb-3 leading-tight drop-shadow-lg">
-          Understand your brain activity
+          Разберете вашата мозъчна активност
         </h1>
         <p className="text-xl text-white/95 drop-shadow-md">
-          Real-time monitoring. Smarter insights.
+          Мониторинг в реално време. По-умни прозрения.
         </p>
       </motion.div>
 
@@ -188,7 +188,7 @@ export function Onboarding() {
         onClick={() => navigate("/")}
         className="relative z-10 bg-white text-green-600 px-16 py-5 rounded-full font-bold text-lg shadow-2xl hover:shadow-3xl transition-all"
       >
-        Get Started
+        Започнете
       </motion.button>
 
       {/* Bottom gradient overlay for depth */}

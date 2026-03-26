@@ -1,0 +1,21 @@
+{
+  "name": "NeuroRisk Patient",
+  "short_name": "NeuroRisk",
+  "start_url": "/onboarding",
+  "display": "standalone",
+  "background_color": "#030213",
+  "theme_color": "#030213",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2983/2983973.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2983/2983973.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

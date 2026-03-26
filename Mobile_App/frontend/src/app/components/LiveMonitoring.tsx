@@ -104,7 +104,7 @@ export function LiveMonitoring() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#1e293b] flex flex-col max-w-md mx-auto overflow-auto pb-6">
+    <div className="min-h-screen bg-[#030213] flex flex-col max-w-md mx-auto overflow-auto pb-6">
       {/* Header */}
       <div className="relative flex items-start justify-between p-6 pb-8">
         <div>
@@ -125,7 +125,7 @@ export function LiveMonitoring() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mx-6 mb-6 bg-[#2d3748] rounded-3xl p-6"
+        className="mx-6 mb-6 bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6"
       >
         <div className="flex items-center gap-2 mb-6">
           <div className={`w-3 h-3 ${statusConfig.dotColor} rounded-full`} />
@@ -155,7 +155,7 @@ export function LiveMonitoring() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="mx-6 mb-6 bg-[#2d3748] rounded-3xl p-6"
+        className="mx-6 mb-6 bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6"
       >
         <h3 className="text-white font-bold text-lg mb-6">EEG вълнова форма</h3>
 
@@ -198,7 +198,7 @@ export function LiveMonitoring() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="mx-6 mb-6 bg-[#2d3748] rounded-3xl p-6"
+        className="mx-6 mb-6 bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6"
       >
         <h3 className="text-white font-bold text-lg mb-6">Мозъчни честоти</h3>
 

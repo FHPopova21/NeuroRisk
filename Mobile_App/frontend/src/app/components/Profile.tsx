@@ -15,7 +15,7 @@ import { motion } from "motion/react";
 
 export function Profile() {
   return (
-    <div className="min-h-full bg-gradient-to-b from-green-50 to-white pb-6">
+    <div className="min-h-full bg-[#f8f9fa] pb-24">
       {/* Header */}
       <div className="px-6 pt-8 pb-6 mb-6">
         <h1 className="text-3xl font-bold text-gray-800 mb-1">Профил</h1>
@@ -26,23 +26,24 @@ export function Profile() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mx-6 mb-6 bg-gradient-to-br from-green-400 to-green-500 rounded-3xl p-6 shadow-lg"
+        className="mx-6 mb-8 bg-[#030213] rounded-[2rem] p-8 shadow-2xl relative overflow-hidden"
       >
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl"></div>
         <div className="flex items-center gap-4">
           <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border-4 border-white/30">
             <User className="w-10 h-10 text-white" />
           </div>
           <div className="flex-1">
-            <h2 className="text-2xl font-bold text-white mb-1">Сара Иванова</h2>
-            <p className="text-green-50 text-sm">ID: #EA1016</p>
+            <h2 className="text-2xl font-bold text-white mb-1 tracking-tight">Сара Иванова</h2>
+            <p className="text-gray-400 text-sm font-medium">ID: #EA1016</p>
           </div>
         </div>
       </motion.div>
 
       {/* Health Status Section */}
       <div className="px-6 mb-6">
-        <h3 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
-          <Shield className="w-5 h-5 text-green-600" />
+        <h3 className="font-bold text-[#030213] mb-4 flex items-center gap-2">
+          <Shield className="w-5 h-5 text-[#030213]" />
           Статус на мониторинг
         </h3>
 

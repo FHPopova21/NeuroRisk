@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from api import schemas, database
+from api import schemas, database, models
 from api.services import monitoring
 from api.utils.auth import token_required, role_required
 from pydantic import ValidationError
@@ -217,5 +217,55 @@ def analyze_lab_file(current_user, lab_id):
     except Exception as e:
         db.rollback()
         return jsonify({"detail": str(e)}), 400
+    finally:
+        db.close()
+
+@monitoring_bp.route('/heartbeat', methods=['POST'])
+@token_required
+def patient_heartbeat(current_user):
+    """
+    Получава данни за активността на пациента в реално време (Mobile App).
+    """
+    if current_user.get('role') != 'patient':
+        return jsonify({"detail": "Само пациенти могат да изпращат heartbeat"}), 403
+        
+    db = next(database.get_db())
+    try:
+        from uuid import UUID
+        patient = db.query(models.Patient).filter(models.Patient.id == UUID(current_user['id'])).first()
+        if patient:
+            patient.status = "ACTIVE"
+            db.commit()
+        return jsonify({"status": "received"}), 200
+    finally:
+        db.close()
+
+@monitoring_bp.route('/signal', methods=['POST'])
+@token_required
+def signal_doctor(current_user):
+    """
+    Позволява на пациента ръчно да сигнализира на своя лекар (Mobile App).
+    Генерира критична аларма.
+    """
+    if current_user.get('role') != 'patient':
+        return jsonify({"detail": "Само пациенти могат да сигнализират"}), 403
+
+    data = request.get_json()
+    message = data.get('message', 'Пациент изисква внимание!')
+    
+    db = next(database.get_db())
+    try:
+        # Генериране на аларма
+        from uuid import UUID
+        new_alert = models.Alert(
+            patient_id=UUID(current_user['id']),
+            message=f"РЪЧЕН СИГНАЛ: {message}",
+            severity="CRITICAL",
+            source="ПАЦИЕНТ",
+            type="manual_signal"
+        )
+        db.add(new_alert)
+        db.commit()
+        return jsonify({"status": "notified"}), 200
     finally:
         db.close()

@@ -1,0 +1,89 @@
+const API_BASE_URL = "http://127.0.0.1:5000/api";
+
+const getHeaders = () => {
+  const token = localStorage.getItem("token");
+  return {
+    "Content-Type": "application/json",
+    ...(token ? { "Authorization": `Bearer ${token}` } : {})
+  };
+};
+
+export interface EEGRecord {
+  id: string;
+  patient_id: string;
+  timestamp: string;
+  risk_score: number;
+  risk_status: string;
+  interpretation?: string;
+  amplitude?: number | null;
+  frequency?: number | null;
+  ai_metadata?: any;
+}
+
+export interface Patient {
+  id: string;
+  patient_id: string;
+  name: string;
+  email: string;
+  status: string;
+  created_at: string;
+}
+
+export const apiService = {
+  // Auth
+  async login(email: string, password: string): Promise<{ token: string, user: any }> {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Влизането неуспешно");
+    }
+    return response.json();
+  },
+
+  async getMe(): Promise<any> {
+    const response = await fetch(`${API_BASE_URL}/auth/me`, {
+      headers: getHeaders()
+    });
+    if (!response.ok) throw new Error("Неуспешно извличане на потребител");
+    return response.json();
+  },
+
+  // Patient Data
+  async getMyProfile(): Promise<Patient> {
+    const response = await fetch(`${API_BASE_URL}/auth/me`, { headers: getHeaders() });
+    if (!response.ok) throw new Error("Неуспешно зареждане на профил");
+    const user = await response.json();
+    // Assuming backend returns patient data if user is a patient
+    return user;
+  },
+
+  async getMyHistory(): Promise<EEGRecord[]> {
+    const response = await fetch(`${API_BASE_URL}/monitoring/history`, { headers: getHeaders() });
+    if (!response.ok) throw new Error("Неуспешно зареждане на историята");
+    return response.json();
+  },
+
+  // Signaling & Monitoring
+  async signalDoctor(message: string): Promise<any> {
+    const response = await fetch(`${API_BASE_URL}/monitoring/signal`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ message })
+    });
+    if (!response.ok) throw new Error("Неуспешно изпращане на сигнал");
+    return response.json();
+  },
+
+  async sendHeartbeat(metrics: any): Promise<any> {
+    const response = await fetch(`${API_BASE_URL}/monitoring/heartbeat`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(metrics)
+    });
+    return response.ok;
+  }
+};

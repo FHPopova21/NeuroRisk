@@ -22,3 +22,6 @@ venv/
 Web_App/node_modules/
 Web_App/dist/
 Web_App/build/
+Mobile_App/frontend/node_modules/
+Mobile_App/frontend/dist/
+Mobile_App/frontend/build/
