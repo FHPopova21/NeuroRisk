@@ -402,7 +402,9 @@ export const DashboardHome: React.FC = () => {
                           </div>
                           <div className="flex justify-between items-center text-[10px] font-bold text-slate-400">
                             <span>Последен риск: <span className="text-slate-700">{analysis.risk_score}%</span></span>
-                            <span className={clsx("px-1.5 py-0.5 rounded", analysis.risk_status === "HIGH" ? "bg-red-100 text-red-600" : "bg-emerald-100 text-emerald-600")}>{analysis.risk_status}</span>
+                            <span className={clsx("px-1.5 py-0.5 rounded", analysis.risk_status === "HIGH" ? "bg-red-100 text-red-600" : "bg-emerald-100 text-emerald-600")}>
+                                {analysis.risk_status === "HIGH" ? "ВИСОК" : "НИСЪК"}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -411,10 +413,10 @@ export const DashboardHome: React.FC = () => {
                       <span className={clsx(
                         "text-[10px] font-black px-2.5 py-1 rounded-lg uppercase tracking-wider border",
                         analysis.risk_status === "HIGH" ? "bg-orange-50 text-orange-600 border-orange-100" :
-                          analysis.risk_status === "MEDIUM" ? "bg-amber-50 text-amber-600 border-amber-100" :
+                          analysis.risk_status === "MEDIUM" ? "bg-amber-50 text-amber-700 border-amber-100" :
                             "bg-emerald-50 text-emerald-600 border-emerald-100"
                       )}>
-                        {analysis.risk_status}
+                        {analysis.risk_status === "HIGH" ? "ВИСОК" : analysis.risk_status === "MEDIUM" ? "СРЕДЕН" : "НИСЪК"}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm font-medium text-slate-500">{new Date(analysis.timestamp).toLocaleTimeString()}</td>

@@ -29,43 +29,49 @@ import { LineChart, Line, AreaChart, Area, ResponsiveContainer, XAxis, YAxis, To
 import { clsx } from "clsx";
 import { apiService, Patient, EEGRecord, LabAnalysis } from "../services/api";
 
-// Risk Gauge Component (extracted from AnalysisPage)
-const RiskGauge = ({ score }: { score: number }) => {
-  const radius = 50;
-  const stroke = 10;
-  const normalizedScore = Math.min(Math.max(score, 0), 100);
-  const circumference = radius * 2 * Math.PI;
-  const strokeDashoffset = circumference - (normalizedScore / 100) * circumference;
-  
-  let color = "#10b981"; // Green
-  let text = "Нисък риск";
-  if (normalizedScore >= 40) { color = "#eab308"; text = "Среден риск"; }
-  if (normalizedScore > 75) { color = "#f97316"; text = "Висок риск"; }
-
-  return (
-    <div className="flex flex-col items-center justify-center relative">
-      <div className="relative w-32 h-32 flex items-center justify-center">
-        <svg className="w-full h-full transform -rotate-90">
-          <circle cx="50%" cy="50%" r={radius} stroke="#f1f5f9" strokeWidth={stroke} fill="transparent" />
-          <circle
-            cx="50%" cy="50%" r={radius}
-            stroke={color} strokeWidth={stroke} fill="transparent"
-            strokeDasharray={circumference}
-            strokeDashoffset={strokeDashoffset}
-            strokeLinecap="round"
-            className="transition-all duration-1000 ease-out"
-          />
-        </svg>
-        <div className="absolute flex flex-col items-center">
-          <span className="text-2xl font-black text-slate-900">{score}%</span>
+// Error Boundary Component
+class ProfileErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error: any }> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error("Profile Crash Caught:", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-12 bg-red-50 border-2 border-red-100 rounded-[2.5rem] text-center space-y-4">
+          <div className="w-16 h-16 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mx-auto">
+            <Activity className="w-8 h-8" />
+          </div>
+          <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Възникна техническа грешка при визуализацията</h2>
+          <p className="text-sm text-slate-500 max-w-md mx-auto">Моля, опитайте да презаредите страницата или се свържете с поддръжката.</p>
+          <pre className="text-[10px] bg-white p-4 rounded-xl text-left overflow-auto max-h-32 border border-red-100">
+            {this.state.error?.toString()}
+          </pre>
+          <button onClick={() => window.location.reload()} className="px-6 py-3 bg-red-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-red-700 transition-all">
+            Презареди страницата
+          </button>
         </div>
-      </div>
-      <span className="mt-2 text-[10px] font-black uppercase tracking-[0.2em]" style={{ color }}>{text}</span>
-    </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+export const PatientProfilePage: React.FC = () => {
+  return (
+    <ProfileErrorBoundary>
+      <PatientProfileContent />
+    </ProfileErrorBoundary>
   );
 };
 
-export const PatientProfilePage: React.FC = () => {
+const PatientProfileContent: React.FC = () => {
   const { id } = useParams();
   const [activeTab, setActiveTab] = useState<"eeg" | "history" | "notes" | "lab">("eeg");
   const [patient, setPatient] = useState<Patient | null>(null);
@@ -238,23 +244,38 @@ export const PatientProfilePage: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       if (!id) return;
+      
       setLoading(true);
+      
+      // Нулиране на състоянието при смяна на пациент
+      setPatient(null);
+      setEegHistory([]);
+      setMedicalNotes([]);
+      setLabAnalyses([]);
+      setSelectedHistoryRecord(null);
+      setDoctorNote("");
+
       try {
-        const [patientData, historyData, notesData, labData] = await Promise.all([
-          apiService.getPatient(id),
-          apiService.getEEGHistory(id),
-          apiService.getMedicalNotes(id),
-          apiService.getLabAnalyses(id)
-        ]);
+        // 1. Извличане на основни данни за пациента (Критично)
+        const patientData = await apiService.getPatient(id);
         setPatient(patientData);
+
+        // 2. Извличане на останалите колекции паралелно
+        const [historyData, notesData, labData] = await Promise.all([
+          apiService.getEEGHistory(id).catch(() => []),
+          apiService.getMedicalNotes(id).catch(() => []),
+          apiService.getLabAnalyses(id).catch(() => [])
+        ]);
+
         setEegHistory(historyData);
         setMedicalNotes(notesData);
         setLabAnalyses(labData);
+
         if (historyData.length > 0) {
           setDoctorNote(historyData[0].doctor_note || "");
         }
       } catch (err: any) {
-        toast.error("Грешка при зареждане на данните за пациента");
+        toast.error("Грешка при зареждане на профила");
       } finally {
         setLoading(false);
       }
@@ -263,15 +284,36 @@ export const PatientProfilePage: React.FC = () => {
     fetchData();
   }, [id]);
 
-  if (loading || !patient) {
+  if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+        <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] animate-pulse">Зареждане на профил...</p>
+      </div>
+    );
+  }
+
+  if (!patient) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+        <div className="w-16 h-16 bg-red-50 text-red-500 rounded-3xl flex items-center justify-center">
+          <User className="w-8 h-8" />
+        </div>
+        <div className="text-center">
+          <h3 className="text-slate-900 font-black uppercase tracking-wider">Пациентът не е намерен</h3>
+          <p className="text-slate-500 text-sm mt-1">Проверете избраното име или ID.</p>
+        </div>
+        <Link to="/patients" className="mt-4 px-6 py-3 bg-white border border-slate-200 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-all">
+          Обратно към списъка
+        </Link>
       </div>
     );
   }
 
   const activeRecord = selectedHistoryRecord || latestRecord;
+
+  // If we have a patient but no records yet, we still want to show the header and tabs
+  // but we must be careful not to crash when accessing activeRecord properties.
 
   return (
     <div className="space-y-8">
@@ -289,12 +331,12 @@ export const PatientProfilePage: React.FC = () => {
               <User className="w-8 h-8 text-emerald-600" />
             </div>
             <div>
-              <h1 className="text-2xl font-black text-slate-900">{patient.name}</h1>
+              <h1 className="text-2xl font-black text-slate-900">{patient?.name || "Зареждане..."}</h1>
               <div className="flex items-center gap-3 mt-1">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Пациент ID: #NR-{patient.id.slice(0, 6)}</span>
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Пациент ID: #NR-{patient?.id?.slice(0, 6) || id?.slice(0, 6)}</span>
                 <span className="w-1 h-1 rounded-full bg-slate-300" />
                 <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded-full">
-                  {patient.is_active ? "Свързан" : "Прекъснат"}
+                  {patient?.is_active ? "Свързан" : "Прекъснат"}
                 </span>
               </div>
             </div>
@@ -411,17 +453,17 @@ export const PatientProfilePage: React.FC = () => {
                       <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Анализ на ИИ (На живо)</h4>
                       <div className={clsx(
                         "text-2xl font-black",
-                        latestRecord.risk_score > 75 ? "text-red-600" : latestRecord.risk_score > 40 ? "text-amber-600" : "text-emerald-600"
+                        latestRecord?.risk_score > 75 ? "text-red-600" : latestRecord?.risk_score > 40 ? "text-amber-600" : "text-emerald-600"
                       )}>
-                        {latestRecord.risk_score > 75 ? "Установен пристъп" : latestRecord.risk_score > 40 ? "Изисква внимание" : "Здрав"}
-                        <span className="text-sm font-bold opacity-60 ml-2">({latestRecord.risk_score}% Сигурност)</span>
+                        {latestRecord?.risk_score > 75 ? "Установен пристъп" : latestRecord?.risk_score > 40 ? "Изисква внимание" : "Здрав"}
+                        <span className="text-sm font-bold opacity-60 ml-2">({latestRecord?.risk_score || 0}% Сигурност)</span>
                       </div>
                     </div>
                     <div className={clsx(
                       "px-6 py-3 rounded-2xl border text-sm font-black uppercase tracking-wider",
-                      latestRecord.risk_score > 75 ? "bg-red-50 text-red-700 border-red-100" : latestRecord.risk_score > 40 ? "bg-amber-50 text-amber-700 border-amber-100" : "bg-emerald-50 text-emerald-700 border-emerald-100"
+                      latestRecord?.risk_score > 75 ? "bg-red-50 text-red-700 border-red-100" : latestRecord?.risk_score > 40 ? "bg-amber-50 text-amber-700 border-amber-100" : "bg-emerald-50 text-emerald-700 border-emerald-100"
                     )}>
-                      {latestRecord.risk_status} Риск
+                      {latestRecord?.risk_status || "LOW"} Риск
                     </div>
                   </div>
                 )}

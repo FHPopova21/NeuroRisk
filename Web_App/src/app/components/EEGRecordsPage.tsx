@@ -37,7 +37,7 @@ import { computeFFT } from "../utils/dsp";
 
 export const EEGRecordsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [riskFilter, setRiskFilter] = useState("All");
+  const [riskFilter, setRiskFilter] = useState("Всички");
   const [records, setRecords] = useState<EEGRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState<string | null>(null);
@@ -75,10 +75,10 @@ export const EEGRecordsPage: React.FC = () => {
 
   const filteredRecords = records.filter(r => {
     const matchesSearch = (r.patient_name || r.patient_id)?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRisk = riskFilter === "All" ||
-      (riskFilter === "Critical" && r.risk_score > 75) ||
-      (riskFilter === "Elevated" && r.risk_score > 40 && r.risk_score <= 75) ||
-      (riskFilter === "Normal" && r.risk_score <= 40);
+    const matchesRisk = riskFilter === "Всички" ||
+      (riskFilter === "Критични" && r.risk_score > 75) ||
+      (riskFilter === "Повишени" && r.risk_score > 40 && r.risk_score <= 75) ||
+      (riskFilter === "Нормални" && r.risk_score <= 40);
     return matchesSearch && matchesRisk;
   });
 
@@ -114,13 +114,7 @@ export const EEGRecordsPage: React.FC = () => {
       {/* FILTERS & SEARCH */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-white p-4 rounded-[2rem] border border-slate-100 shadow-sm">
         <div className="flex items-center gap-2 p-1 bg-slate-50 rounded-xl">
-          {["All", "Critical", "Elevated", "Normal"].map((f) => {
-            const labelMap: Record<string, string> = {
-              "All": "Всички",
-              "Critical": "Критични",
-              "Elevated": "Повишени",
-              "Normal": "Нормални"
-            };
+          {["Всички", "Критични", "Повишени", "Нормални"].map((f) => {
             return (
               <button
                 key={f}
@@ -130,7 +124,7 @@ export const EEGRecordsPage: React.FC = () => {
                   riskFilter === f ? "bg-white text-emerald-700 shadow-sm" : "text-slate-400 hover:text-slate-600"
                 )}
               >
-                {labelMap[f]}
+                {f}
               </button>
             );
           })}

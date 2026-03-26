@@ -40,7 +40,7 @@ def create_eeg_record(db: Session, record_data: schemas.EEGRecordCreate):
             patient_id=record_data.patient_id,
             message=f"ВНИМАНИЕ: Засечен е висок риск от епилептична активност ({record_data.risk_score}%).",
             severity="CRITICAL",
-            source="AI_ENGINE",
+            source="СИСТЕМА_ИИ",
             alert_type="seizure_risk"
         )
 

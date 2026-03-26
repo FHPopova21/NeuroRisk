@@ -98,7 +98,11 @@ export const router = createBrowserRouter([
       },
       {
         path: "patients/:id",
-        element: <PatientProfilePage />,
+        element: (
+          <ProtectedRoute requiredRole="doctor">
+            <PatientProfilePage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "eeg-records",
