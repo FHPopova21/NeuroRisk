@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router";
+import { createHashRouter } from "react-router";
 import { Home } from "./components/Home";
 import { History } from "./components/History";
 import { Profile } from "./components/Profile";
@@ -7,9 +7,13 @@ import { LiveMonitoring } from "./components/LiveMonitoring";
 import { AnalysisDetail } from "./components/AnalysisDetail";
 import { Layout } from "./components/Layout";
 
-export const router = createBrowserRouter([
+export const router = createHashRouter([
   {
     path: "/",
+    element: <OnboardingScreen onStart={() => window.location.hash = "/app"} />,
+  },
+  {
+    path: "/app",
     Component: Layout,
     children: [
       { index: true, Component: Home },
@@ -18,9 +22,5 @@ export const router = createBrowserRouter([
       { path: "profile", Component: Profile },
       { path: "monitoring", Component: LiveMonitoring },
     ],
-  },
-  {
-    path: "/onboarding",
-    element: <OnboardingScreen onStart={() => window.location.href = "/"} />,
   },
 ]);

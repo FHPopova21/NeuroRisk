@@ -149,7 +149,7 @@ export function Home() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.5 }}
         whileTap={{ scale: 0.95 }}
-        onClick={() => navigate("/monitoring")}
+        onClick={() => navigate("/app/monitoring")}
         className="w-full bg-[#030213] text-white py-5 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl transition-all flex items-center justify-center gap-3"
       >
         <Activity className="w-6 h-6" />

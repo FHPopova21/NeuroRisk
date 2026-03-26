@@ -22,4 +22,4 @@ pytest
 requests
 python-dotenv
 PyJWT
-
+eel

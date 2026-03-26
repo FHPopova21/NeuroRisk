@@ -6,9 +6,9 @@ export function Layout() {
   const navigate = useNavigate();
 
   const navItems = [
-    { path: "/", icon: Home, label: "Начало" },
-    { path: "/history", icon: Clock, label: "История" },
-    { path: "/profile", icon: User, label: "Профил" },
+    { path: "/app", icon: Home, label: "Начало" },
+    { path: "/app/history", icon: Clock, label: "История" },
+    { path: "/app/profile", icon: User, label: "Профил" },
   ];
 
   return (
