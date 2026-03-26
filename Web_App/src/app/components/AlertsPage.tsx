@@ -47,9 +47,9 @@ export const AlertsPage: React.FC = () => {
     try {
       await apiService.dismissAlert(alertId);
       setAlerts(prev => prev.filter(a => a.id !== alertId));
-      toast.success("Alert dismissed securely.");
+      toast.success("Известието е отхвърлено сигурно.");
     } catch (error) {
-      toast.error("Failed to dismiss alert.");
+      toast.error("Грешка при отхвърляне на известието.");
     }
   };
 
@@ -63,17 +63,17 @@ export const AlertsPage: React.FC = () => {
           </div>
           <div>
             <h1 className="text-2xl font-black text-slate-900">
-              {isAdmin ? "Global System Alerts" : "Critical Alerts"}
+              {isAdmin ? "Глобални системни известия" : "Критични известия"}
             </h1>
             <p className="text-slate-500 font-medium tracking-tight">
               {isAdmin 
-                ? "Monitoring all clinical warnings across the entire system network." 
-                : "Real-time clinical warnings detected by the AI analysis system."}
+                ? "Наблюдение на всички клинични предупреждения в цялата системна мрежа." 
+                : "Клинични предупреждения в реално време, засечени от системата за анализ на ИИ."}
             </p>
           </div>
         </div>
         <button className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] hover:text-slate-600 transition-colors">
-          Clear All Notifications
+          Изчисти всички известия
         </button>
       </div>
 
@@ -84,7 +84,7 @@ export const AlertsPage: React.FC = () => {
           type="text" 
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
-          placeholder="Filter alerts by patient or condition..." 
+          placeholder="Филтрирай известия по пациент или състояние..." 
           className="w-full pl-12 pr-4 py-4 bg-white border border-slate-100 rounded-[2rem] shadow-sm text-sm focus:ring-2 focus:ring-orange-500 outline-none transition-all"
         />
       </div>
@@ -114,14 +114,14 @@ export const AlertsPage: React.FC = () => {
                  <User className="w-8 h-8 text-slate-300" />
               </div>
               <div className="px-3 py-1 bg-orange-50 rounded-xl border border-orange-100">
-                <span className="text-xs font-black text-orange-600 uppercase tracking-widest">{alert.risk_score}% Risk</span>
+                <span className="text-xs font-black text-orange-600 uppercase tracking-widest">{alert.risk_score}% Риск</span>
               </div>
             </div>
 
             <div className="flex-1 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-xl font-black text-slate-900">Patient: {alert.patient_name || alert.patient_id}</h3>
+                  <h3 className="text-xl font-black text-slate-900">Пациент: {alert.patient_name || alert.patient_id}</h3>
                   <div className="flex items-center gap-2 mt-1">
                     <Clock className="w-3.5 h-3.5 text-slate-400" />
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
@@ -147,28 +147,28 @@ export const AlertsPage: React.FC = () => {
                   to={`/patients/${alert.patient_id}`}
                   className="px-8 py-3 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl hover:bg-slate-800 transition-all flex items-center gap-2"
                 >
-                  View Patient Analysis <ArrowRight className="w-3 h-3" />
+                  Преглед на анализа на пациента <ArrowRight className="w-3 h-3" />
                 </Link>
                 <button 
                   onClick={() => handleDismiss(alert.id)}
                   className="px-6 py-3 bg-white text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl border border-slate-100 hover:bg-slate-50 transition-all"
                 >
-                  Dismiss Alert
+                  Отхвърли известието
                 </button>
               </div>
             </div>
 
             <div className="hidden lg:flex flex-col items-center justify-center p-6 bg-orange-50/30 rounded-[2rem] border border-orange-100/50">
                <AlertCircle className="w-8 h-8 text-orange-500 mb-2 opacity-40" />
-               <span className="text-[10px] font-black text-orange-600 uppercase tracking-[0.15em] text-center">Urgent<br/>Review</span>
+               <span className="text-[10px] font-black text-orange-600 uppercase tracking-[0.15em] text-center">Спешен<br/>Преглед</span>
             </div>
           </motion.div>
         ))}
       </div>
 
       <div className="bg-slate-50 rounded-[2rem] p-8 border border-slate-200 text-center">
-        <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-4">No more alerts for today</p>
-        <button className="text-emerald-600 text-[10px] font-black uppercase tracking-widest hover:underline">View Alert History Archive</button>
+        <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-4">Няма повече известия за днес</p>
+        <button className="text-emerald-600 text-[10px] font-black uppercase tracking-widest hover:underline">Преглед на архива с история на известията</button>
       </div>
     </div>
   );

@@ -28,13 +28,13 @@ export const SettingsPage: React.FC = () => {
 
   const handleSave = () => {
     saveSettings();
-    toast.success("Settings saved successfully");
+    toast.success("Настройките са запазени успешно");
   };
 
   const tabs = [
-    { id: "notifications", label: "Notifications", icon: Bell },
-    { id: "security", label: "Security", icon: Lock },
-    { id: "display", label: "Display", icon: Moon },
+    { id: "notifications", label: "Известия", icon: Bell },
+    { id: "security", label: "Сигурност", icon: Lock },
+    { id: "display", label: "Изглед", icon: Moon },
   ];
 
   return (
@@ -48,8 +48,8 @@ export const SettingsPage: React.FC = () => {
             <ArrowLeft className="w-6 h-6" />
           </button>
           <div>
-            <h1 className="text-2xl font-black text-slate-900">Platform Settings</h1>
-            <p className="text-slate-500 font-medium tracking-tight">Configure your clinical environment and preferences.</p>
+            <h1 className="text-2xl font-black text-slate-900">Системни настройки</h1>
+            <p className="text-slate-500 font-medium tracking-tight">Конфигурирайте своята клинична среда и предпочитания.</p>
           </div>
         </div>
         <button 
@@ -57,7 +57,7 @@ export const SettingsPage: React.FC = () => {
           className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold text-sm rounded-2xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200"
         >
           <Save className="w-5 h-5" />
-          Save Changes
+          Запази промените
         </button>
       </header>
 
@@ -93,25 +93,25 @@ export const SettingsPage: React.FC = () => {
             {activeTab === "notifications" && (
               <div className="space-y-8">
                 <section className="space-y-6">
-                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Alert Subscriptions</h3>
+                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Абонаменти за известия</h3>
                   <div className="space-y-4">
                     <ToggleItem 
-                      label="High Risk Detection" 
-                      description="Get notified immediately when a high risk event is detected" 
+                      label="Засичане на висок риск" 
+                      description="Получавайте незабавно известие при засичане на събитие с висок риск" 
                       checked={settings.highRiskNotifications}
                       onChange={(val) => updateSetting("highRiskNotifications", val)}
                       icon={Bell} 
                     />
                     <ToggleItem 
-                      label="Patient Updates" 
-                      description="Notifications for new patient registrations or profile edits" 
+                      label="Обновления за пациенти" 
+                      description="Известия за нови регистрации на пациенти или редакции на профили" 
                       checked={settings.patientUpdateNotifications}
                       onChange={(val) => updateSetting("patientUpdateNotifications", val)}
                       icon={Users} 
                     />
                     <ToggleItem 
-                      label="System Maintenance" 
-                      description="Alerts about scheduled downtime or updates" 
+                      label="Поддръжка на системата" 
+                      description="Предупреждения за планирани спирания или обновления" 
                       checked={settings.systemMaintenanceNotifications}
                       onChange={(val) => updateSetting("systemMaintenanceNotifications", val)}
                       icon={SettingsIcon} 
@@ -120,21 +120,21 @@ export const SettingsPage: React.FC = () => {
                 </section>
 
                 <section className="space-y-6">
-                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Delivery Methods</h3>
+                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Методи за доставка</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <button 
                       onClick={() => updateSetting("deliveryMethod", "browser")}
                       className={`flex items-center gap-3 p-4 border rounded-2xl transition-all ${settings.deliveryMethod === "browser" ? "bg-emerald-50 border-emerald-100 shadow-sm" : "bg-slate-50 border-slate-100 hover:bg-slate-100"}`}
                     >
                       <div className={`p-2 rounded-lg ${settings.deliveryMethod === "browser" ? "bg-emerald-600 text-white" : "bg-slate-400 text-white"}`}><Globe className="w-5 h-5"/></div>
-                      <span className={`font-bold ${settings.deliveryMethod === "browser" ? "text-emerald-900" : "text-slate-700"}`}>In-App Browser</span>
+                      <span className={`font-bold ${settings.deliveryMethod === "browser" ? "text-emerald-900" : "text-slate-700"}`}>В приложението</span>
                     </button>
                     <button 
                       onClick={() => updateSetting("deliveryMethod", "email")}
                       className={`flex items-center gap-3 p-4 border rounded-2xl transition-all ${settings.deliveryMethod === "email" ? "bg-emerald-50 border-emerald-100 shadow-sm" : "bg-slate-50 border-slate-100 hover:bg-slate-100"}`}
                     >
                       <div className={`p-2 rounded-lg ${settings.deliveryMethod === "email" ? "bg-emerald-600 text-white" : "bg-slate-400 text-white"}`}><Mail className="w-5 h-5"/></div>
-                      <span className={`font-bold ${settings.deliveryMethod === "email" ? "text-emerald-900" : "text-slate-700"}`}>Email Digest</span>
+                      <span className={`font-bold ${settings.deliveryMethod === "email" ? "text-emerald-900" : "text-slate-700"}`}>Имейл обобщение</span>
                     </button>
                   </div>
                 </section>
@@ -144,25 +144,25 @@ export const SettingsPage: React.FC = () => {
             {activeTab === "security" && (
               <div className="space-y-8">
                 <section className="space-y-6">
-                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Privacy Settings</h3>
+                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Настройки за поверителност</h3>
                   <div className="space-y-4">
                     <ToggleItem 
-                      label="Two-Factor Authentication" 
-                      description="Add extra security to your doctor account" 
+                      label="Двуфакторна автентикация" 
+                      description="Добавете допълнителна сигурност към вашия лекарски акаунт" 
                       checked={settings.twoFactorAuth}
                       onChange={(val) => updateSetting("twoFactorAuth", val)}
                       icon={Lock} 
                     />
                     <ToggleItem 
-                      label="Anonymize EEG Export" 
-                      description="Remove patient metadata when exporting clinical data" 
+                      label="Анонимизирай експорта на ЕЕГ" 
+                      description="Премахни метаданните на пациента при експортиране на клинични данни" 
                       checked={settings.anonymizeEEG}
                       onChange={(val) => updateSetting("anonymizeEEG", val)}
                       icon={Eye} 
                     />
                     <ToggleItem 
-                      label="Public Profile Visibility" 
-                      description="Allow other clinicians to find your professional profile" 
+                      label="Публична видимост на профила" 
+                      description="Позволи на други клиницисти да намират вашия професионален профил" 
                       checked={settings.publicProfile}
                       onChange={(val) => updateSetting("publicProfile", val)}
                       icon={Globe} 
@@ -175,36 +175,39 @@ export const SettingsPage: React.FC = () => {
             {activeTab === "display" && (
               <div className="space-y-8">
                 <section className="space-y-6">
-                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Theme Preferences</h3>
+                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Предпочитания за тема</h3>
                   <div className="grid grid-cols-3 gap-4">
-                    <ThemeCard label="Light" active={settings.theme === "light"} onClick={() => updateSetting("theme", "light")} icon={Sun} color="bg-white" />
-                    <ThemeCard label="Dark" active={settings.theme === "dark"} onClick={() => updateSetting("theme", "dark")} icon={Moon} color="bg-slate-900" />
-                    <ThemeCard label="System" active={settings.theme === "system"} onClick={() => updateSetting("theme", "system")} icon={Smartphone} color="bg-slate-100" />
+                    <ThemeCard label="Светла" active={settings.theme === "light"} onClick={() => updateSetting("theme", "light")} icon={Sun} color="bg-white" />
+                    <ThemeCard label="Тъмна" active={settings.theme === "dark"} onClick={() => updateSetting("theme", "dark")} icon={Moon} color="bg-slate-900" />
+                    <ThemeCard label="Системна" active={settings.theme === "system"} onClick={() => updateSetting("theme", "system")} icon={Smartphone} color="bg-slate-100" />
                   </div>
                 </section>
 
                 <section className="space-y-6">
-                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Accessibility</h3>
+                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Достъпност</h3>
                   <div className="space-y-4">
                     <ToggleItem 
-                      label="Screen Reader Support" 
-                      description="Optimize UI elements for screen reading software" 
+                      label="Поддръжка на екранен четец" 
+                      description="Оптимизация на UI елементи за софтуер за екранно четене" 
                       checked={settings.screenReader}
                       onChange={(val) => updateSetting("screenReader", val)}
                       icon={Volume2} 
                     />
                     <div className="space-y-2">
-                       <label className="text-xs font-bold text-slate-700">Text Density</label>
+                       <label className="text-xs font-bold text-slate-700">Плътност на текста</label>
                        <div className="flex gap-2">
-                         {['Compact', 'Standard', 'Relaxed'].map((t) => (
-                           <button 
-                             key={t} 
-                             onClick={() => updateSetting("textDensity", t as any)}
-                             className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${settings.textDensity === t ? 'bg-emerald-50 border-emerald-200 text-emerald-700 shadow-sm' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}
-                           >
-                             {t}
-                           </button>
-                         ))}
+                         {['Compact', 'Standard', 'Relaxed'].map((t) => {
+                           const labelMap: Record<string, string> = { Compact: 'Компактна', Standard: 'Стандартна', Relaxed: 'Широка' };
+                           return (
+                             <button 
+                               key={t} 
+                               onClick={() => updateSetting("textDensity", t as any)}
+                               className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${settings.textDensity === t ? 'bg-emerald-50 border-emerald-200 text-emerald-700 shadow-sm' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}
+                             >
+                               {labelMap[t]}
+                             </button>
+                           );
+                         })}
                        </div>
                     </div>
                   </div>

@@ -33,19 +33,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole, isOpen, onLogout, on
   const { user } = useAuth();
 
   const doctorMenuItems = [
-    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
-    { id: "patients", label: "Patients", icon: Users, path: "/patients" },
-    { id: "eeg-records", label: "EEG Records", icon: Activity, path: "/eeg-records" },
-    { id: "alerts", label: "Alerts", icon: Bell, path: "/alerts" },
-    { id: "notes", label: "Medical Notes", icon: FileEdit, path: "/notes" },
+    { id: "dashboard", label: "Главен панел", icon: LayoutDashboard, path: "/dashboard" },
+    { id: "patients", label: "Пациенти", icon: Users, path: "/patients" },
+    { id: "eeg-records", label: "ЕЕГ Записи", icon: Activity, path: "/eeg-records" },
+    { id: "alerts", label: "Известия", icon: Bell, path: "/alerts" },
+    { id: "notes", label: "Медицински бележки", icon: FileEdit, path: "/notes" },
   ];
 
   const adminMenuItems = [
-    { id: "admin-dashboard", label: "System Overview", icon: LayoutDashboard, path: "/admin/dashboard" },
-    { id: "manage-doctors", label: "Doctors Management", icon: ShieldCheck, path: "/admin/doctors" },
-    { id: "monitor-patients", label: "Patients Monitor", icon: Users, path: "/admin/patients" },
-    { id: "monitor-alerts", label: "Global Alerts", icon: Bell, path: "/admin/alerts" },
-    { id: "activity-logs", label: "Activity Logs", icon: History, path: "/admin/logs" },
+    { id: "admin-dashboard", label: "Системен преглед", icon: LayoutDashboard, path: "/admin/dashboard" },
+    { id: "manage-doctors", label: "Управление на лекари", icon: ShieldCheck, path: "/admin/doctors" },
+    { id: "monitor-patients", label: "Мониторинг пациенти", icon: Users, path: "/admin/patients" },
+    { id: "monitor-alerts", label: "Глобални известия", icon: Bell, path: "/admin/alerts" },
+    { id: "activity-logs", label: "Хронология", icon: History, path: "/admin/logs" },
   ];
 
   const menuItems = userRole === 'admin' ? adminMenuItems : doctorMenuItems;
@@ -63,7 +63,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole, isOpen, onLogout, on
             </div>
             <div className="flex flex-col">
               <span className="font-bold text-lg leading-tight tracking-tight text-white">NeuroRisk</span>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-400/80">EEG Risk Monitoring</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-400/80">ЕЕГ Мониторинг на риска</span>
             </div>
           </div>
           <button onClick={onClose} className="md:hidden text-slate-400 hover:text-white p-2 -mr-2">
@@ -73,7 +73,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole, isOpen, onLogout, on
 
       <div className="flex-1 py-6 px-4 space-y-1 overflow-y-auto">
         <div className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.15em] mb-4 px-3">
-          Clinical Menu
+          Клинично меню
         </div>
         {menuItems.map((item) => {
           const isActive = currentPath === item.path || (item.path !== "/dashboard" && currentPath.startsWith(item.path));
@@ -97,7 +97,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole, isOpen, onLogout, on
         {userRole === 'doctor' && (
           <>
             <div className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.15em] mt-8 mb-4 px-3">
-              Management
+              Управление
             </div>
             <Link
               to="/patients/add"
@@ -109,7 +109,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole, isOpen, onLogout, on
               )}
             >
               <PlusCircle className={clsx("w-5 h-5", currentPath === "/patients/add" ? "text-emerald-400" : "text-slate-500 group-hover:text-slate-300")} />
-              Add Patient
+              Добавяне на пациент
             </Link>
           </>
         )}
@@ -117,7 +117,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole, isOpen, onLogout, on
         {userRole === 'admin' && (
           <>
             <div className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.15em] mt-8 mb-4 px-3">
-              Settings
+              Настройки
             </div>
             <Link
               to="/admin/settings"
@@ -129,7 +129,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole, isOpen, onLogout, on
               )}
             >
               <Settings className={clsx("w-5 h-5", currentPath === "/admin/settings" ? "text-blue-400" : "text-slate-500 group-hover:text-slate-300")} />
-              System Settings
+              Системни настройки
             </Link>
           </>
         )}
@@ -145,10 +145,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole, isOpen, onLogout, on
         >
           <div className="flex-1 min-w-0">
             <p className="text-sm font-bold text-slate-200 truncate">
-              {user?.name || user?.username || "Admin User"}
+              {user?.name || user?.username || "Администратор"}
             </p>
             <p className="text-[10px] font-bold text-emerald-400/80 uppercase tracking-wider">
-              {userRole === 'admin' ? "System Administrator" : (user?.specialization || "Medical Staff")}
+              {userRole === 'admin' ? "Системен администратор" : (user?.specialization || "Медицински персонал")}
             </p>
           </div>
         </Link>
@@ -157,7 +157,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole, isOpen, onLogout, on
           className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-slate-800 bg-slate-800/50 text-slate-300 text-sm font-bold hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20 transition-all shadow-sm"
         >
           <LogOut className="w-4 h-4" />
-          Sign Out
+          Изход
         </button>
       </div>
       </aside>

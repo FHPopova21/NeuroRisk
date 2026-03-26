@@ -65,7 +65,7 @@ export const EEGRecordsPage: React.FC = () => {
     try {
       const updated = await apiService.analyzeRecord(recordId);
       setRecords(prev => prev.map(r => r.id === updated.id ? updated : r));
-      toast.success("Analysis complete");
+      toast.success("Анализът е завършен");
     } catch (err: any) {
       toast.error(err.message);
     } finally {
@@ -91,10 +91,10 @@ export const EEGRecordsPage: React.FC = () => {
   };
 
   const getStatusBadge = (record: EEGRecord) => {
-    if (!record.risk_status) return { text: "Not Analyzed", color: "bg-slate-100 text-slate-500 border-slate-200", icon: Clock };
-    if (record.risk_score > 75) return { text: "Seizure Detected", color: "bg-red-50 text-red-600 border-red-100", icon: Activity };
-    if (record.risk_score > 40) return { text: "Requires Attention", color: "bg-amber-50 text-amber-700 border-amber-100", icon: Zap };
-    return { text: "Clean Recording", color: "bg-emerald-50 text-emerald-600 border-emerald-100", icon: Shield };
+    if (!record.risk_status) return { text: "Не е анализиран", color: "bg-slate-100 text-slate-500 border-slate-200", icon: Clock };
+    if (record.risk_score > 75) return { text: "Установен пристъп", color: "bg-red-50 text-red-600 border-red-100", icon: Activity };
+    if (record.risk_score > 40) return { text: "Изисква внимание", color: "bg-amber-50 text-amber-700 border-amber-100", icon: Zap };
+    return { text: "Чист запис", color: "bg-emerald-50 text-emerald-600 border-emerald-100", icon: Shield };
   };
 
   return (
@@ -102,36 +102,44 @@ export const EEGRecordsPage: React.FC = () => {
       {/* HEADER */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-slate-900">EEG Records</h1>
-          <p className="text-slate-500 font-medium tracking-tight">Access historical EEG data and AI analysis results.</p>
+          <h1 className="text-2xl font-black text-slate-900">ЕЕГ Записи</h1>
+          <p className="text-slate-500 font-medium tracking-tight">Достъп до исторически ЕЕГ данни и резултати от ИИ анализ.</p>
         </div>
         <button className="flex items-center gap-2 px-6 py-3 bg-white text-slate-900 font-bold text-sm rounded-2xl border border-slate-200 hover:bg-slate-50 transition-all shadow-sm">
           <Download className="w-5 h-5" />
-          Batch Export
+          Групов експорт
         </button>
       </div>
 
       {/* FILTERS & SEARCH */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-white p-4 rounded-[2rem] border border-slate-100 shadow-sm">
         <div className="flex items-center gap-2 p-1 bg-slate-50 rounded-xl">
-          {["All", "Critical", "Elevated", "Normal"].map((f) => (
-            <button
-              key={f}
-              onClick={() => setRiskFilter(f)}
-              className={clsx(
-                "px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all",
-                riskFilter === f ? "bg-white text-emerald-700 shadow-sm" : "text-slate-400 hover:text-slate-600"
-              )}
-            >
-              {f}
-            </button>
-          ))}
+          {["All", "Critical", "Elevated", "Normal"].map((f) => {
+            const labelMap: Record<string, string> = {
+              "All": "Всички",
+              "Critical": "Критични",
+              "Elevated": "Повишени",
+              "Normal": "Нормални"
+            };
+            return (
+              <button
+                key={f}
+                onClick={() => setRiskFilter(f)}
+                className={clsx(
+                  "px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all",
+                  riskFilter === f ? "bg-white text-emerald-700 shadow-sm" : "text-slate-400 hover:text-slate-600"
+                )}
+              >
+                {labelMap[f]}
+              </button>
+            );
+          })}
         </div>
         <div className="relative flex-1 md:max-w-md w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
             type="text"
-            placeholder="Search by patient ID..."
+            placeholder="Търсене по ID на пациент..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
@@ -148,10 +156,10 @@ export const EEGRecordsPage: React.FC = () => {
               <table className="w-full">
                 <thead>
                   <tr className="bg-slate-50/50">
-                    <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Patient / ID</th>
-                    <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Date & Time</th>
-                    <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Status</th>
-                    <th className="px-6 py-5 text-right text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Actions</th>
+                    <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Пациент / ID</th>
+                    <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Дата и Час</th>
+                    <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Статус</th>
+                    <th className="px-6 py-5 text-right text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Действия</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
@@ -172,7 +180,7 @@ export const EEGRecordsPage: React.FC = () => {
                               <User className="w-6 h-6 text-slate-400 group-hover:text-emerald-600 transition-colors" />
                             </div>
                             <div>
-                              <span className="text-sm font-bold text-slate-900 block group-hover:text-emerald-600 transition-colors">{record.patient_name || "Unknown Patient"}</span>
+                              <span className="text-sm font-bold text-slate-900 block group-hover:text-emerald-600 transition-colors">{record.patient_name || "Непознат пациент"}</span>
                               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{record.patient_id}</span>
                             </div>
                           </div>
@@ -218,8 +226,8 @@ export const EEGRecordsPage: React.FC = () => {
                   <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 mx-auto mb-4 border border-slate-100">
                     <Search className="w-8 h-8" />
                   </div>
-                  <h3 className="text-slate-900 font-black">No records found</h3>
-                  <p className="text-slate-500 text-sm">Try adjusting your filters or search term.</p>
+                  <h3 className="text-slate-900 font-black">Не са намерени записи</h3>
+                  <p className="text-slate-500 text-sm">Опитайте да коригирате филтрите или термина за търсене.</p>
                 </div>
               )}
             </div>

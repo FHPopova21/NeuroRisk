@@ -17,7 +17,7 @@ export const DoctorManagement: React.FC = () => {
       const data = await apiService.getAdminDoctors(filter === "ALL" ? undefined : filter);
       setDoctors(data);
     } catch (error) {
-      toast.error("Failed to load doctors");
+      toast.error("Неуспешно зареждане на лекарите");
     } finally {
       setLoading(false);
     }
@@ -30,10 +30,10 @@ export const DoctorManagement: React.FC = () => {
   const handleUpdateStatus = async (id: string, status: string) => {
     try {
       await apiService.updateDoctorStatus(id, status);
-      toast.success(`Doctor status updated to ${status}`);
+      toast.success(`Статусът на лекаря е обновен на ${status}`);
       fetchDoctors();
     } catch (error) {
-      toast.error("Failed to update status");
+      toast.error("Неуспешно обновяване на статуса");
     }
   };
 
@@ -41,8 +41,8 @@ export const DoctorManagement: React.FC = () => {
     <div className="space-y-6">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Doctor Management</h1>
-          <p className="text-slate-500 mt-1">Verify and manage medical professional accounts</p>
+          <h1 className="text-3xl font-bold text-slate-900">Управление на лекарите</h1>
+          <p className="text-slate-500 mt-1">Потвърждаване и управление на акаунти на медицински специалисти</p>
         </div>
         
         <div className="flex items-center gap-3">
@@ -50,7 +50,7 @@ export const DoctorManagement: React.FC = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input 
               type="text" 
-              placeholder="Search doctors..." 
+              placeholder="Търсене на лекари..." 
               className="pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-500 transition-all w-64"
             />
           </div>
@@ -59,10 +59,10 @@ export const DoctorManagement: React.FC = () => {
             onChange={(e) => setFilter(e.target.value)}
             className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-500"
           >
-            <option value="ALL">All Status</option>
-            <option value="PENDING">Pending</option>
-            <option value="ACTIVE">Active</option>
-            <option value="SUSPENDED">Suspended</option>
+            <option value="ALL">Всички статуси</option>
+            <option value="PENDING">Изчакващи</option>
+            <option value="ACTIVE">Активни</option>
+            <option value="SUSPENDED">Спрени</option>
           </select>
         </div>
       </header>
@@ -72,12 +72,12 @@ export const DoctorManagement: React.FC = () => {
           <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
             <tr className="bg-slate-50 border-b border-slate-100">
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Doctor</th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Specialization</th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">System ID</th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Date Joined</th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Лекар</th>
+              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Специализация</th>
+              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Системно ID</th>
+              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Статус</th>
+              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Дата на присъединяване</th>
+              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Действия</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
@@ -109,17 +109,17 @@ export const DoctorManagement: React.FC = () => {
                 <td className="px-6 py-4">
                   {doctor.status === 'ACTIVE' && (
                     <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold">
-                      <CheckCircle className="w-3 h-3" /> Active
+                      <CheckCircle className="w-3 h-3" /> Активен
                     </span>
                   )}
                   {doctor.status === 'PENDING' && (
                     <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full text-xs font-bold">
-                      <Clock className="w-3 h-3" /> Pending
+                      <Clock className="w-3 h-3" /> Изчакващ
                     </span>
                   )}
                   {doctor.status === 'SUSPENDED' && (
                     <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-rose-50 text-rose-700 rounded-full text-xs font-bold">
-                      <ShieldAlert className="w-3 h-3" /> Suspended
+                      <ShieldAlert className="w-3 h-3" /> Спрян
                     </span>
                   )}
                 </td>
@@ -132,7 +132,7 @@ export const DoctorManagement: React.FC = () => {
                       <button 
                         onClick={() => handleUpdateStatus(doctor.id, 'ACTIVE')}
                         className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
-                        title="Approve & Activate"
+                        title="Одобри и активирай"
                       >
                         <CheckCircle className="w-5 h-5" />
                       </button>
@@ -141,7 +141,7 @@ export const DoctorManagement: React.FC = () => {
                       <button 
                         onClick={() => handleUpdateStatus(doctor.id, 'SUSPENDED')}
                         className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                        title="Suspend Account"
+                        title="Спри акаунта"
                       >
                         <XCircle className="w-5 h-5" />
                       </button>
@@ -158,7 +158,7 @@ export const DoctorManagement: React.FC = () => {
         </div>
         {doctors.length === 0 && !loading && (
           <div className="p-12 text-center text-slate-400 font-medium">
-            No doctors found matching the current filter.
+            Не са намерени лекари, отговарящи на текущия филтър.
           </div>
         )}
       </div>

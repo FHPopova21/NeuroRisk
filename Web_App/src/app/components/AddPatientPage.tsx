@@ -47,9 +47,9 @@ export const AddPatientPage: React.FC = () => {
         
         if (numbers.length > 0) {
           setEegData(numbers);
-          toast.success(`Loaded ${numbers.length} data points from ${file.name}`);
+          toast.success(`Заредени ${numbers.length} точки данни от ${file.name}`);
         } else {
-          toast.error("No valid numeric data found in file.");
+          toast.error("Не са намерени валидни числови данни във файла.");
         }
       };
       reader.readAsText(file);
@@ -59,7 +59,7 @@ export const AddPatientPage: React.FC = () => {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.firstName || !formData.lastName || !formData.patientId || !formData.email) {
-      toast.error("Please fill in all required fields (First Name, Last Name, ID, Email)");
+      toast.error("Моля, попълнете всички задължителни полета (Име, Фамилия, ID, Имейл)");
       return;
     }
 
@@ -79,10 +79,10 @@ export const AddPatientPage: React.FC = () => {
       };
 
       await apiService.createPatient(payload);
-      toast.success(`Patient ${fullName} added successfully! Email notification logged in server console.`);
+      toast.success(`Пациентът ${fullName} е добавен успешно! Имейл известието е записано в сървърната конзола.`);
       navigate("/patients");
     } catch (err: any) {
-      toast.error(err.message || "Failed to save patient");
+      toast.error(err.message || "Грешка при запазване на пациент");
     } finally {
       setSaving(false);
     }
@@ -100,8 +100,8 @@ export const AddPatientPage: React.FC = () => {
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div>
-            <h1 className="text-2xl font-black text-slate-900">Add New Patient</h1>
-            <p className="text-slate-500 font-medium tracking-tight">Enter patient details and upload initial EEG data.</p>
+            <h1 className="text-2xl font-black text-slate-900">Добави нов пациент</h1>
+            <p className="text-slate-500 font-medium tracking-tight">Въведете детайли за пациента и качете начални ЕЕГ данни.</p>
           </div>
         </div>
       </div>
@@ -113,14 +113,14 @@ export const AddPatientPage: React.FC = () => {
             <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-emerald-600 shadow-sm mb-6 border border-emerald-200">
               <Info className="w-6 h-6" />
             </div>
-            <h3 className="text-emerald-900 font-black text-lg mb-3">Add Protocol</h3>
+            <h3 className="text-emerald-900 font-black text-lg mb-3">Протокол за добавяне</h3>
             <p className="text-emerald-700 text-sm leading-relaxed mb-6">
-              Manually assign a Patient ID and upload a signal file (CSV/TXT) for immediate AI baseline analysis.
+              Ръчно задайте ID на пациента и качете файл със сигнал (CSV/TXT) за незабавен базов анализ от ИИ.
             </p>
             <ul className="space-y-3 text-xs font-bold text-emerald-600 uppercase tracking-widest">
-              <li className="flex items-center gap-2">• Verify Email</li>
-              <li className="flex items-center gap-2">• Upload CSV/TXT</li>
-              <li className="flex items-center gap-2">• Set Epilepsy Status</li>
+              <li className="flex items-center gap-2">• Потвърди имейл</li>
+              <li className="flex items-center gap-2">• Качи CSV/TXT</li>
+              <li className="flex items-center gap-2">• Задай Епилепсия статус</li>
             </ul>
           </div>
         </div>
@@ -131,30 +131,30 @@ export const AddPatientPage: React.FC = () => {
             <div className="grid grid-cols-6 gap-6">
               {/* NAMES */}
               <div className="col-span-2">
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">First Name</label>
+                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Име</label>
                 <input
                   type="text" required
-                  placeholder="First"
+                  placeholder="Име"
                   value={formData.firstName}
                   onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                   className="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm transition-all"
                 />
               </div>
               <div className="col-span-2">
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Middle Name</label>
+                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Презиме</label>
                 <input
                   type="text"
-                  placeholder="Middle"
+                  placeholder="Презиме"
                   value={formData.middleName}
                   onChange={(e) => setFormData({ ...formData, middleName: e.target.value })}
                   className="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm transition-all"
                 />
               </div>
               <div className="col-span-2">
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Last Name</label>
+                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Фамилия</label>
                 <input
                   type="text" required
-                  placeholder="Last"
+                  placeholder="Фамилия"
                   value={formData.lastName}
                   onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                   className="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm transition-all"
@@ -163,12 +163,12 @@ export const AddPatientPage: React.FC = () => {
 
               {/* ID & AGE */}
               <div className="col-span-3">
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Manual Patient ID</label>
+                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Ръчно ID на пациент</label>
                 <div className="relative">
                   <Fingerprint className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
                   <input
                     type="text" required
-                    placeholder="e.g. PN-12345"
+                    placeholder="напр. PN-12345"
                     value={formData.patientId}
                     onChange={(e) => setFormData({ ...formData, patientId: e.target.value })}
                     className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm transition-all font-mono"
@@ -177,7 +177,7 @@ export const AddPatientPage: React.FC = () => {
               </div>
 
               <div className="col-span-1">
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Age</label>
+                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Възраст</label>
                 <input
                   type="number" required
                   placeholder="30"
@@ -188,15 +188,15 @@ export const AddPatientPage: React.FC = () => {
               </div>
 
               <div className="col-span-2">
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Gender</label>
+                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Пол</label>
                 <div className="relative">
                   <select
                     value={formData.gender}
                     onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
                     className="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm transition-all appearance-none"
                   >
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
+                    <option value="male">Мъж</option>
+                    <option value="female">Жена</option>
                   </select>
                   <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                 </div>
@@ -204,7 +204,7 @@ export const AddPatientPage: React.FC = () => {
 
               {/* CONTACT & EPILEPSY */}
               <div className="col-span-4">
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Contact Email</label>
+                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Имейл за контакт</label>
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
                   <input
@@ -219,8 +219,8 @@ export const AddPatientPage: React.FC = () => {
 
               <div className="col-span-2 p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
                 <div>
-                  <h4 className="text-[10px] font-black text-slate-700 uppercase tracking-widest">Epilepsy</h4>
-                  <p className="text-[9px] text-slate-400">Has history?</p>
+                  <h4 className="text-[10px] font-black text-slate-700 uppercase tracking-widest">Епилепсия</h4>
+                  <p className="text-[9px] text-slate-400">Има ли история?</p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input 
@@ -235,7 +235,7 @@ export const AddPatientPage: React.FC = () => {
 
               {/* FILE UPLOAD */}
               <div className="col-span-6">
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Brain Signal Data (CSV / TXT)</label>
+                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Данни за мозъчен сигнал (CSV / TXT)</label>
                 <div className={clsx(
                   "relative border-2 border-dashed rounded-[2rem] p-8 transition-all flex flex-col items-center justify-center gap-4 group cursor-pointer",
                   fileName ? "border-emerald-500 bg-emerald-50/50" : "border-slate-200 bg-slate-50/50 hover:border-emerald-300"
@@ -253,16 +253,16 @@ export const AddPatientPage: React.FC = () => {
                     <FileUp className="w-6 h-6" />
                   </div>
                   <div className="text-center">
-                    <p className="text-sm font-black text-slate-700">{fileName || "Click to upload signal file"}</p>
-                    <p className="text-xs text-slate-400 mt-1">{fileName ? `${eegData?.length || 0} samples detected` : "Support for raw signal records (X1, X2...)"}</p>
+                    <p className="text-sm font-black text-slate-700">{fileName || "Кликнете за качване на файл със сигнал"}</p>
+                    <p className="text-xs text-slate-400 mt-1">{fileName ? `${eegData?.length || 0} засечени проби` : "Поддръжка за записи на суров сигнал (X1, X2...)"}</p>
                   </div>
                 </div>
               </div>
 
               <div className="col-span-6">
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Clinical Notes (Optional)</label>
+                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Клинични бележки (Опционално)</label>
                 <textarea
-                  placeholder="Enter medical history, medications, or specific observations..."
+                  placeholder="Въведете медицинска история, лекарства или специфични наблюдения..."
                   value={formData.condition}
                   onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
                   className="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm transition-all min-h-[80px]"
@@ -284,14 +284,14 @@ export const AddPatientPage: React.FC = () => {
                 ) : (
                   <Save className="w-4 h-4" />
                 )}
-                Save & Notify Patient
+                Запази и уведоми пациента
               </button>
               <button
                 type="button"
                 onClick={() => navigate("/patients")}
                 className="px-8 py-4 bg-slate-100 text-slate-500 font-black rounded-2xl hover:bg-slate-200 transition-all uppercase tracking-widest text-xs"
               >
-                Cancel
+                Отказ
               </button>
             </div>
           </form>

@@ -48,9 +48,9 @@ export const ProfilePage: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-black text-slate-900">
-          {user?.role === 'admin' ? "Admin Profile" : "Doctor Profile"}
+          {user?.role === 'admin' ? "Профил на администратор" : "Профил на лекар"}
         </h1>
-        <p className="text-slate-500 font-medium tracking-tight">Manage your professional identity and security settings.</p>
+        <p className="text-slate-500 font-medium tracking-tight">Управлявайте своята професионална самоличност и настройки за сигурност.</p>
       </div>
     </div>
 
@@ -65,33 +65,33 @@ export const ProfilePage: React.FC = () => {
             </div>
             <h2 className="text-xl font-black text-slate-900">{user?.name || user?.username}</h2>
             <p className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] mb-6">
-              {user?.role === 'admin' ? "System Administrator" : (user?.specialization || "Medical Staff")}
+              {user?.role === 'admin' ? "Системен администратор" : (user?.specialization || "Медицински персонал")}
             </p>
 
             <div className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-100/50">
               <Shield className="w-4 h-4" />
               <span className="text-[10px] font-black uppercase tracking-widest">
-                {user?.role === 'admin' ? "Root Access" : "Verified Instructor"}
+                {user?.role === 'admin' ? "Пълен достъп" : "Потвърден специалист"}
               </span>
             </div>
           </div>
 
           <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white">
             <h3 className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em] mb-6">
-              {user?.role === 'admin' ? "System Analytics" : "Clinical Stats"}
+              {user?.role === 'admin' ? "Системни анализи" : "Клинични статистики"}
             </h3>
             <div className="space-y-6">
               {user?.role === 'doctor' ? (
                 <>
-                  <StatRow label="Active Patients" value={patientCount !== null ? patientCount.toString() : "..."} />
-                  <StatRow label="Monthly Analyses" value="12" />
-                  <StatRow label="Student Reviews" value="5" />
+                  <StatRow label="Активни пациенти" value={patientCount !== null ? patientCount.toString() : "..."} />
+                  <StatRow label="Месечни анализи" value="12" />
+                  <StatRow label="Студентски оценки" value="5" />
                 </>
               ) : (
                 <>
-                  <StatRow label="Total Users" value="24" />
-                  <StatRow label="Active Today" value="8" />
-                  <StatRow label="System Health" value="100%" />
+                  <StatRow label="Общо потребители" value="24" />
+                  <StatRow label="Активни днес" value="8" />
+                  <StatRow label="Състояние на системата" value="100%" />
                 </>
               )}
             </div>
@@ -102,14 +102,14 @@ export const ProfilePage: React.FC = () => {
         <div className="md:col-span-2 space-y-8">
           {/* PERSONAL INFO */}
           <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm p-10 space-y-10">
-            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Profile Information</h3>
+            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Информация за профила</h3>
             <div className="grid grid-cols-2 gap-8">
-              <ProfileItem label="Display Name" value={user?.name || user?.username} icon={User} />
-              <ProfileItem label="Email Address" value={user?.email || "No email provided"} icon={Mail} />
+              <ProfileItem label="Екранно име" value={user?.name || user?.username} icon={User} />
+              <ProfileItem label="Имейл адрес" value={user?.email || "Не е посочен имейл"} icon={Mail} />
               {user?.role === 'doctor' && (
                 <>
-                  <ProfileItem label="Admin ID" value={user?.admin_assigned_id || "N/A"} icon={Stethoscope} />
-                  <ProfileItem label="Specialization" value={user?.specialization || "Not specified"} icon={Globe} />
+                  <ProfileItem label="Админско ID" value={user?.admin_assigned_id || "N/A"} icon={Stethoscope} />
+                  <ProfileItem label="Специализация" value={user?.specialization || "Не е посочена"} icon={Globe} />
                 </>
               )}
             </div>
@@ -118,12 +118,12 @@ export const ProfilePage: React.FC = () => {
           {/* SECURITY & PREFERENCES */}
           <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
             <div className="p-10 border-b border-slate-50">
-              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Account Security</h3>
+              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Сигурност на акаунта</h3>
             </div>
             <div className="divide-y divide-slate-50">
-              <SecurityAction label="Change Account Password" icon={Key} />
-              <SecurityAction label="Configure Notifications" icon={Bell} />
-              <SecurityAction label="Help & Support Center" icon={HelpCircle} />
+              <SecurityAction label="Смяна на паролата" icon={Key} />
+              <SecurityAction label="Настройки на известията" icon={Bell} />
+              <SecurityAction label="Помощен център" icon={HelpCircle} />
               <button
                 onClick={handleLogout}
                 className="w-full flex items-center justify-between p-8 hover:bg-red-50/30 transition-all text-left group"
@@ -133,8 +133,8 @@ export const ProfilePage: React.FC = () => {
                     <LogOut className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-black text-slate-900">Sign Out of Platform</h4>
-                    <p className="text-[10px] font-bold text-red-600 uppercase tracking-widest">End Session Now</p>
+                    <h4 className="text-sm font-black text-slate-900">Излизане от платформата</h4>
+                    <p className="text-[10px] font-bold text-red-600 uppercase tracking-widest">Край на сесията</p>
                   </div>
                 </div>
                 <ChevronRight className="w-5 h-5 text-slate-200 group-hover:text-red-300 transition-colors" />

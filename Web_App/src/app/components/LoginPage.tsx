@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router";
+import { useNavigate, Link } from "react-router-dom";
 import { Activity, Mail, Lock, ArrowRight } from "lucide-react";
 import { motion } from "motion/react";
 import { toast } from "sonner";
@@ -18,7 +18,7 @@ export const LoginPage: React.FC = () => {
       setLoading(true);
       try {
         const loggedUser = await login(email, password);
-        toast.success("Login successful");
+        toast.success("Успешен вход");
         
         if (loggedUser.role === 'admin') {
           navigate("/admin/dashboard");
@@ -26,12 +26,12 @@ export const LoginPage: React.FC = () => {
           navigate("/dashboard");
         }
       } catch (error: any) {
-        toast.error(error.message || "Login failed");
+        toast.error(error.message || "Неуспешен вход");
       } finally {
         setLoading(false);
       }
     } else {
-      toast.error("Please fill in all fields");
+      toast.error("Моля, попълнете всички полета");
     }
   };
 
@@ -46,16 +46,16 @@ export const LoginPage: React.FC = () => {
           <Link to="/" className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mb-4 hover:bg-emerald-200 transition-colors shadow-sm cursor-pointer hover:-translate-y-0.5">
             <Activity className="w-8 h-8 text-emerald-600" />
           </Link>
-          <h1 className="text-2xl font-bold text-slate-900">Welcome Back</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Добре дошли отново</h1>
           <p className="text-slate-500 text-center mt-2">
-            Access your NeuroRisk clinical dashboard
+            Влезте във вашия NeuroRisk клиничен панел
           </p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
-              Email or Username
+              Имейл или Потребителско име
             </label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
@@ -63,7 +63,7 @@ export const LoginPage: React.FC = () => {
                 type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="email or username"
+                placeholder="имейл или потребителско име"
                 className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all outline-none"
                 required
               />
@@ -72,7 +72,7 @@ export const LoginPage: React.FC = () => {
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
-              Password
+              Парола
             </label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
@@ -90,10 +90,10 @@ export const LoginPage: React.FC = () => {
           <div className="flex items-center justify-between">
             <label className="flex items-center gap-2 cursor-pointer group">
               <input type="checkbox" className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
-              <span className="text-sm text-slate-600 group-hover:text-slate-900">Remember me</span>
+              <span className="text-sm text-slate-600 group-hover:text-slate-900">Запомни ме</span>
             </label>
             <Link to="#" className="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
-              Forgot password?
+              Забравена парола?
             </Link>
           </div>
 
@@ -102,16 +102,16 @@ export const LoginPage: React.FC = () => {
             disabled={loading}
             className="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl hover:bg-emerald-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Logging in..." : "Login to Dashboard"}
+            {loading ? "Влизане..." : "Вход в системата"}
             {!loading && <ArrowRight className="w-5 h-5" />}
           </button>
         </form>
 
         <div className="mt-8 text-center">
           <p className="text-slate-500 text-sm">
-            Don't have an account?{" "}
+            Нямате акаунт?{" "}
             <Link to="/register" className="text-emerald-600 font-bold hover:underline">
-              Register now
+              Регистрирайте се
             </Link>
           </p>
         </div>

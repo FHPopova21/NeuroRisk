@@ -71,10 +71,10 @@ export const DashboardHome: React.FC = () => {
     const highRiskCount = patientLatestStatus.filter(s => s === "HIGH").length;
 
     return [
-      { label: "Total Patients", value: patients.length.toString(), icon: Users, color: "bg-emerald-100 text-emerald-700", trend: "Live" },
-      { label: "Patients with App", value: patients.filter(p => p.is_active).length.toString(), icon: Smartphone, color: "bg-blue-100 text-blue-700", trend: "Live" },
-      { label: "High Risk Patients", value: highRiskCount.toString(), icon: AlertCircle, color: "bg-orange-100 text-orange-700", trend: "Live" },
-      { label: "Total Recordings", value: history.length.toString(), icon: Activity, color: "bg-purple-100 text-purple-700", trend: "Live" },
+      { label: "Общо пациенти", value: patients.length.toString(), icon: Users, color: "bg-emerald-100 text-emerald-700", trend: "На живо" },
+      { label: "Активни приложения", value: patients.filter(p => p.is_active).length.toString(), icon: Smartphone, color: "bg-blue-100 text-blue-700", trend: "На живо" },
+      { label: "Пациенти с висок риск", value: highRiskCount.toString(), icon: AlertCircle, color: "bg-orange-100 text-orange-700", trend: "На живо" },
+      { label: "Общо записи", value: history.length.toString(), icon: Activity, color: "bg-purple-100 text-purple-700", trend: "На живо" },
     ];
   }, [patients, history]);
 
@@ -97,9 +97,9 @@ export const DashboardHome: React.FC = () => {
     });
 
     return [
-      { name: "High Risk", value: counts.HIGH, color: "#f97316" },
-      { name: "Medium Risk", value: counts.MEDIUM, color: "#f59e0b" },
-      { name: "Low Risk", value: counts.LOW, color: "#10b981" },
+      { name: "Висок риск", value: counts.HIGH, color: "#f97316" },
+      { name: "Среден риск", value: counts.MEDIUM, color: "#f59e0b" },
+      { name: "Нисък риск", value: counts.LOW, color: "#10b981" },
     ];
   }, [patients, history]);
 
@@ -145,7 +145,7 @@ export const DashboardHome: React.FC = () => {
       {/* TOP BAR */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-slate-900">Clinical Dashboard</h1>
+          <h1 className="text-2xl font-black text-slate-900">Клинично табло</h1>
           <p className="text-slate-500 font-medium">{new Date().toLocaleDateString('bg-BG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
         </div>
         <div className="flex items-center gap-4">
@@ -153,7 +153,7 @@ export const DashboardHome: React.FC = () => {
             <Search className="absolute left-3 w-4 h-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
             <input
               type="text"
-              placeholder="Search by ID, Name or Status..."
+              placeholder="Търсене по ID, име или статус..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none w-72 transition-all shadow-sm"
@@ -203,9 +203,9 @@ export const DashboardHome: React.FC = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
-              <HeartPulse className="w-4 h-4 text-red-500" /> High Risk Priority Queue
+              <HeartPulse className="w-4 h-4 text-red-500" /> Приоритетни пациенти
             </h3>
-            <span className="text-[10px] bg-red-100 text-red-600 font-black px-2.5 py-1 rounded-full uppercase tracking-wider">Requires Immediate Review</span>
+            <span className="text-[10px] bg-red-100 text-red-600 font-black px-2.5 py-1 rounded-full uppercase tracking-wider">Изисква незабавен преглед</span>
           </div>
 
           <div className="flex gap-4 overflow-x-auto pb-4 pt-2 -mx-2 px-2 snap-x hide-scrollbar">
@@ -227,18 +227,18 @@ export const DashboardHome: React.FC = () => {
                       {p.name.substring(0, 2)}
                     </div>
                     <div className="bg-red-600 text-white text-[10px] font-black px-2 py-1 rounded-lg flex items-center gap-1 shadow-md shadow-red-200">
-                      {p.risk}% RISK
+                      {p.risk}% РИСК
                     </div>
                   </div>
                   <h4 className="font-black text-slate-900 text-sm mb-1 truncate">{p.name}</h4>
                   <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-red-500/80 mb-4">
                     <span>ID: #{p.id.slice(0, 6)}</span>
                     <span className="w-1 h-1 bg-red-300 rounded-full" />
-                    <span>{p.latestRecord ? new Date(p.latestRecord.timestamp).toLocaleTimeString() : 'No Data'}</span>
+                    <span>{p.latestRecord ? new Date(p.latestRecord.timestamp).toLocaleTimeString() : 'Няма данни'}</span>
                   </div>
 
                   <div className="flex items-center justify-between mt-2 pt-4 border-t border-red-200/50">
-                    <span className="text-[10px] font-black tracking-widest text-red-600 uppercase">Review Case</span>
+                    <span className="text-[10px] font-black tracking-widest text-red-600 uppercase">Преглед на случай</span>
                     <ArrowRight className="w-4 h-4 text-red-600 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </div>
@@ -256,7 +256,7 @@ export const DashboardHome: React.FC = () => {
           className="lg:col-span-2 bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6"
         >
           <div className="flex justify-between items-center">
-            <h3 className="font-black text-slate-900 uppercase tracking-widest text-xs">Patient Risk Distribution</h3>
+            <h3 className="font-black text-slate-900 uppercase tracking-widest text-xs">Разпределение на риска</h3>
             <Shield className="w-4 h-4 text-emerald-600" />
           </div>
           <div className="h-64">
@@ -296,13 +296,13 @@ export const DashboardHome: React.FC = () => {
               <TrendingUp className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-black text-indigo-950 uppercase tracking-widest text-xs">AI Insights</h3>
-              <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Automated Analysis</p>
+              <h3 className="font-black text-indigo-950 uppercase tracking-widest text-xs">Изкуствен интелект</h3>
+              <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Автоматизиран анализ</p>
             </div>
           </div>
           <div className="flex-1 relative z-10">
             <p className="text-sm font-medium text-slate-700 leading-relaxed italic border-l-2 border-indigo-300 pl-4 bg-white/50 py-3 rounded-r-xl">
-              "System detects an overall <span className="text-indigo-600 font-bold">14% decrease</span> in average epileptiform activity across the monitored cohort this week."
+              "Системата отчита общ <span className="text-indigo-600 font-bold">14% спад</span> в средната епилептиформена активност при наблюдаваните пациенти тази седмица."
             </p>
             <div className="mt-4 flex items-center gap-2">
               <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
@@ -310,11 +310,11 @@ export const DashboardHome: React.FC = () => {
               </div>
               <span className="text-xs font-black text-indigo-600">92%</span>
             </div>
-            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1 text-right">Confidence Level</p>
+            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1 text-right">Ниво на сигурност</p>
           </div>
           <div className="pt-4 border-t border-indigo-200/50 relative z-10">
             <button className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-white text-indigo-600 font-black text-xs uppercase tracking-wider rounded-xl shadow-sm hover:shadow-md transition-shadow">
-              Review Analytics Report
+              Преглед на аналитичен доклад
             </button>
           </div>
         </motion.div>
@@ -325,7 +325,7 @@ export const DashboardHome: React.FC = () => {
         <div className="absolute inset-y-0 left-0 w-64 bg-slate-900 border-r border-slate-800 z-20 flex flex-col p-4 justify-center">
           <div className="flex items-center gap-2 mb-1">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400">Live Transmission</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400">Трансмисия на живо</span>
           </div>
           <h4 className="font-black text-white text-sm">Stefan Zhelyazkov</h4>
         </div>
@@ -354,7 +354,7 @@ export const DashboardHome: React.FC = () => {
         {/* RECENT ANALYSES TABLE */}
         <div className="lg:col-span-3 bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col">
           <div className="p-6 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <h3 className="font-black text-slate-900 uppercase tracking-widest text-xs min-w-max">Patient Directory</h3>
+            <h3 className="font-black text-slate-900 uppercase tracking-widest text-xs min-w-max">Списък с пациенти</h3>
             {/* PATIENT STATUS TABS */}
             <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-xl w-full md:w-auto overflow-x-auto hide-scrollbar">
               {(["ALL", "ACTIVE", "MANUAL"] as const).map(tab => (
@@ -368,7 +368,7 @@ export const DashboardHome: React.FC = () => {
                       : "text-slate-400 hover:text-slate-600"
                   )}
                 >
-                  {tab === "ALL" ? "All Patients" : tab === "ACTIVE" ? "App Tracking" : "Manual Logs"}
+                  {tab === "ALL" ? "Всички пациенти" : tab === "ACTIVE" ? "Приложение" : "Ръчни записи"}
                 </button>
               ))}
             </div>
@@ -377,10 +377,10 @@ export const DashboardHome: React.FC = () => {
             <table className="w-full">
               <thead>
                 <tr className="bg-slate-50/50">
-                  <th className="px-6 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Patient</th>
-                  <th className="px-6 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Risk Level</th>
-                  <th className="px-6 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Time</th>
-                  <th className="px-6 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Status</th>
+                  <th className="px-6 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Пациент</th>
+                  <th className="px-6 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Ниво на риск</th>
+                  <th className="px-6 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Време</th>
+                  <th className="px-6 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Статус</th>
                   <th className="px-6 py-4 text-right"></th>
                 </tr>
               </thead>
@@ -415,14 +415,14 @@ export const DashboardHome: React.FC = () => {
                       <div className="hidden group-hover:block absolute left-48 top-4 z-50 w-64 bg-white rounded-2xl shadow-xl border border-slate-200 p-4 pointer-events-none">
                         <div className="flex items-center gap-2 mb-2">
                           <Activity className="w-4 h-4 text-emerald-600" />
-                          <span className="text-[10px] font-black uppercase tracking-widest">Recent Context</span>
+                          <span className="text-[10px] font-black uppercase tracking-widest">Скорошен контекст</span>
                         </div>
                         <div className="space-y-2">
                           <div className="bg-slate-50 p-2 rounded-lg text-xs italic text-slate-600 font-medium">
-                            {analysis.doctor_note ? `"${analysis.doctor_note.substring(0, 60)}..."` : "No recent doctor notes attached."}
+                            {analysis.doctor_note ? `"${analysis.doctor_note.substring(0, 60)}..."` : "Няма скорошни лекарски бележки."}
                           </div>
                           <div className="flex justify-between items-center text-[10px] font-bold text-slate-400">
-                            <span>Last Risk: <span className="text-slate-700">{analysis.risk_score}%</span></span>
+                            <span>Последен риск: <span className="text-slate-700">{analysis.risk_score}%</span></span>
                             <span className={clsx("px-1.5 py-0.5 rounded", analysis.risk_status === "HIGH" ? "bg-red-100 text-red-600" : "bg-emerald-100 text-emerald-600")}>{analysis.risk_status}</span>
                           </div>
                         </div>
@@ -445,7 +445,7 @@ export const DashboardHome: React.FC = () => {
                           "w-1.5 h-1.5 rounded-full",
                           analysis.risk_status === "HIGH" ? "bg-orange-500 animate-pulse" : "bg-emerald-500"
                         )} />
-                        <span className="text-sm font-bold text-slate-700">{analysis.risk_status === "HIGH" ? "Urgent Review" : "Healthy"}</span>
+                        <span className="text-sm font-bold text-slate-700">{analysis.risk_status === "HIGH" ? "Спешен преглед" : "Здрав"}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right">
@@ -475,7 +475,7 @@ export const DashboardHome: React.FC = () => {
                        : "text-slate-400 hover:text-slate-600"
                    )}
                  >
-                   {tab}
+                   {tab === "CRITICAL" ? "КРИТИЧНИ" : tab === "UNREAD" ? "НЕПРОЧЕТЕНИ" : "ВСИЧКИ"}
                  </button>
                ))}
             </div>
@@ -493,9 +493,9 @@ export const DashboardHome: React.FC = () => {
                 <p className="text-[11px] text-slate-500 mb-2 leading-relaxed line-clamp-2">{alert.message}</p>
                 <div className="flex items-center justify-between mt-1">
                   <span className={clsx("text-[9px] font-black px-2 py-0.5 rounded-md", alert.risk_score > 75 ? "text-orange-700 bg-orange-50" : alert.risk_score > 40 ? "text-amber-700 bg-amber-50" : "text-emerald-700 bg-emerald-50")}>
-                    {alert.risk_score}% Risk Level
+                    {alert.risk_score}% Ниво на риск
                   </span>
-                  <Link to={`/patients/${alert.patient_id}`} className="text-[9px] font-black text-emerald-600 uppercase tracking-widest hover:underline">Review Case</Link>
+                  <Link to={`/patients/${alert.patient_id}`} className="text-[9px] font-black text-emerald-600 uppercase tracking-widest hover:underline">Преглед на случай</Link>
                 </div>
               </div>
             ))}
@@ -506,11 +506,11 @@ export const DashboardHome: React.FC = () => {
                   <Activity className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-slate-900">System Status</h4>
-                  <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">All Systems Operational</p>
+                  <h4 className="text-sm font-bold text-slate-900">Системен статус</h4>
+                  <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">Всички системи функционират</p>
                 </div>
               </div>
-              <p className="text-xs text-slate-500 leading-relaxed">AI analysis models are processing data from {activePatientsCount} active patient monitors.</p>
+              <p className="text-xs text-slate-500 leading-relaxed">Моделите за изкуствен интелект обработват данни от {activePatientsCount} активни монитора.</p>
             </div>
           </div>
         </div>

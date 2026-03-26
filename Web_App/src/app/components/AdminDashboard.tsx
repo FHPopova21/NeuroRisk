@@ -17,7 +17,7 @@ export const AdminDashboard: React.FC = () => {
         const data = await apiService.getAdminStats();
         setStats(data);
       } catch (error) {
-        toast.error("Failed to load admin stats");
+        toast.error("Неуспешно зареждане на администраторските статистики");
       } finally {
         setLoading(false);
       }
@@ -25,30 +25,30 @@ export const AdminDashboard: React.FC = () => {
     fetchStats();
   }, []);
 
-  if (loading) return <div className="p-8">Loading stats...</div>;
-  if (!stats) return <div className="p-8 text-rose-600 bg-rose-50 rounded-xl m-8 border border-rose-100">Failed to load statistics. Please ensure you are logged in and the server is running.</div>;
+  if (loading) return <div className="p-8">Зареждане на статистики...</div>;
+  if (!stats) return <div className="p-8 text-rose-600 bg-rose-50 rounded-xl m-8 border border-rose-100">Неуспешно зареждане на статистиките. Уверете се, че сте влезли и сървърът работи.</div>;
 
   return (
 
     <div className="space-y-8">
       <header className="flex justify-between items-end">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">System Overview</h1>
-          <p className="text-slate-500 mt-1">Global monitoring & administrative control</p>
+          <h1 className="text-3xl font-bold text-slate-900">Системен преглед</h1>
+          <p className="text-slate-500 mt-1">Глобално наблюдение и административен контрол</p>
         </div>
         <div className="flex items-center gap-2 text-sm font-medium text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100">
           <Shield className="w-4 h-4" />
-          Admin Verified Session
+          Потвърдена администраторска сесия
         </div>
       </header>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: "Total Doctors", value: stats.total_doctors, icon: Users, color: "bg-blue-50 text-blue-600" },
-          { label: "Total Patients", value: stats.total_patients, icon: Activity, color: "bg-emerald-50 text-emerald-600" },
-          { label: "Active Sessions", value: stats.active_sessions, icon: CheckCircle, color: "bg-purple-50 text-purple-600" },
-          { label: "High Risk Alerts", value: stats.high_risk_alerts, icon: AlertTriangle, color: "bg-rose-50 text-rose-600" },
+          { label: "Общо лекари", value: stats.total_doctors, icon: Users, color: "bg-blue-50 text-blue-600" },
+          { label: "Общо пациенти", value: stats.total_patients, icon: Activity, color: "bg-emerald-50 text-emerald-600" },
+          { label: "Активни сесии", value: stats.active_sessions, icon: CheckCircle, color: "bg-purple-50 text-purple-600" },
+          { label: "Известия за висок риск", value: stats.high_risk_alerts, icon: AlertTriangle, color: "bg-rose-50 text-rose-600" },
         ].map((kpi, idx) => (
           <motion.div
             key={idx}
@@ -62,7 +62,7 @@ export const AdminDashboard: React.FC = () => {
                 <kpi.icon className="w-6 h-6" />
               </div>
               <span className="text-xs font-medium text-slate-400 flex items-center gap-1">
-                Live <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                На живо <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               </span>
             </div>
             <h3 className="text-3xl font-bold text-slate-900">{kpi.value}</h3>
@@ -75,10 +75,10 @@ export const AdminDashboard: React.FC = () => {
         {/* Activity Chart Placeholder */}
         <div className="lg:col-span-2 bg-white p-8 rounded-2xl border border-slate-100 shadow-sm min-h-[400px]">
           <div className="flex justify-between items-center mb-8">
-            <h2 className="text-xl font-bold text-slate-900">Analyses Over Time</h2>
+            <h2 className="text-xl font-bold text-slate-900">Анализи във времето</h2>
             <select className="bg-slate-50 border border-slate-200 text-sm rounded-lg px-2 py-1 outline-none">
-              <option>Last 7 Days</option>
-              <option>Last 30 Days</option>
+              <option>Последните 7 дни</option>
+              <option>Последните 30 дни</option>
             </select>
           </div>
           
@@ -105,7 +105,7 @@ export const AdminDashboard: React.FC = () => {
         {/* Recent Activity Logs */}
         <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-slate-900">Recent Logs</h2>
+            <h2 className="text-xl font-bold text-slate-900">Скоршни записи</h2>
             <ArrowUpRight className="w-5 h-5 text-slate-400" />
           </div>
           <div className="space-y-6">

@@ -6,7 +6,7 @@ import {
   Info, ChevronDown, BarChart2, Smartphone, Zap, Brain, LayoutDashboard, CheckCircle
 } from "lucide-react";
 
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export const LandingPage: React.FC = () => {
@@ -67,10 +67,10 @@ export const LandingPage: React.FC = () => {
         <header className="absolute top-0 left-0 right-0 px-8 py-6 flex items-center justify-between max-w-7xl mx-auto w-full z-20">
           <div className="flex items-center gap-2 text-emerald-700">
             <Activity className="w-8 h-8" />
-            <span className="font-semibold text-xl tracking-tight">NeuroRisk Clinical Platform</span>
+            <span className="font-semibold text-xl tracking-tight">Клинична платформа NeuroRisk</span>
           </div>
           <div className="hidden sm:block text-sm text-emerald-800/70 font-medium bg-emerald-50/80 backdrop-blur-sm border border-emerald-100 px-3 py-1 rounded-full">
-            v1.1.0 Research Preview
+            v1.1.0 Изследователско превю
           </div>
         </header>
 
@@ -86,30 +86,30 @@ export const LandingPage: React.FC = () => {
           >
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 text-slate-600 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              AI-powered EEG Risk Monitoring
+              AI-базиран мониторинг на ЕЕГ риск
             </div>
 
             <h1 className="text-5xl md:text-7xl font-bold text-slate-900 leading-[1.1] tracking-tight">
-              Interpretable <br />
+              Обясним <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">
-                EEG Analysis
+                ЕЕГ Анализ
               </span>
             </h1>
 
             <p className="text-lg md:text-xl text-slate-600 leading-relaxed max-w-lg">
-              Real-time brain signal analysis for early risk detection.
+              Анализ на мозъчни сигнали в реално време за ранно откриване на риск.
             </p>
 
             {/* FIX 2: Explainability Teaser (List) */}
             <div className="flex flex-wrap gap-3 text-sm font-medium text-slate-500">
               <span className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 rounded-md">
-                <Activity className="w-3.5 h-3.5" /> Hjorth Mobility
+                <Activity className="w-3.5 h-3.5" /> Мобилност по Хьорт
               </span>
               <span className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 rounded-md">
-                <BarChart2 className="w-3.5 h-3.5" /> Signal Variance
+                <BarChart2 className="w-3.5 h-3.5" /> Дисперсия на сигнала
               </span>
               <span className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 rounded-md">
-                <Cpu className="w-3.5 h-3.5" /> Spectral Power
+                <Cpu className="w-3.5 h-3.5" /> Спектрална мощност
               </span>
             </div>
 
@@ -124,7 +124,7 @@ export const LandingPage: React.FC = () => {
                     className="group relative px-8 py-4 bg-emerald-600 text-white rounded-xl font-medium shadow-lg shadow-emerald-200/50 overflow-hidden"
                   >
                     <span className="relative z-10 flex items-center justify-center gap-2">
-                      Enter {user.role === 'admin' ? 'Admin Console' : 'Clinical Dashboard'} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      Влез в {user.role === 'admin' ? 'Админ панела' : 'Клиничното табло'} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </span>
                     <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                   </motion.button>
@@ -134,7 +134,7 @@ export const LandingPage: React.FC = () => {
                     onClick={() => navigate("/profile")}
                     className="px-8 py-4 bg-white border border-slate-200 text-slate-700 rounded-xl font-medium hover:border-emerald-200 hover:text-emerald-700 hover:bg-emerald-50/30 transition-colors"
                   >
-                    Signed in as {user.name || "Doctor"}
+                    Вписан като {user.name || "Лекар"}
                   </motion.button>
                 </>
               ) : (
@@ -146,7 +146,7 @@ export const LandingPage: React.FC = () => {
                     className="group relative px-8 py-4 bg-emerald-600 text-white rounded-xl font-medium shadow-lg shadow-emerald-200/50 overflow-hidden"
                   >
                     <span className="relative z-10 flex items-center justify-center gap-2">
-                      Clinical Dashboard Login <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      Вход в клиничното табло <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </span>
                     <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                   </motion.button>
@@ -156,7 +156,7 @@ export const LandingPage: React.FC = () => {
                     onClick={() => navigate("/login")}
                     className="px-8 py-4 bg-white border border-slate-200 text-slate-700 rounded-xl font-medium hover:border-emerald-200 hover:text-emerald-700 hover:bg-emerald-50/30 transition-colors"
                   >
-                    System Admin Login
+                    Вход за системни администратори
                   </motion.button>
                 </>
               )}
@@ -179,21 +179,21 @@ export const LandingPage: React.FC = () => {
                     <Activity className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-800 text-sm">Simulation Monitor</h3>
+                    <h3 className="font-bold text-slate-800 text-sm">Симулационен монитор</h3>
                     <p className="text-xs text-slate-500 flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      Processing Stream
+                      Обработка на потока
                     </p>
                   </div>
                 </div>
-                <span className="text-xs font-mono text-slate-400">CH-02: ACTIVE</span>
+                <span className="text-xs font-mono text-slate-400">КАНАЛ-02: АКТИВЕН</span>
               </div>
 
               {/* Live Stats */}
               <div className="space-y-4 mb-6">
                 <div>
                   <div className="flex justify-between text-xs font-semibold text-slate-500 mb-1">
-                    <span>RISK PROBABILITY</span>
+                    <span>ВЕРОЯТНОСТ ЗА РИСК</span>
                     <span className="text-emerald-600 transition-all duration-500">{Math.round(liveRiskScore)}%</span>
                   </div>
                   <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
@@ -207,11 +207,11 @@ export const LandingPage: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                    <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Hjorth Mobility</p>
+                    <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Мобилност по Хьорт</p>
                     <p className="font-mono font-medium text-slate-700">{liveHjorth}</p>
                   </div>
                   <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                    <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Spectral Entropy</p>
+                    <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Спектрална ентропия</p>
                     <p className="font-mono font-medium text-slate-700">0.85</p>
                   </div>
                 </div>
@@ -260,7 +260,7 @@ export const LandingPage: React.FC = () => {
           className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 cursor-pointer text-slate-400 hover:text-emerald-600 transition-colors"
           onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
         >
-          <span className="text-xs font-medium uppercase tracking-widest">How it works</span>
+          <span className="text-xs font-medium uppercase tracking-widest">Как работи</span>
           <ChevronDown className="w-5 h-5" />
         </motion.div>
       </section>
@@ -269,8 +269,8 @@ export const LandingPage: React.FC = () => {
       <section className="py-32 px-6 lg:px-8 bg-white overflow-hidden relative border-t border-slate-100">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-24 relative z-10">
-            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6 tracking-tight">How NeuroRisk Works</h2>
-            <p className="text-xl text-slate-500 max-w-2xl mx-auto">From raw neurological data to actionable clinical insights in three seamless steps.</p>
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6 tracking-tight">Как работи NeuroRisk</h2>
+            <p className="text-xl text-slate-500 max-w-2xl mx-auto">От сурови неврологични данни до приложими клинични прозрения в три безпроблемни стъпки.</p>
           </div>
 
           <div className="relative">
@@ -285,9 +285,9 @@ export const LandingPage: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative z-10">
               {[
-                { step: "01", title: "Patient Data Collection", icon: Smartphone, desc: "Continuous EEG monitoring via connected clinical devices and the patient mobile app." },
-                { step: "02", title: "AI Analysis Engine", icon: Cpu, desc: "Our proprietary models extract features and evaluate seizure risk in real-time." },
-                { step: "03", title: "Doctor Dashboard", icon: LayoutDashboard, desc: "Clinicians receive structured insights to support faster, more accurate decisions." },
+                { step: "01", title: "Събиране на данни", icon: Smartphone, desc: "Непрекъснат ЕЕГ мониторинг чрез свързани клинични устройства и мобилното приложение за пациенти." },
+                { step: "02", title: "AI машина за анализ", icon: Cpu, desc: "Нашите собствени модели извличат характеристики и оценяват риска от пристъпи в реално време." },
+                { step: "03", title: "Лекарско табло", icon: LayoutDashboard, desc: "Клиницистите получават структурирани прозрения в подкрепа на по-бързи и по-точни решения." },
               ].map((item, idx) => (
                 <motion.div
                   key={idx}
@@ -320,8 +320,8 @@ export const LandingPage: React.FC = () => {
       <section className="py-32 px-6 lg:px-8 bg-slate-50/80 border-t border-slate-200/50">
         <div className="max-w-7xl mx-auto">
           <div className="mb-20 space-y-4">
-            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight">Platform Capabilities</h2>
-            <p className="text-xl text-slate-500 max-w-2xl">A comprehensive suite designed for clinical precision and continuous oversight.</p>
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight">Възможности на платформата</h2>
+            <p className="text-xl text-slate-500 max-w-2xl">Пълен пакет, създаден за клинична прецизност и непрекъснат надзор.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
@@ -332,8 +332,8 @@ export const LandingPage: React.FC = () => {
               <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 mb-8 border border-emerald-100/50">
                 <Activity className="w-8 h-8" />
               </div>
-              <h3 className="text-3xl font-bold text-slate-900 mb-4">Real-Time EEG Visualization</h3>
-              <p className="text-slate-500 text-lg leading-relaxed max-w-xl">Stream, monitor, and analyze live brainwave activity with sub-millisecond latency. Interactive time and spectral domains built exclusively for rigorous clinical review.</p>
+              <h3 className="text-3xl font-bold text-slate-900 mb-4">Визуализация на ЕЕГ в реално време</h3>
+              <p className="text-slate-500 text-lg leading-relaxed max-w-xl">Предавайте, наблюдавайте и анализирайте мозъчната активност на живо със субмилисекундно закъснение. Интерактивни времеви и спектрални домейни, изградени изключително за строг клиничен преглед.</p>
             </motion.div>
 
             <motion.div
@@ -343,32 +343,32 @@ export const LandingPage: React.FC = () => {
               <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center text-emerald-400 mb-8 border border-white/10">
                 <Brain className="w-8 h-8" />
               </div>
-              <h3 className="text-2xl font-bold mb-4">AI Risk Detection</h3>
-              <p className="text-slate-300 text-lg opacity-90">Machine learning algorithms flag high-risk anomalies instantly for human review.</p>
+              <h3 className="text-2xl font-bold mb-4">AI Засичане на риск</h3>
+              <p className="text-slate-300 text-lg opacity-90">Алгоритми за машинно обучение незабавно маркират високорискови аномалии за преглед от човек.</p>
             </motion.div>
 
             <motion.div whileHover={{ scale: 1.02 }} className="md:col-span-2 bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-sm transition-all duration-300 group">
               <div className="w-14 h-14 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 mb-6 group-hover:scale-110 transition-transform">
                 <LayoutDashboard className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Doctor Dashboard</h3>
-              <p className="text-slate-500 text-md">Centralized hub for tracking patient risk and medical history.</p>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">Лекарско табло</h3>
+              <p className="text-slate-500 text-md">Централизиран хъб за проследяване на пациентски риск и медицинска история.</p>
             </motion.div>
 
             <motion.div whileHover={{ scale: 1.02 }} className="md:col-span-2 bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-sm transition-all duration-300 group">
               <div className="w-14 h-14 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600 mb-6 group-hover:scale-110 transition-transform">
                 <Zap className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Continuous Tracking</h3>
-              <p className="text-slate-500 text-md">Constant background processing ensures no critical anomaly is missed.</p>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">Непрекъснато проследяване</h3>
+              <p className="text-slate-500 text-md">Постоянната обработка във фонов режим гарантира, че не е пропусната критична аномалия.</p>
             </motion.div>
 
             <motion.div whileHover={{ scale: 1.02 }} className="md:col-span-2 bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-sm transition-all duration-300 group">
               <div className="w-14 h-14 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600 mb-6 group-hover:scale-110 transition-transform">
                 <Smartphone className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Mobile Integration</h3>
-              <p className="text-slate-500 text-md">Patients sync their devices via a straightforward mobile application.</p>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">Мобилна интеграция</h3>
+              <p className="text-slate-500 text-md">Пациентите синхронизират устройствата си чрез лесно за използване мобилно приложение.</p>
             </motion.div>
           </div>
         </div>
@@ -380,16 +380,16 @@ export const LandingPage: React.FC = () => {
         <div className="flex-1 bg-gradient-to-br from-slate-900 to-slate-800 text-white p-16 lg:p-24 flex flex-col justify-center relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl opacity-50 group-hover:opacity-100 transition-opacity duration-1000" />
           <Smartphone className="w-14 h-14 text-emerald-400 mb-10 opacity-90" />
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">For Patients</h2>
-          <p className="text-xl text-slate-300 max-w-md leading-relaxed font-light">A simple mobile application to sync your wearable device, view monitoring status, and seamlessly share data with your doctor.</p>
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">За пациенти</h2>
+          <p className="text-xl text-slate-300 max-w-md leading-relaxed font-light">Лесно мобилно приложение за синхронизиране на вашето носимо устройство, преглед на състоянието на мониторинга и безпроблемно споделяне на данни с вашия лекар.</p>
         </div>
 
         {/* Right: Doctor */}
         <div className="flex-1 bg-gradient-to-br from-emerald-50 to-teal-50 text-emerald-950 p-16 lg:p-24 flex flex-col justify-center relative overflow-hidden group">
           <div className="absolute bottom-0 left-0 w-96 h-96 bg-white/60 rounded-full blur-3xl opacity-50 group-hover:opacity-100 transition-opacity duration-1000" />
           <Stethoscope className="w-14 h-14 text-emerald-600 mb-10 opacity-90" />
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight text-emerald-900">For Doctors</h2>
-          <p className="text-xl text-emerald-800/80 max-w-md leading-relaxed font-light">A robust web dashboard featuring live AI inference streaming, comprehensive historical charting, and centralized clinical note management.</p>
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight text-emerald-900">За лекари</h2>
+          <p className="text-xl text-emerald-800/80 max-w-md leading-relaxed font-light">Здраво уеб табло, включващо стрийминг на AI изводи на живо, изчерпателни исторически диаграми и централизирано управление на клинични бележки.</p>
         </div>
       </section>
 
@@ -397,8 +397,8 @@ export const LandingPage: React.FC = () => {
       <section className="py-32 px-6 lg:px-8 bg-slate-50/50 overflow-hidden border-b border-slate-100">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-24">
-            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6 tracking-tight">Experience the Interface</h2>
-            <p className="text-xl text-slate-500 max-w-2xl mx-auto">Clean, accessible, and structured perfectly for both clinical velocity and patient ease of use.</p>
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6 tracking-tight">Изживейте интерфейса</h2>
+            <p className="text-xl text-slate-500 max-w-2xl mx-auto">Изчистен, достъпен и структуриран перфектно както за клинична скорост, така и за лесно използване от пациентите.</p>
           </div>
 
           <div className="flex flex-col lg:flex-row items-center justify-center gap-16 lg:gap-24">
@@ -418,8 +418,8 @@ export const LandingPage: React.FC = () => {
                   <div className="w-8 h-8 rounded-full bg-white/20" />
                   <div className="w-8 h-8 rounded-full bg-white/20" />
                 </div>
-                <h3 className="text-2xl font-bold tracking-tight mb-2">Hello, Sarah</h3>
-                <p className="text-white/80 text-sm">Your connection is active.</p>
+                <h3 className="text-2xl font-bold tracking-tight mb-2">Здравейте, Сара</h3>
+                <p className="text-white/80 text-sm">Вашата връзка е активна.</p>
               </div>
               {/* Mobile Content */}
               <div className="p-6 space-y-4 flex-1 bg-slate-50">
@@ -428,8 +428,8 @@ export const LandingPage: React.FC = () => {
                     <Activity className="w-6 h-6 text-emerald-600" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-slate-800 text-sm">Sync Status</h4>
-                    <p className="text-xs text-emerald-600 font-medium">Live Streaming</p>
+                    <h4 className="font-bold text-slate-800 text-sm">Статус на синхронизация</h4>
+                    <p className="text-xs text-emerald-600 font-medium">Предаване на живо</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -519,13 +519,13 @@ export const LandingPage: React.FC = () => {
       <section className="py-32 px-6 lg:px-8 bg-white overflow-hidden">
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-20 items-center">
           <div className="flex-1 space-y-10">
-            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight leading-tight">Why Contextual<br />Monitoring Matters</h2>
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight leading-tight">Защо контекстуалният<br />мениджмънт е важен</h2>
 
             <div className="space-y-8">
               {[
-                { title: "Early Risk Awareness", desc: "Spots subtle baseline deviations in EEG waveforms before physical manifestations occur." },
-                { title: "Supports Decision-Making", desc: "Provides empirical, structured data to back up clinical suspicions." },
-                { title: "Long-term Continuous Tracking", desc: "Logs historical events over months to define accurate patient patterns." },
+                { title: "Ранна осведоменост за риска", desc: "Забелязва фини отклонения от базовата линия в ЕЕГ вълните преди появата на физически прояви." },
+                { title: "Подпомага вземането на решения", desc: "Предоставя емпирични, структурирани данни в подкрепа на клиничните подозрения." },
+                { title: "Дългосрочно непрекъснато проследяване", desc: "Записва исторически събития в продължение на месеци, за да дефинира точни модели на пациентите." },
               ].map((item, idx) => (
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
@@ -556,9 +556,9 @@ export const LandingPage: React.FC = () => {
               <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-amber-500 mb-8 shadow-sm border border-amber-100">
                 <AlertCircle className="w-8 h-8" />
               </div>
-              <h3 className="text-3xl font-bold text-amber-950 mb-6 font-serif tracking-tight">A Clear Ethical Boundary</h3>
+              <h3 className="text-3xl font-bold text-amber-950 mb-6 font-serif tracking-tight">Ясна етична граница</h3>
               <p className="text-xl text-amber-900/80 leading-relaxed italic">
-                "NeuroRisk is engineered specifically as a decision-support and educational tool. It is strictly <strong className="text-amber-950 border-b-2 border-amber-300">not a diagnostic engine</strong>. The algorithmic risk probability serves only one purpose: to guide human clinical expertise."
+                "NeuroRisk е създаден специално като инструмент за подпомагане на вземането на решения и обучение. Той категорично <strong className="text-amber-950 border-b-2 border-amber-300">не е диагностична машина</strong>. Алгоритмичната вероятност за риск служи само за една цел: да насочва клиничния опит на лекарите."
               </p>
             </motion.div>
           </div>
@@ -573,10 +573,10 @@ export const LandingPage: React.FC = () => {
 
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <h2 className="text-5xl md:text-7xl font-bold text-white mb-8 tracking-tight">
-            Start monitoring smarter.
+            Започнете да мониторирате по-умно.
           </h2>
           <p className="text-2xl text-slate-400 mb-12 max-w-2xl mx-auto font-light">
-            Deploy real-time analysis for your clinical environment. Experience interpretable monitoring today.
+            Внедрете анализ в реално време за вашата клинична среда. Изпитайте обясним мониторинг днес.
           </p>
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -584,7 +584,7 @@ export const LandingPage: React.FC = () => {
             onClick={() => navigate("/login")}
             className="px-12 py-5 bg-emerald-500 text-white text-lg rounded-2xl font-bold shadow-2xl shadow-emerald-500/30 hover:bg-emerald-400 border border-emerald-400 transition-all font-sans tracking-wide uppercase"
           >
-            Access the Platform
+            Достъп до платформата
           </motion.button>
         </div>
       </section>
@@ -592,12 +592,12 @@ export const LandingPage: React.FC = () => {
       {/* ================= FOOTER ================= */}
       <footer className="bg-white border-t border-slate-100 py-12 px-8">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6 text-sm text-slate-400 font-medium">
-          <p>© 2026 NeuroRisk Medical AI Tech.</p>
+          <p>© 2026 NeuroRisk Медицински AI технологии.</p>
           <div className="flex flex-wrap justify-center gap-8">
-            <span className="hover:text-emerald-600 outline-none cursor-pointer transition-colors">About</span>
-            <span className="hover:text-emerald-600 outline-none cursor-pointer transition-colors">Contact</span>
-            <span className="hover:text-emerald-600 outline-none cursor-pointer transition-colors">Privacy Protocol</span>
-            <span className="hover:text-emerald-600 outline-none cursor-pointer transition-colors">Terms of Use</span>
+            <span className="hover:text-emerald-600 outline-none cursor-pointer transition-colors">За нас</span>
+            <span className="hover:text-emerald-600 outline-none cursor-pointer transition-colors">Контакти</span>
+            <span className="hover:text-emerald-600 outline-none cursor-pointer transition-colors">Протокол за поверителност</span>
+            <span className="hover:text-emerald-600 outline-none cursor-pointer transition-colors">Условия за ползване</span>
           </div>
         </div>
       </footer>

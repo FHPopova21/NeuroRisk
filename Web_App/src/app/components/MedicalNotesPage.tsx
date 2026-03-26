@@ -32,7 +32,7 @@ export const MedicalNotesPage: React.FC = () => {
       const data = await apiService.getMedicalNotes();
       setNotes(data);
     } catch (error) {
-      toast.error("Failed to load clinical notes");
+      toast.error("Неуспешно зареждане на клиничните бележки");
     } finally {
       setLoading(false);
     }
@@ -52,12 +52,12 @@ export const MedicalNotesPage: React.FC = () => {
 
   const handleCreateNote = async () => {
     if (!targetPatientId || !newNoteContent.trim()) {
-      toast.error("Please select a patient and enter content");
+      toast.error("Моля, изберете пациент и въведете съдържание");
       return;
     }
     try {
       await apiService.createMedicalNote(targetPatientId, newNoteContent);
-      toast.success("Note created successfully");
+      toast.success("Бележката е създадена успешно");
       setShowCreateModal(false);
       setNewNoteContent("");
       fetchNotes();
@@ -80,8 +80,8 @@ export const MedicalNotesPage: React.FC = () => {
             <FileEdit className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-slate-900">Medical Notes</h1>
-            <p className="text-slate-500 font-medium tracking-tight">Access all clinical observations and patient log summaries.</p>
+            <h1 className="text-2xl font-black text-slate-900">Медицински бележки</h1>
+            <p className="text-slate-500 font-medium tracking-tight">Достъп до всички клинични наблюдения и резюмета на пациентските досиета.</p>
           </div>
         </div>
         <button
@@ -89,7 +89,7 @@ export const MedicalNotesPage: React.FC = () => {
           className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold text-sm rounded-2xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200"
         >
           <Plus className="w-5 h-5" />
-          Create New Note
+          Създай нова бележка
         </button>
       </div>
 
@@ -100,7 +100,7 @@ export const MedicalNotesPage: React.FC = () => {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
             <input
               type="text"
-              placeholder="Search by patient or doctor name..."
+              placeholder="Търсене по име на пациент или лекар..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-12 pr-4 py-4 bg-white border border-slate-100 rounded-[2rem] shadow-sm text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
@@ -109,9 +109,9 @@ export const MedicalNotesPage: React.FC = () => {
 
           <div className="space-y-4">
             {loading ? (
-              <div className="text-center py-20 text-slate-400 font-bold uppercase tracking-widest text-xs">Loading notes...</div>
+              <div className="text-center py-20 text-slate-400 font-bold uppercase tracking-widest text-xs">Зареждане на бележки...</div>
             ) : filteredNotes.length === 0 ? (
-              <div className="text-center py-20 text-slate-400 font-bold uppercase tracking-widest text-xs">No notes found</div>
+              <div className="text-center py-20 text-slate-400 font-bold uppercase tracking-widest text-xs">Не са намерени бележки</div>
             ) : filteredNotes.map((note, i) => (
               <motion.div
                 key={note.id}
@@ -139,10 +139,10 @@ export const MedicalNotesPage: React.FC = () => {
                   </p>
                   <div className="flex items-center justify-between pt-2">
                     <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded-full flex items-center gap-1.5">
-                      <MessageSquare className="w-3 h-3" /> Clinical Log
+                      <MessageSquare className="w-3 h-3" /> Клинично досие
                     </span>
                     <button className="text-[10px] font-black text-emerald-600 uppercase tracking-widest flex items-center gap-1.5 hover:underline">
-                      View Full Details <ChevronRight className="w-3 h-3" />
+                      Преглед на всички детайли <ChevronRight className="w-3 h-3" />
                     </button>
                   </div>
                 </div>
@@ -173,7 +173,7 @@ export const MedicalNotesPage: React.FC = () => {
                   <div className="absolute top-4 right-4 text-slate-200">
                     <MessageSquare className="w-6 h-6" />
                   </div>
-                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Clinical Note Content</h4>
+                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Съдържание на клиничната бележка</h4>
                   <p className="text-sm text-slate-600 leading-relaxed font-medium">
                     {selectedNote.content}
                   </p>
@@ -184,7 +184,7 @@ export const MedicalNotesPage: React.FC = () => {
                     to={`/patients/${selectedNote.patient_id}`}
                     className="w-full py-4 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
                   >
-                    Go to Patient Record <ExternalLink className="w-3 h-3" />
+                    Към досието на пациента <ExternalLink className="w-3 h-3" />
                   </Link>
                 </div>
               </div>
@@ -194,7 +194,7 @@ export const MedicalNotesPage: React.FC = () => {
               <div className="w-16 h-16 bg-slate-50 rounded-[1.5rem] flex items-center justify-center text-slate-300 mb-6 border border-slate-100">
                 <FileEdit className="w-8 h-8 opacity-20" />
               </div>
-              <h3 className="text-slate-400 font-black text-xs uppercase tracking-widest">Select a note to view full details</h3>
+              <h3 className="text-slate-400 font-black text-xs uppercase tracking-widest">Изберете бележка за пълен преглед на детайлите</h3>
             </div>
           )}
         </div>
@@ -209,19 +209,19 @@ export const MedicalNotesPage: React.FC = () => {
             className="bg-white rounded-[2.5rem] w-full max-w-lg p-10 space-y-8"
           >
             <div className="space-y-2">
-              <h2 className="text-2xl font-black text-slate-900">New Clinical Note</h2>
-              <p className="text-slate-500 font-medium">Record observations for a patient.</p>
+              <h2 className="text-2xl font-black text-slate-900">Нова клинична бележка</h2>
+              <p className="text-slate-500 font-medium">Запишете наблюдения за пациент.</p>
             </div>
 
             <div className="space-y-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Select Patient</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Избери пациент</label>
                 <select
                   value={targetPatientId}
                   onChange={(e) => setTargetPatientId(e.target.value)}
                   className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-sm"
                 >
-                  <option value="">Choose a patient...</option>
+                  <option value="">Изберете пациент...</option>
                   {patients.map(p => (
                     <option key={p.id} value={p.id}>{p.name} ({p.patient_id})</option>
                   ))}
@@ -229,12 +229,12 @@ export const MedicalNotesPage: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Note Content</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Съдържание на бележката</label>
                 <textarea
                   rows={6}
                   value={newNoteContent}
                   onChange={(e) => setNewNoteContent(e.target.value)}
-                  placeholder="Type clinical observations here..."
+                  placeholder="Въведете клинични наблюдения тук..."
                   className="w-full p-6 bg-slate-50 border border-slate-100 rounded-[2rem] outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-sm resize-none"
                 />
               </div>
@@ -245,13 +245,13 @@ export const MedicalNotesPage: React.FC = () => {
                 onClick={() => setShowCreateModal(false)}
                 className="flex-1 py-4 bg-slate-50 text-slate-600 font-black text-[10px] uppercase tracking-widest rounded-2xl border border-slate-100 hover:bg-slate-100 transition-all"
               >
-                Cancel
+                Отказ
               </button>
               <button
                 onClick={handleCreateNote}
                 className="flex-1 py-4 bg-emerald-600 text-white font-black text-[10px] uppercase tracking-widest rounded-2xl shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all"
               >
-                Save Clinical Note
+                Запази клиничната бележка
               </button>
             </div>
           </motion.div>

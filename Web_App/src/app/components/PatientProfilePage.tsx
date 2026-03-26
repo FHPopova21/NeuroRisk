@@ -38,9 +38,9 @@ const RiskGauge = ({ score }: { score: number }) => {
   const strokeDashoffset = circumference - (normalizedScore / 100) * circumference;
   
   let color = "#10b981"; // Green
-  let text = "Low Risk";
-  if (normalizedScore >= 40) { color = "#eab308"; text = "Medium Risk"; }
-  if (normalizedScore > 75) { color = "#f97316"; text = "High Risk"; }
+  let text = "Нисък риск";
+  if (normalizedScore >= 40) { color = "#eab308"; text = "Среден риск"; }
+  if (normalizedScore > 75) { color = "#f97316"; text = "Висок риск"; }
 
   return (
     <div className="flex flex-col items-center justify-center relative">
@@ -169,12 +169,12 @@ export const PatientProfilePage: React.FC = () => {
       
       // Also sync it to Global Medical Notes if there is any content, so it appears everywhere
       if (doctorNote && doctorNote.trim() !== "") {
-        const globalNoteStr = `[Clinical Analysis - Record ${recordToUpdate.id.slice(0,6)}]: ${doctorNote}`;
+        const globalNoteStr = `[Клиничен анализ - Запис ${recordToUpdate.id.slice(0,6)}]: ${doctorNote}`;
         const newGlobalNote = await apiService.createMedicalNote(id!, globalNoteStr);
         setMedicalNotes(prev => [newGlobalNote, ...prev]);
       }
       
-      toast.success("Record updated successfully");
+      toast.success("Записът е обновен успешно");
     } catch (err: any) {
       toast.error(err.message);
     } finally {
@@ -193,16 +193,16 @@ export const PatientProfilePage: React.FC = () => {
         setEegHistory(prev => [newRecord, ...prev]);
         setSelectedHistoryRecord(newRecord); // Auto-select the newly analyzed record
         setSelectedLabAnalysis(""); // Reset selection
-        toast.success("File Analysis Complete!");
+        toast.success("Анализът на файла приключи!");
       } else {
         const updatedRecord = await apiService.analyzeRecord(eegHistory[0].id);
         // Update history with the new analyzed record
         setEegHistory(prev => [updatedRecord, ...prev.slice(1)]);
-        toast.success("Record Re-analyzed!");
+        toast.success("Записът е преанализиран!");
       }
     } catch (err: any) {
       setAnalysisError(err.message);
-      toast.error(err.message || "Analysis failed");
+      toast.error(err.message || "Неуспешен анализ");
     } finally {
       setAnalyzing(false);
     }
@@ -227,7 +227,7 @@ export const PatientProfilePage: React.FC = () => {
           setDoctorNote(historyData[0].doctor_note || "");
         }
       } catch (err: any) {
-        toast.error("Failed to load patient data");
+        toast.error("Грешка при зареждане на данните за пациента");
       } finally {
         setLoading(false);
       }
@@ -264,10 +264,10 @@ export const PatientProfilePage: React.FC = () => {
             <div>
               <h1 className="text-2xl font-black text-slate-900">{patient.name}</h1>
               <div className="flex items-center gap-3 mt-1">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Patient ID: #NR-{patient.id.slice(0, 6)}</span>
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Пациент ID: #NR-{patient.id.slice(0, 6)}</span>
                 <span className="w-1 h-1 rounded-full bg-slate-300" />
                 <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded-full">
-                  {patient.is_active ? "Connected" : "Disconnected"}
+                  {patient.is_active ? "Свързан" : "Прекъснат"}
                 </span>
               </div>
             </div>
@@ -284,7 +284,7 @@ export const PatientProfilePage: React.FC = () => {
                 <span className="truncate">
                   {selectedLabAnalysis 
                     ? labAnalyses.find(l => l.id === selectedLabAnalysis)?.file_name 
-                    : "- Select Analysis Data Source -"}
+                    : "- Изберете източник за анализ -"}
                 </span>
                 <ChevronDown className={clsx("w-4 h-4 text-slate-400 transition-transform", isDropdownOpen && "rotate-180")} />
               </button>
@@ -304,7 +304,7 @@ export const PatientProfilePage: React.FC = () => {
                         className="w-full text-left px-5 py-3 hover:bg-slate-50 transition-colors border-b border-slate-100"
                       >
                         <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">
-                          - Default Live Stream -
+                          - Стандартен стрийм на живо -
                         </span>
                       </button>
                       {labAnalyses.map(lab => (
@@ -323,13 +323,13 @@ export const PatientProfilePage: React.FC = () => {
                             {lab.file_name}
                           </span>
                           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                            Uploaded: {new Date(lab.timestamp).toLocaleDateString()}
+                            Качен: {new Date(lab.timestamp).toLocaleDateString()}
                           </span>
                         </button>
                       ))}
                       {labAnalyses.length === 0 && (
                         <div className="px-5 py-4 text-xs font-medium text-slate-400 text-center">
-                          No valid Lab files uploaded yet.
+                          Няма качени валидни файлове за лабораторен анализ все още.
                         </div>
                       )}
                     </div>
@@ -351,9 +351,9 @@ export const PatientProfilePage: React.FC = () => {
             {analyzing ? (
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Analyzing...
+                Анализиране...
               </div>
-            ) : "Analyze Record"}
+            ) : "Анализирай запис"}
           </button>
         </div>
       </div>
@@ -363,10 +363,10 @@ export const PatientProfilePage: React.FC = () => {
         <div className="w-full space-y-8">
           {/* TABS */}
           <div className="flex flex-wrap items-center gap-6 border-b border-slate-200">
-            <TabButton active={activeTab === "eeg"} onClick={() => { setActiveTab("eeg"); setSelectedHistoryRecord(null); }} label="EEG Monitoring" icon={Activity} />
-            <TabButton active={activeTab === "history"} onClick={() => setActiveTab("history")} label="Analysis History" icon={Clock} />
-            <TabButton active={activeTab === "notes"} onClick={() => setActiveTab("notes")} label="Medical Notes" icon={FileText} />
-            <TabButton active={activeTab === "lab"} onClick={() => setActiveTab("lab")} label="Lab Analysis" icon={Microscope} />
+            <TabButton active={activeTab === "eeg"} onClick={() => { setActiveTab("eeg"); setSelectedHistoryRecord(null); }} label="ЕЕГ Мониторинг" icon={Activity} />
+            <TabButton active={activeTab === "history"} onClick={() => setActiveTab("history")} label="История на анализите" icon={Clock} />
+            <TabButton active={activeTab === "notes"} onClick={() => setActiveTab("notes")} label="Медицинско досие" icon={FileText} />
+            <TabButton active={activeTab === "lab"} onClick={() => setActiveTab("lab")} label="Лабораторен анализ" icon={Microscope} />
           </div>
 
           <motion.div
@@ -381,20 +381,20 @@ export const PatientProfilePage: React.FC = () => {
                 {latestRecord && (
                   <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
                     <div>
-                      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">AI Verdict (Live-ish)</h4>
+                      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Анализ на ИИ (На живо)</h4>
                       <div className={clsx(
                         "text-2xl font-black",
                         latestRecord.risk_score > 75 ? "text-red-600" : latestRecord.risk_score > 40 ? "text-amber-600" : "text-emerald-600"
                       )}>
-                        {latestRecord.risk_score > 75 ? "Seizure Detected" : latestRecord.risk_score > 40 ? "Requires Attention" : "Healthy Context"}
-                        <span className="text-sm font-bold opacity-60 ml-2">({latestRecord.risk_score}% Confidence)</span>
+                        {latestRecord.risk_score > 75 ? "Установен пристъп" : latestRecord.risk_score > 40 ? "Изисква внимание" : "Здрав"}
+                        <span className="text-sm font-bold opacity-60 ml-2">({latestRecord.risk_score}% Сигурност)</span>
                       </div>
                     </div>
                     <div className={clsx(
                       "px-6 py-3 rounded-2xl border text-sm font-black uppercase tracking-wider",
                       latestRecord.risk_score > 75 ? "bg-red-50 text-red-700 border-red-100" : latestRecord.risk_score > 40 ? "bg-amber-50 text-amber-700 border-amber-100" : "bg-emerald-50 text-emerald-700 border-emerald-100"
                     )}>
-                      {latestRecord.risk_status} Risk
+                      {latestRecord.risk_status} Риск
                     </div>
                   </div>
                 )}
@@ -411,10 +411,10 @@ export const PatientProfilePage: React.FC = () => {
                         <h4 className={clsx(
                           "text-[10px] font-black uppercase tracking-widest",
                           latestRecord?.risk_score > 75 ? "text-red-500" : "text-slate-400"
-                        )}>Time Domain: Primary Stream Signal</h4>
+                        )}>Времева област: Основен сигнал</h4>
                         <div className="flex items-center gap-2">
                           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                          <span className="text-[9px] font-bold text-slate-400 uppercase">Live Analysis Active</span>
+                          <span className="text-[9px] font-bold text-slate-400 uppercase">Активен анализ на живо</span>
                         </div>
                       </div>
                       <div className="h-[400px] w-full">
@@ -425,8 +425,8 @@ export const PatientProfilePage: React.FC = () => {
                             <YAxis domain={['auto', 'auto']} tick={{fontSize: 10, fill: '#64748b'}} axisLine={false} tickLine={false} tickFormatter={(val) => `${val} µV`} width={60} />
                             <Tooltip 
                               contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                              formatter={(value: any) => [`${Number(value).toFixed(2)} µV`, 'Voltage']}
-                              labelFormatter={() => 'Simulated Time Stream'}
+                              formatter={(value: any) => [`${Number(value).toFixed(2)} µV`, 'Напрежение']}
+                              labelFormatter={() => 'Симулиран поток (Време)'}
                             />
                             <Line 
                               type="monotone" 
@@ -448,9 +448,9 @@ export const PatientProfilePage: React.FC = () => {
                     <div className="pt-4 border-t border-slate-200/50">
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                          Frequency Domain: Spectral Density (0-50Hz)
+                          Честотна област: Спектрална плътност (0-50Hz)
                         </h4>
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">FFT Approximation</span>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">FFT апроксимация</span>
                       </div>
                       <div className="h-64 w-full">
                         <ResponsiveContainer width="100%" height="100%">
@@ -466,7 +466,7 @@ export const PatientProfilePage: React.FC = () => {
                             <YAxis tick={{fontSize: 10, fill: '#64748b'}} axisLine={false} tickLine={false} tickFormatter={(val) => `${val.toFixed(1)}`} width={40} />
                             <Tooltip 
                               contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                              formatter={(value: any) => [`${Number(value).toFixed(2)} µV²/Hz`, 'Power']}
+                              formatter={(value: any) => [`${Number(value).toFixed(2)} µV²/Hz`, 'Мощност']}
                               labelFormatter={(label) => `${label} Hz`}
                             />
                             <Area 
@@ -487,19 +487,19 @@ export const PatientProfilePage: React.FC = () => {
                 {/* BIOMARKER CARDS */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <ProCard 
-                    label="Energy (RMS)" 
+                    label="Енергия (RMS)" 
                     value={`${latestRecord?.rms?.toFixed(2) || "0.00"} µV`} 
                     icon={Zap} 
                     color="blue"
                   />
                   <ProCard 
-                    label="Spectrum (Mobility)" 
+                    label="Спектър (Подвижност)" 
                     value={latestRecord?.hjorth_mobility?.toFixed(3) || "0.000"} 
                     icon={Waves} 
                     color="purple"
                   />
                   <ProCard 
-                    label="Complexity" 
+                    label="Комплексност" 
                     value={latestRecord?.hjorth_complexity?.toFixed(3) || "0.000"} 
                     icon={Brain} 
                     color="emerald"
@@ -521,13 +521,13 @@ export const PatientProfilePage: React.FC = () => {
                       <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500">
                         <FileText className="w-5 h-5" />
                       </div>
-                      <h3 className="font-black text-slate-900">Live Clinical Observations</h3>
+                      <h3 className="font-black text-slate-900">Клинични наблюдения на живо</h3>
                     </div>
                     <div className="space-y-4">
                       <textarea
                         value={doctorNote}
                         onChange={(e) => setDoctorNote(e.target.value)}
-                        placeholder="Enter clinical observations for this specific record..."
+                        placeholder="Въведете клинични наблюдения за този конкретен запис..."
                         className="w-full h-32 p-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all resize-none"
                       />
                       <div className="flex flex-wrap gap-4 pt-2">
@@ -541,7 +541,7 @@ export const PatientProfilePage: React.FC = () => {
                               : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
                           )}
                         >
-                          {latestRecord.doctor_validation === "VALIDATED" ? "Diagnosis Confirmed" : "Confirm Diagnosis"}
+                          {latestRecord.doctor_validation === "VALIDATED" ? "Диагнозата е потвърдена" : "Потвърди диагноза"}
                         </button>
                         <button
                           onClick={() => handleUpdateRecord("FALSE_ALARM")}
@@ -553,7 +553,7 @@ export const PatientProfilePage: React.FC = () => {
                               : "bg-red-50 text-red-600 hover:bg-red-100"
                           )}
                         >
-                          {latestRecord.doctor_validation === "FALSE_ALARM" ? "Marked False Alarm" : "False Alarm"}
+                          {latestRecord.doctor_validation === "FALSE_ALARM" ? "Маркирано като фалшива аларма" : "Фалшива аларма"}
                         </button>
                       </div>
                     </div>
@@ -567,9 +567,9 @@ export const PatientProfilePage: React.FC = () => {
                 <table className="w-full">
                   <thead>
                     <tr className="bg-slate-50/50">
-                      <th className="px-8 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Analysis Date</th>
-                      <th className="px-8 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Risk Score</th>
-                      <th className="px-8 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Status</th>
+                      <th className="px-8 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Дата на анализ</th>
+                      <th className="px-8 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Ниво на риск</th>
+                      <th className="px-8 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Статус</th>
                       <th className="px-8 py-5 text-right"></th>
                     </tr>
                   </thead>
@@ -616,7 +616,7 @@ export const PatientProfilePage: React.FC = () => {
                             onClick={() => setSelectedHistoryRecord(item)}
                             className="px-4 py-2 bg-slate-50 text-slate-600 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-50 hover:text-emerald-700 transition-all border border-slate-100"
                           >
-                            View Details
+                            Преглед на детайли
                           </button>
                         </td>
                       </tr>
@@ -634,8 +634,8 @@ export const PatientProfilePage: React.FC = () => {
                       <Brain className="w-6 h-6" />
                     </div>
                     <div>
-                      <h2 className="text-lg font-black text-slate-900 leading-tight">Patient Record Details</h2>
-                      <p className="text-xs text-slate-400 font-medium">Record ID: {selectedHistoryRecord.id.slice(0, 8)}... • Patient: {patient.name}</p>
+                      <h2 className="text-lg font-black text-slate-900 leading-tight">Детайли за записа</h2>
+                      <p className="text-xs text-slate-400 font-medium">Запис ID: {selectedHistoryRecord.id.slice(0, 8)}... • Пациент: {patient.name}</p>
                     </div>
                   </div>
                   <button
@@ -650,20 +650,20 @@ export const PatientProfilePage: React.FC = () => {
                   {/* PRO HEADER DIAGNOSIS */}
                   <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
                     <div>
-                      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">AI Verdict</h4>
+                      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Анализ на ИИ</h4>
                       <div className={clsx(
                         "text-2xl font-black",
                         selectedHistoryRecord.risk_score > 75 ? "text-red-600" : selectedHistoryRecord.risk_score > 40 ? "text-amber-600" : "text-emerald-600"
                       )}>
-                        {selectedHistoryRecord.risk_score > 75 ? "Seizure Detected" : selectedHistoryRecord.risk_score > 40 ? "Requires Attention" : "Healthy Context"}
-                        <span className="text-sm font-bold opacity-60 ml-2">({selectedHistoryRecord.risk_score}% Confidence)</span>
+                        {selectedHistoryRecord.risk_score > 75 ? "Установен пристъп" : selectedHistoryRecord.risk_score > 40 ? "Изисква внимание" : "Здрав"}
+                        <span className="text-sm font-bold opacity-60 ml-2">({selectedHistoryRecord.risk_score}% Сигурност)</span>
                       </div>
                     </div>
                     <div className={clsx(
                       "px-6 py-3 rounded-2xl border text-sm font-black uppercase tracking-wider",
                       selectedHistoryRecord.risk_score > 75 ? "bg-red-50 text-red-700 border-red-100" : selectedHistoryRecord.risk_score > 40 ? "bg-amber-50 text-amber-700 border-amber-100" : "bg-emerald-50 text-emerald-700 border-emerald-100"
                     )}>
-                      {selectedHistoryRecord.risk_status} Risk
+                      {selectedHistoryRecord.risk_status} Риск
                     </div>
                   </div>
 
@@ -679,7 +679,7 @@ export const PatientProfilePage: React.FC = () => {
                           <h4 className={clsx(
                             "text-[10px] font-black uppercase tracking-widest",
                             selectedHistoryRecord.risk_score > 75 ? "text-red-500" : "text-slate-400"
-                          )}>Time Domain: Historical Waveform</h4>
+                          )}>Времева област: Историческа вълна</h4>
                           <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{new Date(selectedHistoryRecord.timestamp).toLocaleString()}</span>
                         </div>
                         <div className="h-[400px] w-full">
@@ -690,8 +690,8 @@ export const PatientProfilePage: React.FC = () => {
                               <YAxis domain={['auto', 'auto']} tick={{fontSize: 10, fill: '#64748b'}} axisLine={false} tickLine={false} tickFormatter={(val) => `${val} µV`} width={60} />
                               <Tooltip 
                                 contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                formatter={(value: any) => [`${Number(value).toFixed(2)} µV`, 'Voltage']}
-                                labelFormatter={() => 'Historical Time Record'}
+                                formatter={(value: any) => [`${Number(value).toFixed(2)} µV`, 'Напрежение']}
+                                labelFormatter={() => 'Времеви запис'}
                               />
                               <Line 
                                 type="monotone" 
@@ -710,7 +710,7 @@ export const PatientProfilePage: React.FC = () => {
                       <div className="pt-4 border-t border-slate-200/50">
                         <div className="flex items-center justify-between mb-2">
                           <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                            Frequency Domain: Spectral Density (0-50Hz)
+                            Честотна област: Спектрална плътност (0-50Hz)
                           </h4>
                           <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">FFT</span>
                         </div>
@@ -728,7 +728,7 @@ export const PatientProfilePage: React.FC = () => {
                               <YAxis tick={{fontSize: 10, fill: '#64748b'}} axisLine={false} tickLine={false} tickFormatter={(val) => `${val.toFixed(1)}`} width={40} />
                               <Tooltip 
                                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                formatter={(value: any) => [`${Number(value).toFixed(2)} µV²/Hz`, 'Power']}
+                                formatter={(value: any) => [`${Number(value).toFixed(2)} µV²/Hz`, 'Мощност']}
                                 labelFormatter={(label) => `${label} Hz`}
                               />
                               <Area 
@@ -749,19 +749,19 @@ export const PatientProfilePage: React.FC = () => {
                   {/* BIOMARKER CARDS */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <ProCard 
-                      label="Energy (RMS)" 
+                      label="Енергия (RMS)" 
                       value={`${selectedHistoryRecord.rms?.toFixed(2) || "0.00"} µV`} 
                       icon={Zap} 
                       color="blue"
                     />
                     <ProCard 
-                      label="Spectrum (Mobility)" 
+                      label="Спектър (Подвижност)" 
                       value={selectedHistoryRecord.hjorth_mobility?.toFixed(3) || "0.000"} 
                       icon={Waves} 
                       color="purple"
                     />
                     <ProCard 
-                      label="Complexity" 
+                      label="Комплексност" 
                       value={selectedHistoryRecord.hjorth_complexity?.toFixed(3) || "0.000"} 
                       icon={Brain} 
                       color="emerald"
@@ -782,16 +782,16 @@ export const PatientProfilePage: React.FC = () => {
                       <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500">
                         <FileText className="w-5 h-5" />
                       </div>
-                      <h3 className="font-black text-slate-900">Clinical Control Center</h3>
+                      <h3 className="font-black text-slate-900">Клиничен контролен център</h3>
                     </div>
 
                     <div className="space-y-4">
                       <div>
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-1">Doctor's Clinical Notes</label>
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-1">Клинични бележки на лекаря</label>
                         <textarea
                           value={doctorNote}
                           onChange={(e) => setDoctorNote(e.target.value)}
-                          placeholder="Enter your observations or diagnosis comments here..."
+                          placeholder="Въведете вашите наблюдения или диагностични коментари тук..."
                           className="w-full h-32 p-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all resize-none"
                         />
                       </div>
@@ -807,7 +807,7 @@ export const PatientProfilePage: React.FC = () => {
                               : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
                           )}
                         >
-                          {selectedHistoryRecord.doctor_validation === "VALIDATED" ? "Diagnosis Confirmed" : "Confirm Diagnosis"}
+                          {selectedHistoryRecord.doctor_validation === "VALIDATED" ? "Диагнозата е потвърдена" : "Потвърди диагноза"}
                         </button>
                         <button
                           onClick={() => handleUpdateRecord("FALSE_ALARM")}
@@ -819,7 +819,7 @@ export const PatientProfilePage: React.FC = () => {
                               : "bg-red-50 text-red-600 hover:bg-red-100"
                           )}
                         >
-                          {selectedHistoryRecord.doctor_validation === "FALSE_ALARM" ? "Marked False Alarm" : "False Alarm"}
+                          {selectedHistoryRecord.doctor_validation === "FALSE_ALARM" ? "Маркирано като фалшива аларма" : "Фалшива аларма"}
                         </button>
                         {selectedHistoryRecord.doctor_validation === "PENDING" && doctorNote !== selectedHistoryRecord.doctor_note && (
                            <button
@@ -827,7 +827,7 @@ export const PatientProfilePage: React.FC = () => {
                              disabled={updating}
                              className="w-full md:w-auto py-4 px-8 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-slate-800 transition-all shadow-xl shadow-slate-200"
                            >
-                             Save Clinical Observations
+                             Запази клинични наблюдения
                            </button>
                         )}
                       </div>
@@ -840,13 +840,13 @@ export const PatientProfilePage: React.FC = () => {
             {activeTab === "notes" && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest">Medical Log History</h3>
+                  <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest">История на медицинското досие</h3>
                   <button 
                     onClick={() => setIsAddingNote(!isAddingNote)}
                     className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200"
                   >
                     {isAddingNote ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />} 
-                    {isAddingNote ? "Cancel" : "Add Medical Note"}
+                    {isAddingNote ? "Отказ" : "Добави медицинска бележка"}
                   </button>
                 </div>
 
@@ -855,7 +855,7 @@ export const PatientProfilePage: React.FC = () => {
                     <textarea
                       value={newNoteContent}
                       onChange={(e) => setNewNoteContent(e.target.value)}
-                      placeholder="Enter new medical observations here..."
+                      placeholder="Въведете нови медицински наблюдения тук..."
                       className="w-full h-32 p-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all resize-none mb-4"
                     />
                     <div className="flex justify-end">
@@ -868,9 +868,9 @@ export const PatientProfilePage: React.FC = () => {
                             setMedicalNotes(prev => [newGlobalNote, ...prev]);
                             setNewNoteContent("");
                             setIsAddingNote(false);
-                            toast.success("Medical note added!");
+                            toast.success("Медицинската бележка е добавена!");
                           } catch (err: any) {
-                            toast.error(err.message || "Failed to add note");
+                            toast.error(err.message || "Неуспешно добавяне на бележка");
                           } finally {
                             setSavingNote(false);
                           }
@@ -880,7 +880,7 @@ export const PatientProfilePage: React.FC = () => {
                           savingNote || !newNoteContent.trim() ? "bg-slate-100 text-slate-400" : "bg-emerald-600 text-white hover:bg-emerald-700 shadow-md"
                         )}
                       >
-                        {savingNote ? "Saving..." : "Save Note"}
+                        {savingNote ? "Запазване..." : "Запази бележка"}
                       </button>
                     </div>
                   </div>
@@ -894,7 +894,7 @@ export const PatientProfilePage: React.FC = () => {
                           <User className="w-5 h-5" />
                         </div>
                         <div>
-                          <h4 className="text-sm font-black text-slate-900">{note.doctor_id ? `Dr. ${note.doctor_id.slice(0, 5)}` : "Doctor"}</h4>
+                          <h4 className="text-sm font-black text-slate-900">{note.doctor_id ? `Д-р ${note.doctor_id.slice(0, 5)}` : "Доктор"}</h4>
                           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{new Date(note.timestamp).toLocaleDateString()}</p>
                         </div>
                       </div>
@@ -916,12 +916,12 @@ export const PatientProfilePage: React.FC = () => {
                     <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-emerald-400 to-emerald-600" />
                     <h3 className="font-black text-slate-900 mb-6 flex items-center gap-2">
                       <UploadCloud className="w-5 h-5 text-emerald-600" />
-                      Upload New Analysis
+                      Качи нов анализ
                     </h3>
                     
                     <div className="space-y-4">
                       <div>
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-1">File (TXT, CSV)</label>
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-1">Файл (TXT, CSV)</label>
                         <input
                           type="file"
                           accept=".txt,.csv"
@@ -931,11 +931,11 @@ export const PatientProfilePage: React.FC = () => {
                       </div>
                       
                       <div>
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-1">Clinical Notes (Optional)</label>
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-1">Клинични бележки (Опционално)</label>
                         <textarea
                           value={labNotes}
                           onChange={(e) => setLabNotes(e.target.value)}
-                          placeholder="e.g. Brain MRI indicates structural normalities, but continuous slowing..."
+                          placeholder="напр. ЯМР показва структурни нормалности..."
                           className="w-full h-24 p-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all resize-none"
                         />
                       </div>
@@ -943,7 +943,7 @@ export const PatientProfilePage: React.FC = () => {
                       <button
                         onClick={async () => {
                           if (!labFile) {
-                            toast.error("Please select a file to upload.");
+                            toast.error("Моля, изберете файл за качване.");
                             return;
                           }
                           setUploadingLab(true);
@@ -952,9 +952,9 @@ export const PatientProfilePage: React.FC = () => {
                             setLabAnalyses([newAnalysis, ...labAnalyses]);
                             setLabFile(null);
                             setLabNotes("");
-                            toast.success("Lab analysis uploaded successfully");
+                            toast.success("Лабораторният анализ е качен успешно");
                           } catch (err: any) {
-                            toast.error(err.message || "Failed to upload file");
+                            toast.error(err.message || "Неуспешно качване на файл");
                           } finally {
                             setUploadingLab(false);
                           }
@@ -970,9 +970,9 @@ export const PatientProfilePage: React.FC = () => {
                         {uploadingLab ? (
                           <div className="flex items-center gap-2">
                             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                            Uploading...
+                            Качване...
                           </div>
-                        ) : "Submit Upload"}
+                        ) : "Потвърди качването"}
                       </button>
                     </div>
                   </div>
@@ -981,17 +981,17 @@ export const PatientProfilePage: React.FC = () => {
                 {/* RESULTS LIST */}
                 <div className="lg:col-span-2 space-y-4">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest">Laboratory History</h3>
+                    <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest">История на лабораторията</h3>
                     <span className="text-[10px] font-black bg-slate-100 text-slate-500 px-3 py-1 rounded-full uppercase tracking-wider">
-                      {labAnalyses.length} Documents
+                      {labAnalyses.length} Документи
                     </span>
                   </div>
                   
                   {labAnalyses.length === 0 ? (
                     <div className="bg-slate-50/50 border border-slate-100 border-dashed rounded-[2rem] p-12 text-center">
                       <Microscope className="w-12 h-12 text-slate-300 mx-auto mb-4 opacity-50" />
-                      <h4 className="text-slate-500 font-black mb-1">No Lab Results Available</h4>
-                      <p className="text-xs text-slate-400 font-medium">Upload external assessments (.txt, .csv) here.</p>
+                      <h4 className="text-slate-500 font-black mb-1">Няма налични лабораторни резултати</h4>
+                      <p className="text-xs text-slate-400 font-medium">Качете външни оценки тук.</p>
                     </div>
                   ) : (
                     labAnalyses.map((lab: LabAnalysis) => (
@@ -1110,8 +1110,8 @@ const ShapWaterfall = ({ data }: { data: any[] }) => {
             <Brain className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="font-black text-slate-900 leading-tight">AI Diagnostic Logic (SHAP)</h3>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Local Explanation: Feature Contributions</p>
+            <h3 className="font-black text-slate-900 leading-tight">Диагностична логика на ИИ (SHAP)</h3>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Локално обяснение: Принос на характеристиките</p>
           </div>
         </div>
       </div>
@@ -1122,7 +1122,7 @@ const ShapWaterfall = ({ data }: { data: any[] }) => {
             <div className="flex justify-between text-[11px] font-black uppercase tracking-wider">
               <span className="text-slate-500">{item.feature}</span>
               <span className={clsx(item.impact > 0 ? "text-orange-600" : "text-emerald-600")}>
-                {item.impact > 0 ? "+" : ""}{item.impact.toFixed(1)}% Impact
+                {item.impact > 0 ? "+" : ""}{item.impact.toFixed(1)}% Влияние
               </span>
             </div>
             <div className="h-3 bg-slate-50 rounded-full overflow-hidden flex relative">
@@ -1143,7 +1143,7 @@ const ShapWaterfall = ({ data }: { data: any[] }) => {
         ))}
       </div>
       <p className="text-[10px] font-medium text-slate-400 italic">
-        * Positive impact (orange) increases risk score; negative impact (green) decreases it.
+        * Положителното влияние (оранжево) увеличава риска; отрицателното (зелено) го намалява.
       </p>
     </div>
   );
@@ -1155,17 +1155,17 @@ const LabResultsTable = ({ data }: { data: any[] }) => {
   return (
     <div className="bg-white border border-slate-100 rounded-[2.5rem] shadow-sm overflow-hidden">
       <div className="p-8 pb-4 border-b border-slate-50">
-        <h3 className="font-black text-slate-900">Clinical Measurements</h3>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Medical Lab Results Format</p>
+        <h3 className="font-black text-slate-900">Клинични измервания</h3>
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Формат на медицински лабораторни резултати</p>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="bg-slate-50/50">
-              <th className="px-8 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-wider">Biomarker</th>
-              <th className="px-8 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-wider">Patient Value</th>
-              <th className="px-8 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-wider">Reference (Normal)</th>
-              <th className="px-8 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-wider">Status</th>
+              <th className="px-8 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-wider">Биомаркер</th>
+              <th className="px-8 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-wider">Стойност на пациента</th>
+              <th className="px-8 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-wider">Референтни граници</th>
+              <th className="px-8 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-wider">Статус</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
@@ -1180,7 +1180,7 @@ const LabResultsTable = ({ data }: { data: any[] }) => {
                     item.status === "High" ? "text-red-600" : item.status === "Low" ? "text-blue-600" : "text-emerald-600"
                   )}>
                     {item.status === "High" ? <TrendingUp className="w-3 h-3" /> : item.status === "Low" ? <TrendingDown className="w-3 h-3" /> : null}
-                    {item.status}
+                    {item.status === "High" ? "Висок" : item.status === "Low" ? "Нисък" : item.status === "Normal" ? "Нормален" : item.status}
                   </div>
                 </td>
               </tr>
