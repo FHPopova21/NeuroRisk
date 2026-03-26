@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { clsx } from "clsx";
 import { motion } from "motion/react";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 import { apiService, Patient, EEGRecord } from "../services/api";
 import { useState, useEffect, useMemo } from "react";
 import {
@@ -45,6 +45,7 @@ export const DashboardHome: React.FC = () => {
   const [patientFilter, setPatientFilter] = useState<"ALL" | "ACTIVE" | "MANUAL">("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [alertTab, setAlertTab] = useState<"CRITICAL" | "UNREAD" | "ALL">("CRITICAL");
+  const [recentlyViewed, setRecentlyViewed] = useState<any[]>([]);
 
   useEffect(() => {
     setLoading(true);
@@ -58,6 +59,13 @@ export const DashboardHome: React.FC = () => {
       setAlerts(a);
       setLoading(false);
     });
+
+    try {
+      const stored = localStorage.getItem('recently_viewed_patients');
+      if (stored) {
+        setRecentlyViewed(JSON.parse(stored));
+      }
+    } catch (e) {}
   }, []);
 
   const stats = useMemo(() => {
@@ -306,9 +314,9 @@ export const DashboardHome: React.FC = () => {
             </p>
             <div className="mt-4 flex items-center gap-2">
               <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
-                <div className="h-full bg-indigo-500 w-[92%]" />
+                <div className="h-full bg-indigo-500 w-[94%]" />
               </div>
-              <span className="text-xs font-black text-indigo-600">92%</span>
+              <span className="text-xs font-black text-indigo-600">94%</span>
             </div>
             <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1 text-right">Ниво на сигурност</p>
           </div>
@@ -320,35 +328,6 @@ export const DashboardHome: React.FC = () => {
         </motion.div>
       </div>
 
-      {/* LIVE MONITORING STRIP */}
-      <div className="w-full bg-slate-900 rounded-[2rem] border border-slate-800 shadow-xl overflow-hidden relative group cursor-pointer transition-transform hover:scale-[1.01]">
-        <div className="absolute inset-y-0 left-0 w-64 bg-slate-900 border-r border-slate-800 z-20 flex flex-col p-4 justify-center">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400">Трансмисия на живо</span>
-          </div>
-          <h4 className="font-black text-white text-sm">Stefan Zhelyazkov</h4>
-        </div>
-        {/* Animated wave mock */}
-        <div className="h-24 w-full pl-64 relative overflow-hidden flex items-center">
-          <svg
-            className="absolute h-16 w-[200%] text-emerald-500/50 stroke-current animate-[slide_10s_linear_infinite]"
-            style={{ strokeWidth: 1.5, fill: 'none', strokeLinecap: 'round' }}
-            viewBox="0 0 1000 100"
-            preserveAspectRatio="none"
-          >
-            <path d="M0,50 Q25,20 50,50 T100,50 Q125,80 150,50 T200,50 Q225,20 250,50 T300,50 Q325,80 350,50 T400,50 Q425,20 450,50 T500,50 Q525,80 550,50 T600,50 Q625,20 650,50 T700,50 Q725,80 750,50 T800,50 Q825,20 850,50 T900,50 Q925,80 950,50 T1000,50" />
-          </svg>
-          <svg
-            className="absolute h-16 w-[200%] text-emerald-500/30 stroke-current animate-[slide_8s_linear_infinite]"
-            style={{ strokeWidth: 1, fill: 'none', strokeLinecap: 'round', animationDelay: '-4s' }}
-            viewBox="0 0 1000 100"
-            preserveAspectRatio="none"
-          >
-            <path d="M0,50 Q40,10 80,50 T160,50 Q200,90 240,50 T320,50 Q360,10 400,50 T480,50 Q520,90 560,50 T640,50 Q680,10 720,50 T800,50 Q840,90 880,50 T960,50 Q1000,10 1040,50" />
-          </svg>
-        </div>
-      </div>
 
       <div className="grid lg:grid-cols-4 gap-8">
         {/* RECENT ANALYSES TABLE */}
@@ -386,21 +365,21 @@ export const DashboardHome: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-slate-50">
                 {recentAnalyses.filter(analysis => {
-                   const pInfo = patients.find(p => p.id === analysis.patient_id);
-                   const matchesFilter = patientFilter === "ALL"
-                     ? true
-                     : patientFilter === "ACTIVE"
-                       ? pInfo?.is_active
-                       : !pInfo?.is_active;
+                  const pInfo = patients.find(p => p.id === analysis.patient_id);
+                  const matchesFilter = patientFilter === "ALL"
+                    ? true
+                    : patientFilter === "ACTIVE"
+                      ? pInfo?.is_active
+                      : !pInfo?.is_active;
 
-                   const queryStr = searchQuery.toLowerCase();
-                   const matchesSearch = queryStr === ""
-                     ? true
-                     : (analysis.patient_name?.toLowerCase().includes(queryStr) ||
-                        analysis.patient_id.toLowerCase().includes(queryStr) ||
-                        analysis.risk_status.toLowerCase().includes(queryStr));
+                  const queryStr = searchQuery.toLowerCase();
+                  const matchesSearch = queryStr === ""
+                    ? true
+                    : (analysis.patient_name?.toLowerCase().includes(queryStr) ||
+                      analysis.patient_id.toLowerCase().includes(queryStr) ||
+                      analysis.risk_status.toLowerCase().includes(queryStr));
 
-                   return matchesFilter && matchesSearch;
+                  return matchesFilter && matchesSearch;
                 }).map((analysis) => (
                   <tr key={analysis.id} className="hover:bg-slate-50/50 transition-colors group relative">
                     <td className="px-6 py-4">
@@ -460,54 +439,45 @@ export const DashboardHome: React.FC = () => {
           </div>
         </div>
 
-        {/* ALERTS PANEL */}
-         <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm flex flex-col h-full lg:col-span-1">
-          <div className="p-4 border-b border-slate-50 flex items-center justify-between">
-            <div className="flex gap-1 bg-slate-50 p-1 rounded-xl w-full justify-between">
-               {(["CRITICAL", "UNREAD", "ALL"] as const).map(tab => (
-                 <button
-                   key={tab}
-                   onClick={() => setAlertTab(tab)}
-                   className={clsx(
-                     "px-3 py-2 text-[9px] font-black flex-1 uppercase tracking-widest rounded-lg transition-all",
-                     alertTab === tab
-                       ? "bg-white text-slate-900 shadow-sm border border-slate-100"
-                       : "text-slate-400 hover:text-slate-600"
-                   )}
-                 >
-                   {tab === "CRITICAL" ? "КРИТИЧНИ" : tab === "UNREAD" ? "НЕПРОЧЕТЕНИ" : "ВСИЧКИ"}
-                 </button>
-               ))}
-            </div>
+        {/* RECENTLY VIEWED PATIENTS PANEL */}
+        <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm flex flex-col h-full lg:col-span-1">
+          <div className="p-6 border-b border-slate-50 flex items-center justify-between">
+            <h3 className="font-black text-slate-900 uppercase tracking-widest text-xs min-w-max">Последно разгледани</h3>
           </div>
-          <div className="p-6 space-y-6 flex-1 overflow-y-auto max-h-[500px]">
-            {alerts
-              .filter(a => alertTab === "CRITICAL" ? a.risk_score > 75 : alertTab === "UNREAD" ? !a.is_read : true)
-              .slice(0, 5)
-              .map((alert) => (
-              <div key={alert.id} className={clsx("relative pl-5 border-l-2 py-1", alert.risk_score > 75 ? "border-orange-500" : alert.risk_score > 40 ? "border-amber-400" : "border-emerald-400")}>
-                <div className="flex justify-between items-start mb-1">
-                  <h4 className="text-sm font-black text-slate-900 truncate pr-2">{alert.patient_name || alert.patient_id.slice(0,8)}</h4>
-                  <span className="text-[9px] font-bold text-slate-400 whitespace-nowrap">{new Date(alert.timestamp).toLocaleTimeString()}</span>
+          <div className="p-6 space-y-4 flex-1 overflow-y-auto max-h-[500px]">
+             {recentlyViewed.length > 0 ? (
+                recentlyViewed.map((v: any) => {
+                   const diffMins = Math.round((new Date().getTime() - new Date(v.timestamp).getTime()) / 60000);
+                   const timeText = diffMins === 0 ? "току-що" : diffMins < 60 ? `преди ${diffMins} мин` : diffMins < 1440 ? `преди ${Math.floor(diffMins/60)} ч.` : "по-рано";
+                   return (
+                     <Link to={`/patients/${v.id}`} key={v.id} className="flex items-center justify-between p-3 hover:bg-slate-50 rounded-xl transition-colors border border-transparent hover:border-slate-100 group">
+                        <div className="flex items-center gap-3">
+                           <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-black text-xs border border-emerald-100 uppercase">
+                             {v.name.substring(0,2)}
+                           </div>
+                           <div>
+                              <h4 className="text-sm font-bold text-slate-900 group-hover:text-emerald-700 transition-colors truncate max-w-[120px]">{v.name}</h4>
+                              <p className="text-[10px] text-slate-400 font-medium whitespace-nowrap">#{v.id.slice(0,6)} • {timeText}</p>
+                           </div>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-emerald-500 transition-colors" />
+                     </Link>
+                   )
+                })
+             ) : (
+                <div className="text-center p-6 text-slate-400 text-xs font-bold text-center italic border border-dashed border-slate-200 rounded-xl">
+                    Няма скорошно разгледани пациенти
                 </div>
-                <p className="text-[11px] text-slate-500 mb-2 leading-relaxed line-clamp-2">{alert.message}</p>
-                <div className="flex items-center justify-between mt-1">
-                  <span className={clsx("text-[9px] font-black px-2 py-0.5 rounded-md", alert.risk_score > 75 ? "text-orange-700 bg-orange-50" : alert.risk_score > 40 ? "text-amber-700 bg-amber-50" : "text-emerald-700 bg-emerald-50")}>
-                    {alert.risk_score}% Ниво на риск
-                  </span>
-                  <Link to={`/patients/${alert.patient_id}`} className="text-[9px] font-black text-emerald-600 uppercase tracking-widest hover:underline">Преглед на случай</Link>
-                </div>
-              </div>
-            ))}
-
-            <div className="bg-slate-50 rounded-2xl p-6 mt-4">
+             )}
+            
+            <div className="bg-slate-50 rounded-2xl p-6 mt-6 mt-auto">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-emerald-600 shadow-sm border border-slate-100">
                   <Activity className="w-5 h-5" />
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-slate-900">Системен статус</h4>
-                  <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">Всички системи функционират</p>
+                  <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">Работи нормално</p>
                 </div>
               </div>
               <p className="text-xs text-slate-500 leading-relaxed">Моделите за изкуствен интелект обработват данни от {activePatientsCount} активни монитора.</p>

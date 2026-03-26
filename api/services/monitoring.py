@@ -95,6 +95,48 @@ def calculate_signal_features(signal):
         "deriv2_std": float(deriv2_std)
     }
 
+def get_spectral_data(signal, fs=100.0):
+    """
+    Calculate Power Spectral Density using numpy FFT and group into 1-60 Hz bins.
+    Uses log10 scaling to match medical standards (V^2/Hz log scale).
+    """
+    if not signal or len(signal) < 2:
+        return []
+    
+    x = np.array(signal)
+    N = len(x)
+    
+    # Apply Hann window to reduce spectral leakage
+    window = np.hanning(N)
+    x_w = (x - np.mean(x)) * window # Detrend and window
+    
+    X = np.fft.rfft(x_w)
+    Pxx = (np.abs(X) ** 2) / (fs * N)
+    freqs = np.fft.rfftfreq(N, d=1.0/fs)
+    
+    # We want 1-60Hz to match the second reference image
+    max_f = 60
+    spectral_bins = {i: [] for i in range(1, max_f + 1)}
+    
+    for idx, f in enumerate(freqs):
+        if 0 < f <= max_f:
+            b = int(round(f))
+            if 1 <= b <= max_f:
+                spectral_bins[b].append(Pxx[idx])
+                
+    spectral_data = []
+    for b in range(1, max_f + 1):
+        if spectral_bins[b]:
+            power = float(np.mean(spectral_bins[b]))
+            # Log scale for better visualization of low-power high-freq components
+            # We add a tiny epsilon to avoid log(0)
+            log_power = float(np.log10(max(1e-10, power)))
+        else:
+            log_power = -2.0 # -2 in log10 is 0.01
+        spectral_data.append({"freq": b, "power": log_power})
+        
+    return spectral_data
+
 def get_shap_explanations(features: dict, risk_score: int):
     """
     Генерира симулирани SHAP стойности (локални обяснения)
@@ -192,7 +234,8 @@ def process_eeg_signal(db: Session, signal_data: schemas.EEGSignalIn):
         ai_metadata={
             "sampling_rate": signal_data.sampling_rate,
             "signal_length": len(signal_data.signal),
-            "shap_explanation": get_shap_explanations(features, risk_score)
+            "shap_explanation": get_shap_explanations(features, risk_score),
+            "spectral_data": get_spectral_data(signal_data.signal, float(signal_data.sampling_rate) if hasattr(signal_data, 'sampling_rate') else 100.0)
         }
     )
     
@@ -200,11 +243,13 @@ def process_eeg_signal(db: Session, signal_data: schemas.EEGSignalIn):
 
 def _ensure_shap_data(record: models.EEGRecord):
     """
-    Помощна функция, която гарантира, че записът има SHAP данни за визуализация.
-    Ако липсват в ai_metadata, ги генерира на база съществуващите характеристики.
+    Помощна функция, която гарантира, че записът има SHAP и Spectral данни за визуализация.
+    Ако липсват в ai_metadata, ги генерира на база съществуващите характеристики / суров сигнал.
     """
     if not record.ai_metadata:
         record.ai_metadata = {}
+    
+    needs_update = False
     
     if "shap_explanation" not in record.ai_metadata:
         # Използваме съществуващите характеристики от записа
@@ -215,6 +260,18 @@ def _ensure_shap_data(record: models.EEGRecord):
             "zcr": record.zcr or 0.02
         }
         record.ai_metadata["shap_explanation"] = get_shap_explanations(features, record.risk_score)
+        needs_update = True
+        
+    if "spectral_data" not in record.ai_metadata:
+        raw_signal = record.ai_metadata.get("raw_signal", [])
+        record.ai_metadata["spectral_data"] = get_spectral_data(raw_signal, fs=100.0)
+        needs_update = True
+        
+    if needs_update:
+        # Prevent SQLAlchemy from thinking the json dict hasn't changed
+        import copy
+        record.ai_metadata = copy.deepcopy(record.ai_metadata)
+        
     return record
 
 def create_alert(db: Session, patient_id: str, message: str, severity: str, source: str, alert_type: str):
@@ -337,6 +394,9 @@ def analyze_with_lstm(db: Session, record: models.EEGRecord):
     # Извличаме характеристиките, ако още ги нямаме (за SHAP)
     features = calculate_signal_features(raw_signal)
     record.ai_metadata["shap_explanation"] = get_shap_explanations(features, risk_score)
+    # Добавяме и спектрални данни, базирани на истинския сигнал
+    record.ai_metadata["spectral_data"] = get_spectral_data(raw_signal, fs=100.0) # Assumption
+    
     # Също обновяваме самите характеристики в записа
     for k, v in features.items():
         setattr(record, k, v)

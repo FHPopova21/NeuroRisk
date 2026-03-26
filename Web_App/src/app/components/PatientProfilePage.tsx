@@ -119,24 +119,36 @@ export const PatientProfilePage: React.FC = () => {
   const getRecordDetails = (record: EEGRecord | null) => {
     if (!record) return { timeData: [], spectralData: [] };
     const signal = record.ai_metadata?.raw_signal || [];
-    const timeData = signal.slice(0, 100).map((val: number, i: number) => ({ time: i, value: val }));
+    // Each record is 23s long. 
+    // To show periodicity and spikes better, we increase resolution from 100 to 1000 points
+    // Recharts handles ~1000 points well.
+    const displayPoints = signal.length > 1000 ? signal.filter((_: number, i: number) => i % Math.ceil(signal.length / 1000) === 0) : signal;
+
+    const timeData = displayPoints.map((val: number, i: number) => ({ 
+      time: (i / Math.max(1, displayPoints.length - 1)) * 23, 
+      value: val 
+    }));
     
-    // Mock Spectral Data (0-50Hz)
     const isHighRisk = record.risk_score > 75;
-    const spectralData = Array.from({ length: 50 }, (_, i) => {
+    const isMediumRisk = record.risk_score > 40;
+    
+    const spectralData = record.ai_metadata?.spectral_data || Array.from({ length: 60 }, (_, i) => {
       const freq = i + 1;
-      let power = Math.random() * 5; // Base noise
+      let power = Math.random() * -1; // Base noise (log scale floor)
       
       if (isHighRisk) {
         // High risk: Broadband noise, spiking in Theta/Beta
-        if (freq > 4 && freq < 8) power += Math.random() * 15 + 5; // Theta
-        if (freq > 15 && freq < 30) power += Math.random() * 20 + 10; // Beta
-        if (freq >= 30) power += Math.random() * 15 + 5; // Gamma
+        if (freq > 4 && freq < 8) power += Math.random() * 2 + 1; // Theta
+        if (freq > 15 && freq < 30) power += Math.random() * 3 + 2; // Beta
+        if (freq >= 30) power += Math.random() * 2 + 1; // Gamma
+      } else if (isMediumRisk) {
+        // Medium risk: Some elevated noise in Theta/Alpha
+        if (freq >= 4 && freq <= 13) power += Math.random() * 1.5;
       } else {
         // Normal: Dominant Alpha rhythm (8-13Hz)
-        if (freq >= 8 && freq <= 13) power += Math.random() * 20 + 10;
+        if (freq >= 8 && freq <= 13) power += Math.random() * 1.5;
         // Delta baseline
-        if (freq < 4) power += Math.random() * 10;
+        if (freq < 4) power += Math.random() * 0.5;
       }
       
       return { freq, power };
@@ -146,6 +158,21 @@ export const PatientProfilePage: React.FC = () => {
   };
 
   const selectedRecordData = useMemo(() => getRecordDetails(selectedHistoryRecord || latestRecord), [selectedHistoryRecord, latestRecord]);
+
+  useEffect(() => {
+    if (patient) {
+      try {
+        const stored = localStorage.getItem('recently_viewed_patients');
+        let recent = stored ? JSON.parse(stored) : [];
+        recent = recent.filter((p: any) => p.id !== patient.id);
+        recent.unshift({ id: patient.id, name: patient.name, timestamp: new Date().toISOString() });
+        if (recent.length > 5) recent = recent.slice(0, 5);
+        localStorage.setItem('recently_viewed_patients', JSON.stringify(recent));
+      } catch (e) {
+        console.error("Failed to save recently viewed", e);
+      }
+    }
+  }, [patient]);
 
   useEffect(() => {
     if (selectedHistoryRecord) {
@@ -431,10 +458,14 @@ export const PatientProfilePage: React.FC = () => {
                             <Line 
                               type="monotone" 
                               dataKey="value" 
-                              stroke={latestRecord?.risk_score > 75 ? "#dc2626" : "#10b981"} 
-                              strokeWidth={2.5} 
+                              stroke={
+                                latestRecord?.risk_score > 75 ? "#ef4444" : // RED (Ictal)
+                                latestRecord?.risk_score > 40 ? "#f59e0b" : // ORANGE (Interictal)
+                                "#10b981" // GREEN (Healthy)
+                              } 
+                              strokeWidth={1.5} 
                               dot={false} 
-                              animationDuration={1500}
+                              isAnimationActive={false}
                             />
                             {selectedRecordData.timeData.length === 0 && (
                               <Line type="monotone" dataKey="ch1" stroke="#10b981" strokeWidth={2} dot={false} strokeDasharray="5 5 opacity-50" />
@@ -462,8 +493,15 @@ export const PatientProfilePage: React.FC = () => {
                               </linearGradient>
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                            <XAxis dataKey="freq" tick={{fontSize: 10, fill: '#64748b'}} axisLine={false} tickLine={false} tickFormatter={(val) => `${val}Hz`} />
-                            <YAxis tick={{fontSize: 10, fill: '#64748b'}} axisLine={false} tickLine={false} tickFormatter={(val) => `${val.toFixed(1)}`} width={40} />
+                            <XAxis dataKey="freq" tick={{fontSize: 10, fill: '#64748b'}} axisLine={false} tickLine={false} tickFormatter={(val) => `${val}Hz`} domain={[0, 60]} />
+                            <YAxis 
+                              tick={{fontSize: 10, fill: '#64748b'}} 
+                              axisLine={false} 
+                              tickLine={false} 
+                              tickFormatter={(val) => Number.isInteger(Number(val)) ? `10^${val}` : ""} 
+                              domain={[-3, 5]}
+                              width={40} 
+                            />
                             <Tooltip 
                               contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                               formatter={(value: any) => [`${Number(value).toFixed(2)} µV²/Hz`, 'Мощност']}
@@ -696,10 +734,14 @@ export const PatientProfilePage: React.FC = () => {
                               <Line 
                                 type="monotone" 
                                 dataKey="value" 
-                                stroke={selectedHistoryRecord.risk_score > 75 ? "#dc2626" : "#059669"} 
-                                strokeWidth={2} 
+                                stroke={
+                                  selectedHistoryRecord.risk_score > 75 ? "#ef4444" : // RED
+                                  selectedHistoryRecord.risk_score > 40 ? "#f59e0b" : // ORANGE
+                                  "#10b981" // GREEN
+                                } 
+                                strokeWidth={1.5} 
                                 dot={false} 
-                                animationDuration={1500}
+                                isAnimationActive={false}
                               />
                             </LineChart>
                           </ResponsiveContainer>
@@ -724,8 +766,15 @@ export const PatientProfilePage: React.FC = () => {
                                 </linearGradient>
                               </defs>
                               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                              <XAxis dataKey="freq" tick={{fontSize: 10, fill: '#64748b'}} axisLine={false} tickLine={false} tickFormatter={(val) => `${val}Hz`} />
-                              <YAxis tick={{fontSize: 10, fill: '#64748b'}} axisLine={false} tickLine={false} tickFormatter={(val) => `${val.toFixed(1)}`} width={40} />
+                            <XAxis dataKey="freq" tick={{fontSize: 10, fill: '#64748b'}} axisLine={false} tickLine={false} tickFormatter={(val) => `${val}Hz`} domain={[0, 60]} />
+                            <YAxis 
+                              tick={{fontSize: 10, fill: '#64748b'}} 
+                              axisLine={false} 
+                              tickLine={false} 
+                              tickFormatter={(val) => Number.isInteger(Number(val)) ? `10^${val}` : ""} 
+                              domain={[-3, 5]}
+                              width={40} 
+                            />
                               <Tooltip 
                                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                 formatter={(value: any) => [`${Number(value).toFixed(2)} µV²/Hz`, 'Мощност']}
