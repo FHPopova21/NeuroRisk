@@ -10,78 +10,21 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { useState, useEffect } from "react";
+import { apiService, EEGRecord } from "../services/api";
+import { toast } from "sonner";
+import { format } from "date-fns";
+import { bg } from "date-fns/locale";
 
-// Mock data for weekly chart
-const weeklyData = [
-  { day: "Пон", risk: 20, id: "mon" },
-  { day: "Вто", risk: 35, id: "tue" },
-  { day: "Сря", risk: 25, id: "wed" },
-  { day: "Чет", risk: 45, id: "thu" },
-  { day: "Пет", risk: 30, id: "fri" },
-  { day: "Съб", risk: 15, id: "sat" },
-  { day: "Нед", risk: 20, id: "sun" },
-];
+function getRiskLevel(record: any) {
+  const status = record.risk_status?.toLowerCase() || "low";
+  return status;
+}
 
-// Mock history entries
-const historyEntries = [
-  {
-    id: 1,
-    date: "26 март 2026",
-    time: "14:30",
-    risk: "low",
-    riskText: "Нисък риск",
-    percentage: 15,
-    interpretation:
-      "Нормална активност. Мозъчните вълни показват стабилни модели без отклонения.",
-  },
-  {
-    id: 2,
-    date: "26 март 2026",
-    time: "09:15",
-    risk: "medium",
-    riskText: "Среден риск",
-    percentage: 41,
-    interpretation:
-      "Леко повишена активност в тета диапазона. Препоръчва се проследяване.",
-  },
-  {
-    id: 3,
-    date: "25 март 2026",
-    time: "18:45",
-    risk: "low",
-    riskText: "Нисък риск",
-    percentage: 18,
-    interpretation: "Стабилни показатели. Няма необичайни флуктуации.",
-  },
-  {
-    id: 4,
-    date: "25 март 2026",
-    time: "11:20",
-    risk: "high",
-    riskText: "Висок риск",
-    percentage: 85,
-    interpretation:
-      "Високо ниво на епилептиформена активност. Свържете се с лекар.",
-  },
-  {
-    id: 5,
-    date: "24 март 2026",
-    time: "16:00",
-    risk: "medium",
-    riskText: "Среден риск",
-    percentage: 45,
-    interpretation: "Умерено повишение. Може да се наложи корекция на терапията.",
-  },
-  {
-    id: 6,
-    date: "24 март 2026",
-    time: "08:30",
-    risk: "low",
-    riskText: "Нисък риск",
-    percentage: 12,
-    interpretation: "Отлични резултати. Продължете с текущата терапия.",
-  },
-];
+function getRiskText(record: any) {
+  const status = record.risk_status?.toLowerCase() || "low";
+  return status === "high" ? "Висок риск" : status === "medium" ? "Среден риск" : "Нисък риск";
+}
 
 function getRiskColor(risk: string) {
   switch (risk) {
@@ -122,6 +65,32 @@ function getRiskColor(risk: string) {
 
 export function History() {
   const navigate = useNavigate();
+  const [records, setRecords] = useState<EEGRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    apiService.getMyHistory()
+      .then(data => {
+        // Сортираме по дата низходящо
+        const sorted = data.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        setRecords(sorted);
+      })
+      .catch(() => toast.error("Грешка при зареждане на историята"))
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Подготовка на данни за графиката (последните 7 записа)
+  const chartData = [...records].reverse().slice(-7).map(r => ({
+    day: format(new Date(r.timestamp), "EEE", { locale: bg }),
+    risk: r.risk_score,
+    id: r.id
+  }));
+
+  const averageRisk = records.length > 0
+    ? Math.round(records.reduce((acc, r) => acc + r.risk_score, 0) / records.length)
+    : 0;
+
+  if (loading) return <div className="flex items-center justify-center h-screen">Зареждане...</div>;
   
   return (
     <div className="min-h-full bg-gray-50 pb-6">
@@ -148,7 +117,7 @@ export function History() {
         </div>
 
         <ResponsiveContainer width="100%" height={180}>
-          <AreaChart data={weeklyData}>
+          <AreaChart data={chartData}>
             <defs>
               <linearGradient id="riskGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
@@ -167,6 +136,7 @@ export function History() {
               tick={{ fontSize: 12 }}
               tickLine={false}
               axisLine={false}
+              domain={[0, 100]}
             />
             <Tooltip
               contentStyle={{
@@ -189,9 +159,9 @@ export function History() {
         <div className="mt-4 flex items-center justify-between text-sm">
           <div className="flex items-center gap-2 text-gray-500">
             <Calendar className="w-4 h-4" />
-            <span>19 - 26 март 2026</span>
+            <span>{records.length > 0 ? `${records.length} записани анализа` : "Няма записи"}</span>
           </div>
-          <div className="text-green-600 font-semibold">Средно: 27%</div>
+          <div className="text-green-600 font-semibold">Средно: {averageRisk}%</div>
         </div>
       </motion.div>
 
@@ -205,9 +175,18 @@ export function History() {
 
       {/* Timeline Entries */}
       <div className="px-6 space-y-4">
-        {historyEntries.map((entry, index) => {
-          const colors = getRiskColor(entry.risk);
+        {records.length === 0 && (
+          <div className="bg-white rounded-2xl p-8 text-center text-gray-400">
+            <Calendar className="w-12 h-12 mx-auto mb-4 opacity-20" />
+            Няма намерени анализи. Започнете нов мониторинг.
+          </div>
+        )}
+        {records.map((entry, index) => {
+          const riskLevel = getRiskLevel(entry);
+          const colors = getRiskColor(riskLevel);
           const Icon = colors.icon;
+          const formattedDate = format(new Date(entry.timestamp), "d MMMM yyyy", { locale: bg });
+          const formattedTime = format(new Date(entry.timestamp), "HH:mm");
 
           return (
             <motion.div
@@ -215,7 +194,7 @@ export function History() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.05 }}
-              onClick={() => navigate(`/history/${entry.id}`)}
+              onClick={() => navigate(`/app/history/${entry.id}`)}
               className={`relative bg-white rounded-2xl shadow-sm border-l-4 ${colors.border} overflow-hidden cursor-pointer hover:shadow-md transition-shadow`}
             >
               <div className="p-5">
@@ -231,10 +210,10 @@ export function History() {
                       <div
                         className={`inline-flex items-center px-3 py-1 rounded-full ${colors.badge} ${colors.text} text-xs font-semibold mb-1`}
                       >
-                        {entry.riskText} • {entry.percentage}%
+                        {getRiskText(entry)} • {entry.risk_score}%
                       </div>
                       <p className="text-xs text-gray-500">
-                        {entry.date} • {entry.time}
+                        {formattedDate} • {formattedTime}
                       </p>
                     </div>
                   </div>
@@ -243,7 +222,7 @@ export function History() {
                 {/* Interpretation */}
                 <div className={`${colors.bg} rounded-xl p-4`}>
                   <p className="text-sm text-gray-700 leading-relaxed">
-                    {entry.interpretation}
+                    {entry.interpretation || "Автоматичен анализ в очакване на потвърждение от лекар."}
                   </p>
                 </div>
               </div>
@@ -252,13 +231,13 @@ export function History() {
               <div className="h-1.5 bg-gray-100">
                 <div
                   className={`h-full transition-all ${
-                    entry.risk === "low"
+                    riskLevel === "low"
                       ? "bg-green-500"
-                      : entry.risk === "medium"
+                      : riskLevel === "medium"
                       ? "bg-orange-500"
                       : "bg-red-500"
                   }`}
-                  style={{ width: `${entry.percentage}%` }}
+                  style={{ width: `${entry.risk_score}%` }}
                 />
               </div>
             </motion.div>

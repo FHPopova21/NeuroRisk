@@ -87,6 +87,21 @@ def get_current_user(current_user):
     else:
         role = 'patient'
         user_data = schemas.Patient.model_validate(current_user).model_dump()
+        # Добавяме клиничен статус и последен риск за пациента
+        db = next(database.get_db())
+        latest_record = db.query(models.EEGRecord).filter(models.EEGRecord.patient_id == current_user.id).order_by(models.EEGRecord.timestamp.desc()).first()
+        total_records = db.query(models.EEGRecord).filter(models.EEGRecord.patient_id == current_user.id).count()
+        
+        user_data['status'] = current_user.status or "LOW"
+        user_data['risk_score'] = latest_record.risk_score if latest_record else 0
+        user_data['total_records'] = total_records
+        
+        # Добавяме информация за лекаря
+        if current_user.doctor:
+            user_data['doctor_name'] = current_user.doctor.name
+            user_data['doctor_specialization'] = current_user.doctor.specialization
+        
+        db.close()
         
     user_data['role'] = role
     return jsonify(user_data), 200

@@ -1,4 +1,4 @@
-import { Activity, Wifi, Heart, AlertTriangle } from "lucide-react";
+import { Activity, Wifi, Heart, Shield, Calendar } from "lucide-react";
 import { motion } from "motion/react";
 import { useNavigate } from "react-router";
 import { useState, useEffect } from "react";
@@ -56,15 +56,22 @@ export function Home() {
           </div>
           <div>
             <h2 className="text-2xl font-bold text-white tracking-tight">
-              {patient?.status === "HIGH" ? "Висок риск" : patient?.status === "MEDIUM" ? "Повишен риск" : "Нисък риск"}
+              {patient?.risk_score !== undefined 
+                ? (patient.risk_score > 70 ? "Висок риск" : patient.risk_score > 30 ? "Повишен риск" : "Нисък риск")
+                : "Нисък риск"}
             </h2>
-            <p className="text-gray-400 text-sm font-medium uppercase tracking-wider">Системата е активна</p>
+            <p className="text-gray-400 text-sm font-medium uppercase tracking-wider">
+              {patient?.risk_score !== undefined ? `Рисков индекс: ${patient.risk_score}%` : "Системата е активна"}
+            </p>
           </div>
         </div>
         <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4">
           <p className="text-white text-sm">
-            Системата отчита обична спав в средната епилептиформена активнос
-            при наблюдаваните пациенти тази седмица.
+            {patient?.risk_score !== undefined && patient.risk_score > 70 
+              ? "Системата отчита критични отклонения. Моля, свържете се с Вашия лекар при първа възможност."
+              : patient?.risk_score !== undefined && patient.risk_score > 30
+              ? "Отчетени са леки промени в активността. Продължавайте мониторинга според указанията."
+              : "Вашето състояние е стабилно. Системата работи нормално."}
           </p>
         </div>
       </motion.div>
@@ -115,8 +122,10 @@ export function Home() {
           <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mb-3">
             <Heart className="w-5 h-5 text-purple-600" />
           </div>
-          <h4 className="text-2xl font-bold text-gray-800 mb-1">22</h4>
-          <p className="text-sm text-gray-500">Общо записи</p>
+          <h4 className="text-2xl font-bold text-gray-800 mb-1">
+            {patient?.total_records || 0}
+          </h4>
+          <p className="text-sm text-gray-500">Направени анализи</p>
         </motion.div>
 
         <motion.div
@@ -125,23 +134,26 @@ export function Home() {
           transition={{ delay: 0.4 }}
           className="bg-white rounded-2xl p-4 shadow-sm"
         >
-          <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center mb-3">
-            <Activity className="w-5 h-5 text-orange-600" />
+          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mb-3">
+            <Shield className="w-5 h-5 text-blue-600" />
           </div>
-          <h4 className="text-2xl font-bold text-gray-800 mb-1">5</h4>
-          <p className="text-sm text-gray-500">Пациенти с висок риск</p>
+          <h4 className="text-2xl font-bold text-gray-800 mb-1">
+            {patient?.status === "LOW" ? "Нисък" : patient?.status === "MEDIUM" ? "Среден" : "Висок"}
+          </h4>
+          <p className="text-sm text-gray-500">Ниво на риск</p>
         </motion.div>
       </div>
 
-      {/* Signal Doctor Button */}
-      <motion.button
-        whileTap={{ scale: 0.95 }}
-        onClick={handleSignalDoctor}
-        className="w-full bg-white text-[#d4183d] py-5 rounded-2xl font-bold border border-[#d4183d]/10 mb-4 flex items-center justify-center gap-2 shadow-sm"
-      >
-        <AlertTriangle className="w-5 h-5" />
-        Сигнализирай на лекар
-      </motion.button>
+      {/* Signal Doctor Link (Secondary) */}
+      <div className="mb-4 text-center">
+        <button 
+          onClick={handleSignalDoctor}
+          className="text-sm text-gray-500 hover:text-red-500 transition-colors flex items-center justify-center gap-2 mx-auto"
+        >
+          <Calendar className="w-4 h-4" />
+          Нуждаете се от консултация? Сигнализирайте лекар
+        </button>
+      </div>
 
       {/* Floating Action Button */}
       <motion.button

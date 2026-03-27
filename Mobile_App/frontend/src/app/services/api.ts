@@ -26,6 +26,10 @@ export interface Patient {
   name: string;
   email: string;
   status: string;
+  risk_score?: number;
+  total_records?: number;
+  doctor_name?: string;
+  doctor_specialization?: string;
   created_at: string;
 }
 

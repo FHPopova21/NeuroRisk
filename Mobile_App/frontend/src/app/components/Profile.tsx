@@ -11,9 +11,23 @@ import {
   Mail,
   Phone,
 } from "lucide-react";
-import { motion } from "motion/react";
+import { useState, useEffect } from "react";
+import { apiService, Patient } from "../services/api";
+import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 export function Profile() {
+  const [patient, setPatient] = useState<Patient | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    apiService.getMyProfile()
+      .then(setPatient)
+      .catch(() => toast.error("Грешка при зареждане на профила"))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div className="flex items-center justify-center h-screen">Зареждане...</div>;
   return (
     <div className="min-h-full bg-[#f8f9fa] pb-24">
       {/* Header */}
@@ -34,8 +48,8 @@ export function Profile() {
             <User className="w-10 h-10 text-white" />
           </div>
           <div className="flex-1">
-            <h2 className="text-2xl font-bold text-white mb-1 tracking-tight">Сара Иванова</h2>
-            <p className="text-gray-400 text-sm font-medium">ID: #EA1016</p>
+            <h2 className="text-2xl font-bold text-white mb-1 tracking-tight">{patient?.name || "Пациент"}</h2>
+            <p className="text-gray-400 text-sm font-medium">ID: {patient?.patient_id || "#---"}</p>
           </div>
         </div>
       </motion.div>
@@ -63,9 +77,9 @@ export function Profile() {
                 <div>
                   <h4 className="font-semibold text-gray-800">Лекар</h4>
                   <p className="text-sm text-gray-600 mt-1">
-                    Д-р Билияна Бадалова
+                    {patient?.doctor_name || "Д-р Билияна Бадалова"}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">Невролог</p>
+                  <p className="text-xs text-gray-500 mt-1">{patient?.doctor_specialization || "Невролог"}</p>
                 </div>
               </div>
               <div className="flex items-center gap-1 bg-green-100 px-3 py-1 rounded-full">
@@ -128,17 +142,17 @@ export function Profile() {
             </div>
             <div className="bg-purple-50 rounded-xl p-4">
               <div className="flex justify-between text-sm mb-2">
-                <span className="text-gray-600">Статус</span>
-                <span className="text-purple-700 font-semibold">41%</span>
+                <span className="text-gray-600">Рисков индекс</span>
+                <span className="text-purple-700 font-semibold">{patient?.risk_score || 0}%</span>
               </div>
               <div className="h-2 bg-purple-200 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-purple-500 rounded-full transition-all"
-                  style={{ width: "41%" }}
+                  style={{ width: `${patient?.risk_score || 0}%` }}
                 />
               </div>
               <p className="text-xs text-gray-500 mt-2">
-                Вероятност за риск: Средна
+                Статус: {patient?.status === "HIGH" ? "Висок" : patient?.status === "MEDIUM" ? "Среден" : "Нисък"}
               </p>
             </div>
           </motion.div>
@@ -196,7 +210,7 @@ export function Profile() {
             <div>
               <p className="text-xs text-gray-500">Имейл</p>
               <p className="text-sm font-medium text-gray-800">
-                sara.ivanova@example.com
+                {patient?.email || "---"}
               </p>
             </div>
           </motion.div>
@@ -211,9 +225,9 @@ export function Profile() {
               <Phone className="w-5 h-5 text-gray-600" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">Телефон</p>
+              <p className="text-xs text-gray-500">Система</p>
               <p className="text-sm font-medium text-gray-800">
-                +359 888 123 456
+                NeuroRisk Mobile v1.0
               </p>
             </div>
           </motion.div>

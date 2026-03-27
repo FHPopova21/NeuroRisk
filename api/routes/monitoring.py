@@ -52,6 +52,11 @@ def get_history(current_user, patient_id):
     """
     Връща историята на записите за конкретен пациент.
     """
+    # Защита: Ако е пациент, може да вижда само своя си ID
+    is_patient = not (hasattr(current_user, 'specialization') or hasattr(current_user, 'username'))
+    if is_patient and str(current_user.id) != str(patient_id):
+        return jsonify({"detail": "Нямате достъп до хронологията на друг пациент"}), 403
+
     db = next(database.get_db())
     try:
         history = monitoring.get_patient_history(db=db, patient_id=patient_id)
@@ -66,6 +71,12 @@ def get_alerts(current_user):
     Връща списък с активните аларми. Може да се филтрира по patient_id през query параметър.
     """
     patient_id = request.args.get('patient_id')
+    
+    # Защита: Ако е пациент, винаги филтрираме само по неговия ID
+    is_patient = not (hasattr(current_user, 'specialization') or hasattr(current_user, 'username'))
+    if is_patient:
+        patient_id = str(current_user.id)
+
     db = next(database.get_db())
     try:
         alerts = monitoring.get_active_alerts(db=db, patient_id=patient_id)
@@ -254,7 +265,8 @@ def signal_doctor(current_user):
     Позволява на пациента ръчно да сигнализира на своя лекар (Mobile App).
     Генерира критична аларма.
     """
-    if current_user.get('role') != 'patient':
+    is_patient = not (hasattr(current_user, 'specialization') or hasattr(current_user, 'username'))
+    if not is_patient:
         return jsonify({"detail": "Само пациенти могат да сигнализират"}), 403
 
     data = request.get_json()
@@ -262,10 +274,9 @@ def signal_doctor(current_user):
     
     db = next(database.get_db())
     try:
-        # Генериране на аларма
-        from uuid import UUID
+        # Генериране на аларма за текущия логнат пациент
         new_alert = models.Alert(
-            patient_id=UUID(current_user['id']),
+            patient_id=current_user.id,
             message=f"РЪЧЕН СИГНАЛ: {message}",
             severity="CRITICAL",
             source="ПАЦИЕНТ",
