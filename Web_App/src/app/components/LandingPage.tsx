@@ -139,14 +139,18 @@ export const LandingPage: React.FC = () => {
                 </>
               ) : (
                 <>
+                <>
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => navigate("/login")}
+                    onClick={() => {
+                      const toastContent = "Моля, използвайте линка от Вашия имейл за активация, или въведете ръчно кода в мобилното приложение.";
+                      alert(toastContent);
+                    }}
                     className="group relative px-8 py-4 bg-emerald-600 text-white rounded-xl font-medium shadow-lg shadow-emerald-200/50 overflow-hidden"
                   >
                     <span className="relative z-10 flex items-center justify-center gap-2">
-                      Вход в клиничното табло <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      Активирай пациентски профил <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </span>
                     <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                   </motion.button>
@@ -156,8 +160,9 @@ export const LandingPage: React.FC = () => {
                     onClick={() => navigate("/login")}
                     className="px-8 py-4 bg-white border border-slate-200 text-slate-700 rounded-xl font-medium hover:border-emerald-200 hover:text-emerald-700 hover:bg-emerald-50/30 transition-colors"
                   >
-                    Вход за системни администратори
+                    Вход за специалисти
                   </motion.button>
+                </>
                 </>
               )}
             </div>
@@ -584,7 +589,7 @@ export const LandingPage: React.FC = () => {
             onClick={() => navigate("/login")}
             className="px-12 py-5 bg-emerald-500 text-white text-lg rounded-2xl font-bold shadow-2xl shadow-emerald-500/30 hover:bg-emerald-400 border border-emerald-400 transition-all font-sans tracking-wide uppercase"
           >
-            Достъп до платформата
+            Вход за специалисти
           </motion.button>
         </div>
       </section>

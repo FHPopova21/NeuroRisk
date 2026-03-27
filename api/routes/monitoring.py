@@ -226,18 +226,25 @@ def patient_heartbeat(current_user):
     """
     Получава данни за активността на пациента в реално време (Mobile App).
     """
-    if current_user.get('role') != 'patient':
+    # Проверяваме дали е пациент (по липса на атрибут username/specialization или по роля)
+    if hasattr(current_user, 'specialization') or hasattr(current_user, 'username'):
         return jsonify({"detail": "Само пациенти могат да изпращат heartbeat"}), 403
         
     db = next(database.get_db())
     try:
         from uuid import UUID
-        patient = db.query(models.Patient).filter(models.Patient.id == UUID(current_user['id'])).first()
+        # Тъй като current_user е самият обект от базата в Flask версията ни
+        patient = db.query(models.Patient).filter(models.Patient.id == current_user.id).first()
         if patient:
             patient.status = "ACTIVE"
+            patient.last_active = datetime.now() # Обновяваме времето на последна активност
             db.commit()
         return jsonify({"status": "received"}), 200
+    except Exception as e:
+        db.rollback()
+        return jsonify({"detail": str(e)}), 400
     finally:
+        db.close()
         db.close()
 
 @monitoring_bp.route('/signal', methods=['POST'])

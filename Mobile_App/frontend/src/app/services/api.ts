@@ -31,17 +31,21 @@ export interface Patient {
 
 export const apiService = {
   // Auth
-  async login(email: string, password: string): Promise<{ token: string, user: any }> {
+  async login(loginId: string, password: string): Promise<{ token: string, user: any }> {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ email: loginId, password })
     });
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.detail || "Влизането неуспешно");
     }
-    return response.json();
+    const data = await response.json();
+    if (data.token) {
+      localStorage.setItem("token", data.token);
+    }
+    return data;
   },
 
   async getMe(): Promise<any> {
@@ -49,6 +53,19 @@ export const apiService = {
       headers: getHeaders()
     });
     if (!response.ok) throw new Error("Неуспешно извличане на потребител");
+    return response.json();
+  },
+
+  async activatePatient(token: string, password: string, confirmPassword: string): Promise<any> {
+    const response = await fetch(`${API_BASE_URL}/patients/activate/${token}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password, confirm_password: confirmPassword })
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Активацията неуспешна");
+    }
     return response.json();
   },
 
