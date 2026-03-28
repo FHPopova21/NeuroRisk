@@ -1,84 +1,82 @@
-import bcrypt
 from sqlalchemy.orm import Session
-from api import models, schemas
+from api import models
+import bcrypt
+from typing import Optional, Tuple
+from sqlalchemy.ext.declarative import DeclarativeMeta as Base
 
 def hash_password(password: str) -> str:
-    """Превръща чиста парола в неразпознаваем хеш чрез bcrypt."""
-    salt = bcrypt.gensalt()
-    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
-    return hashed.decode('utf-8')
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Проверява дали въведената парола съответства на хеша чрез bcrypt."""
-    return bcrypt.checkpw(
-        plain_password.encode('utf-8'), 
-        hashed_password.encode('utf-8')
-    )
+    if not hashed_password:
+        return False
+    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
 
-def create_doctor(db: Session, doctor_data: schemas.DoctorCreate):
-    """
-    Основна функция за регистрация на нов лекар.
-    """
-    # 1. Проверка дали паролите съвпадат
-    if doctor_data.password != doctor_data.confirm_password:
-        raise Exception("Паролите не съвпадат!")
-
-    # 2. Проверка дали имейлът вече съществува
-    existing_doctor = db.query(models.Doctor).filter(models.Doctor.email == doctor_data.email).first()
-    if existing_doctor:
-        raise Exception("Този имейл вече е регистриран!")
-
-    # 3. Хеширане на паролата 
+def create_doctor(db: Session, doctor_data):
+    # Check if email exists
+    if db.query(models.Doctor).filter(models.Doctor.email == doctor_data.email).first():
+        raise Exception("Имейлът вече е регистриран!")
+    
     hashed_pwd = hash_password(doctor_data.password)
-
-    # 4. Създаване на обекта за базата данни
-    new_doctor = models.Doctor(
-        admin_assigned_id=doctor_data.admin_assigned_id,
+    db_doctor = models.Doctor(
         name=doctor_data.name,
         email=doctor_data.email,
         password_hash=hashed_pwd,
-        specialization=doctor_data.specialization
+        admin_assigned_id=doctor_data.admin_assigned_id,
+        specialization=doctor_data.specialization,
+        is_active=True 
     )
-
-    # 5. Записване в базата
-    db.add(new_doctor)
+    db.add(db_doctor)
     db.commit()
-    db.refresh(new_doctor) # Вземане на генерираното ID и други полета
-    
-    return new_doctor
+    db.refresh(db_doctor)
+    return db_doctor
 
-def authenticate_user(db: Session, username_or_email: str, password: str):
+def authenticate_user(db: Session, email_or_id: str, password: str = None) -> Tuple[Optional[Base], Optional[str]]:
     """
-    Проверява паролата за администратор, лекар или пациент.
-    Връща потребителя и неговата роля.
+    Автентикира потребител по имейл/ID и парола.
+    Връща (потребител, роля) или (None, None).
     """
-    # 1. Първо за администратор (по потребителско име)
-    admin = db.query(models.Admin).filter(models.Admin.username == username_or_email).first()
-    if admin and verify_password(password, admin.password_hash):
-        return admin, 'admin'
+    print(f"--- AUTH DEBUG ---")
+    print(f"Attempting login for: {email_or_id}")
 
-    # 2. Първо търсим за пациент (по имейл или пациентски ID) - с приоритет за тест/мобилно
-    patient = db.query(models.Patient).filter(
-        (models.Patient.email == username_or_email) | 
-        (models.Patient.patient_id == username_or_email)
-    ).first()
+    # 1. Търсим в Admin
+    admin = db.query(models.Admin).filter(models.Admin.username == email_or_id).first()
+    if admin:
+        print("Checking Admin...")
+        if verify_password(password, admin.password_hash):
+            print("Login Success: Admin")
+            return admin, 'admin'
+
+    # 2. Търсим в Doctor
+    doctor = db.query(models.Doctor).filter(models.Doctor.email == email_or_id).first()
+    if doctor:
+        print("Checking Doctor...")
+        if verify_password(password, doctor.password_hash):
+            print("Login Success: Doctor")
+            return doctor, 'doctor'
+
+    # 3. Търсим в Patient
+    patient = db.query(models.Patient).filter(models.Patient.patient_id == email_or_id).first()
+    if not patient:
+        patient = db.query(models.Patient).filter(models.Patient.email == email_or_id).first()
     
     if patient:
-        # НОВА ЛОГИКА: Ако е подаден само Patient ID (без парола) ИЛИ паролата съвпада с ID-то, пускаме
-        if not password or password == patient.patient_id:
-             return patient, 'patient'
-        
-        # Стандартна логика за парола (за уеб приложението)
-        if patient.password_hash and verify_password(password, patient.password_hash):
+        print(f"Checking Patient: {patient.patient_id}")
+        # Ако няма заложена парола още или паролата съвпада с ID-то, или е празна
+        # Това позволява първоначален вход
+        if not patient.password_hash:
+            print("Login Success: Patient (Initial No-Password)")
             return patient, 'patient'
-
-    # 3. После търсим за лекар (по имейл или служебен ID)
-    doctor = db.query(models.Doctor).filter(
-        (models.Doctor.email == username_or_email) | 
-        (models.Doctor.admin_assigned_id == username_or_email)
-    ).first()
-    
-    if doctor and verify_password(password, doctor.password_hash):
-        return doctor, 'doctor'
         
+        # Ако потребителят е подал парола (дори и да е същата като ID-то)
+        if password and verify_password(password, patient.password_hash):
+            print("Login Success: Patient (Password)")
+            return patient, 'patient'
+            
+        # Fallback за стария метод с ID като парола (ако е записана така)
+        if password == patient.patient_id:
+             print("Login Success: Patient (ID fallback)")
+             return patient, 'patient'
+
+    print("Login Failed: No match found")
     return None, None

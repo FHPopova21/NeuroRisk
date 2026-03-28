@@ -30,6 +30,7 @@ class Doctor(Base):
     password_hash = Column(Text, nullable=False)
     specialization = Column(String(100))
     is_verified = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=True) # Добавено за съвместимост с auth логиката
     status = Column(String(20), default="PENDING") # PENDING, ACTIVE, SUSPENDED
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 

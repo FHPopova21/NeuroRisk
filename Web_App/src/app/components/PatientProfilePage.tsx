@@ -260,10 +260,10 @@ const PatientProfileContent: React.FC = () => {
         const patientData = await apiService.getPatient(id);
         setPatient(patientData);
 
-        // 2. Извличане на останалите колекции паралелно
+        // 2. Извличане на останалите колекции паралелно (филтрирани по ID)
         const [historyData, notesData, labData] = await Promise.all([
           apiService.getEEGHistory(id).catch(() => []),
-          apiService.getMedicalNotes(id).catch(() => []),
+          apiService.getMedicalNotes(id).catch(() => []), 
           apiService.getLabAnalyses(id).catch(() => [])
         ]);
 
@@ -930,6 +930,31 @@ const PatientProfileContent: React.FC = () => {
 
             {activeTab === "notes" && (
               <div className="space-y-6">
+                {/* PERMANENT MEDICAL HISTORY (ANAMNESIS) */}
+                {patient.medical_history && (
+                  <div className="bg-slate-900 rounded-[2.5rem] border border-slate-800 shadow-2xl p-8 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+                      <FileText className="w-24 h-24 text-white" />
+                    </div>
+                    <div className="relative z-10 space-y-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-400">
+                          <Shield className="w-5 h-5" />
+                        </div>
+                        <h3 className="text-sm font-black text-white uppercase tracking-[0.2em]">Анамнеза (История)</h3>
+                      </div>
+                      <p className="text-slate-300 text-sm leading-relaxed font-medium italic">
+                        {patient.medical_history}
+                      </p>
+                      <div className="pt-2">
+                        <span className="text-[10px] font-black text-emerald-500/60 uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+                          Първоначална документация
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest">История на медицинското досие</h3>
                   <button 

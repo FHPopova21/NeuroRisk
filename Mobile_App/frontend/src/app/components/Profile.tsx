@@ -15,19 +15,58 @@ import { useState, useEffect } from "react";
 import { apiService, Patient } from "../services/api";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import clsx from "clsx";
 
 export function Profile() {
   const [patient, setPatient] = useState<Patient | null>(null);
+  const [latestNote, setLatestNote] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isSignaling, setIsSignaling] = useState(false);
 
   useEffect(() => {
-    apiService.getMyProfile()
-      .then(setPatient)
-      .catch(() => toast.error("Грешка при зареждане на профила"))
-      .finally(() => setLoading(false));
+    const fetchData = async () => {
+      try {
+        const [profileData, noteData] = await Promise.all([
+          apiService.getMyProfile(),
+          apiService.getLatestNote()
+        ]);
+        setPatient(profileData);
+        setLatestNote(noteData);
+      } catch (err) {
+        toast.error("Грешка при зареждане на данните");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, []);
 
-  if (loading) return <div className="flex items-center justify-center h-screen">Зареждане...</div>;
+  const handleReportProblem = async () => {
+    if (window.confirm("Сигурни ли сте, че искате да сигнализирате за проблем? Лекарят ще получи известие веднага.")) {
+      setIsSignaling(true);
+      try {
+        await apiService.signalDoctor("Пациентът сигнализира за технически или здравословен проблем през мобилното приложение.");
+        toast.success("Сигналът е изпратен успешно!");
+      } catch (err) {
+        toast.error("Грешка при изпращане на сигнала");
+      } finally {
+        setIsSignaling(false);
+      }
+    }
+  };
+
+  const getLastSyncText = () => {
+    if (!patient?.last_active) return "Няма данни за синхронизация";
+    const lastActive = new Date(patient.last_active);
+    const diffMs = new Date().getTime() - lastActive.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    
+    if (diffMins < 1) return "Току-що синхронизирано";
+    if (diffMins < 60) return `Последна синхронизация: преди ${diffMins} мин`;
+    return `Последна синхронизация: ${lastActive.toLocaleDateString()} ${lastActive.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  };
+
+  if (loading) return <div className="flex items-center justify-center h-screen bg-[#f8f9fa]">Зареждане...</div>;
   return (
     <div className="min-h-full bg-[#f8f9fa] pb-24">
       {/* Header */}
@@ -105,9 +144,9 @@ export function Profile() {
                 </div>
                 <div>
                   <h4 className="font-semibold text-gray-800">Устройство</h4>
-                  <p className="text-sm text-gray-600 mt-1">Канал-02</p>
+                  <p className="text-sm text-gray-600 mt-1">MindWave Mobile 2</p>
                   <p className="text-xs text-gray-500 mt-1">
-                    Последна синхронизация: преди 5 мин
+                    {getLastSyncText()}
                   </p>
                 </div>
               </div>
@@ -179,14 +218,19 @@ export function Profile() {
             <div className="flex-1">
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-semibold text-gray-800">
-                  Д-р Бадалова
+                  {latestNote ? (latestNote.doctor_name || "Вашият Лекар") : "Д-р Бадалова"}
                 </h4>
-                <span className="text-xs text-gray-500">Вчера, 15:30</span>
+                <span className="text-xs text-gray-500">
+                  {latestNote ? new Date(latestNote.timestamp).toLocaleDateString() : "---"}
+                </span>
               </div>
               <div className="bg-blue-50 rounded-xl p-4">
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  "Системата отчита обична спав в средната епилептиформена
-                  активнос при наблюдаваните пациенти тази седмица."
+                <p className="text-sm text-gray-700 leading-relaxed italic">
+                  {latestNote ? (
+                    `"${latestNote.content.length > 150 ? latestNote.content.slice(0, 150) + "..." : latestNote.content}"`
+                  ) : (
+                    "Липсват нови клинични бележки."
+                  )}
                 </p>
               </div>
             </div>
@@ -237,22 +281,27 @@ export function Profile() {
       {/* Action Buttons */}
       <div className="px-6 space-y-3">
         <motion.button
+          onClick={handleReportProblem}
+          disabled={isSignaling}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7 }}
-          className="w-full bg-white rounded-2xl p-4 shadow-sm flex items-center gap-4 hover:bg-gray-50 transition-colors"
+          className={clsx(
+            "w-full bg-white rounded-2xl p-4 shadow-sm flex items-center gap-4 transition-all",
+            isSignaling ? "opacity-50 cursor-not-allowed" : "hover:bg-amber-50 active:scale-[0.98]"
+          )}
         >
-          <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-            <Settings className="w-5 h-5 text-gray-600" />
+          <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
+            <Settings className="w-5 h-5 text-amber-600" />
           </div>
-          <span className="font-medium text-gray-800">Настройки</span>
+          <span className="font-medium text-gray-800">Сигнализирай за проблем</span>
         </motion.button>
 
         <motion.button
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}
-          className="w-full bg-white rounded-2xl p-4 shadow-sm flex items-center gap-4 hover:bg-red-50 transition-colors"
+          className="w-full bg-white rounded-2xl p-4 shadow-sm flex items-center gap-4 hover:bg-red-50 active:scale-[0.98] transition-all"
         >
           <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
             <LogOut className="w-5 h-5 text-red-600" />

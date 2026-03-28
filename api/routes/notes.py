@@ -41,6 +41,32 @@ def get_notes(current_user):
     finally:
         db.close()
 
+@notes_bp.route('/latest', methods=['GET'])
+@token_required
+def get_latest_note(current_user):
+    """
+    Връща най-новата медицинска бележка за текущия логнат пациент.
+    """
+    # Защита: Само пациенти могат да ползват този ендпойнт за себе си
+    is_patient = not (hasattr(current_user, 'specialization') or hasattr(current_user, 'username'))
+    if not is_patient:
+        return jsonify({"detail": "Този ендпойнт е само за пациенти"}), 403
+
+    db = next(database.get_db())
+    try:
+        from api import models
+        latest_note = db.query(models.MedicalNote)\
+            .filter(models.MedicalNote.patient_id == current_user.id)\
+            .order_by(models.MedicalNote.timestamp.desc())\
+            .first()
+        
+        if not latest_note:
+            return jsonify(None), 200
+            
+        return jsonify(schemas.MedicalNote.model_validate(latest_note).model_dump()), 200
+    finally:
+        db.close()
+
 @notes_bp.route('/patient/<patient_id>', methods=['GET'])
 @token_required
 def get_patient_notes(current_user, patient_id):

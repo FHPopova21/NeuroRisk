@@ -31,6 +31,7 @@ export interface Patient {
   doctor_name?: string;
   doctor_specialization?: string;
   is_active: boolean;
+  last_active?: string;
   created_at: string;
 }
 
@@ -86,6 +87,12 @@ export const apiService = {
   async getMyHistory(): Promise<EEGRecord[]> {
     const response = await fetch(`${API_BASE_URL}/monitoring/history`, { headers: getHeaders() });
     if (!response.ok) throw new Error("Неуспешно зареждане на историята");
+    return response.json();
+  },
+
+  async getLatestNote(): Promise<any> {
+    const response = await fetch(`${API_BASE_URL}/notes/latest`, { headers: getHeaders() });
+    if (!response.ok) return null;
     return response.json();
   },
 

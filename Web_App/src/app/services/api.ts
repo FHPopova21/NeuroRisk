@@ -92,8 +92,12 @@ export const apiService = {
   },
 
   // --- MEDICAL NOTES ---
-  async getMedicalNotes(patientId?: string): Promise<MedicalNote[]> {
-    const url = patientId ? `${API_BASE_URL}/notes/?patient_id=${patientId}` : `${API_BASE_URL}/notes/`;
+  async getMedicalNotes(patientId: string): Promise<MedicalNote[]> {
+    if (!patientId || patientId === "undefined") {
+      console.warn("getMedicalNotes: patientId is undefined, skipping fetch");
+      return [];
+    }
+    const url = `${API_BASE_URL}/notes/patient/${patientId}`;
     const response = await fetch(url, { headers: getHeaders() });
     if (!response.ok) throw new Error("Failed to fetch medical notes");
     return response.json();
@@ -159,7 +163,7 @@ export const apiService = {
 
   // EEG Monitoring
   async getEEGHistory(patientId: string): Promise<EEGRecord[]> {
-    const url = patientId 
+    const url = patientId
       ? `${API_BASE_URL}/monitoring/history/${patientId}`
       : `${API_BASE_URL}/monitoring/history`;
     const response = await fetch(url, { headers: getHeaders() });
@@ -192,8 +196,8 @@ export const apiService = {
   },
 
   async getAlerts(patientId?: string): Promise<any[]> {
-    const url = patientId 
-      ? `${API_BASE_URL}/monitoring/alerts?patient_id=${patientId}` 
+    const url = patientId
+      ? `${API_BASE_URL}/monitoring/alerts?patient_id=${patientId}`
       : `${API_BASE_URL}/monitoring/alerts`;
     const response = await fetch(url, { headers: getHeaders() });
     if (!response.ok) throw new Error("Failed to fetch alerts");
@@ -242,6 +246,32 @@ export const apiService = {
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.detail || "Registration failed");
+    }
+    return response.json();
+  },
+
+  async setPassword(password: string, patientId: string) {
+    const response = await fetch(`${API_BASE_URL}/auth/set-password`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify({ password, patient_id: patientId }),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Неуспешна активация");
+    }
+    return response.json();
+  },
+
+  async activatePatient(patientId: string, password: string) {
+    const response = await fetch(`${API_BASE_URL}/auth/activate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token: patientId, password }), // Тук приемаме токена за активация да е самия Patient ID за улеснение
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || "Невалиден код за активация");
     }
     return response.json();
   },

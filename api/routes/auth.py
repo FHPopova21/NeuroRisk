@@ -90,15 +90,17 @@ def activate_patient():
         
     db = next(database.get_db())
     try:
-        from datetime import datetime
+        # Търсим пациент, на който token съвпада с activation_token ИЛИ с patient_id (за улеснение)
         patient = db.query(models.Patient).filter(
-            models.Patient.activation_token == token
-            # models.Patient.token_expires_at > datetime.now()
+            (models.Patient.activation_token == token) | (models.Patient.patient_id == token)
         ).first()
         
         if not patient:
-            return jsonify({"detail": "Невалиден или изтекъл токен за активация!"}), 400
+            return jsonify({"detail": "Невалиден или вече активиран акаунт!"}), 400
             
+        if patient.is_active and patient.password_hash:
+             return jsonify({"detail": "Този профил вече е активиран!"}), 400
+
         # Хешираме паролата и активираме
         patient.password_hash = auth.hash_password(password)
         patient.is_active = True
@@ -132,7 +134,7 @@ def get_current_user(current_user):
         role = 'patient'
         # ПРОВЕРКА: Ако пациентът не е активен, връщаме само основното му инфо без да гърмим
         user_data = schemas.Patient.model_validate(current_user).model_dump()
-        user_data['is_active'] = current_user.is_active
+        user_data['is_active'] = getattr(current_user, 'is_active', True)
         
         db = next(database.get_db())
         latest_record = db.query(models.EEGRecord).filter(models.EEGRecord.patient_id == current_user.id).order_by(models.EEGRecord.timestamp.desc()).first()

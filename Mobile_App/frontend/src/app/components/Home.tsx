@@ -25,19 +25,29 @@ export function Home() {
   const handleConnectDevice = async () => {
     setConnecting(true);
     try {
-      // Инициализираме Bluetooth сканиране (Web Bluetooth API)
+      console.log("Starting Bluetooth scan for MindWave...");
+      
+      // MindWave Mobile 2 често използва стандартни UUID-та или специфични за профила
+      // Насочваме се към търсене по име за по-голяма съвместимост с MindWave
       const bluetoothDevice = await (navigator as any).bluetooth.requestDevice({
-        acceptAllDevices: true,
-        optionalServices: ['battery_service', 'heart_rate_measurement'] // Примерни сървиси
+        filters: [
+          { namePrefix: 'MindWave' },
+          { namePrefix: 'Mindwave' },
+          { name: 'MindWave Mobile' }
+        ],
+        optionalServices: ['00001101-0000-1000-8000-00805f9b34fb'] // Стандартен Serial Port Profile
       });
 
-      setDevice({ name: bluetoothDevice.name || "ЕЕГ Сензор", connected: true });
+      console.log("Device found:", bluetoothDevice.name);
+      setDevice({ name: bluetoothDevice.name || "MindWave Mobile 2", connected: true });
       toast.success(`Свързано с ${bluetoothDevice.name}`);
       
-      // Тук може да се добави логика за слушане на данни (GATT)
     } catch (err: any) {
-      if (err.name !== 'NotFoundError' && err.name !== 'SecurityError') {
-        toast.error("Bluetooth не се поддържа или беше отказан");
+      console.error("Bluetooth error:", err);
+      if (err.name === 'NotFoundError') {
+        toast.error("MindWave не беше намерен. Уверете се, че е в режим на сдвояване.");
+      } else {
+        toast.error("Грешка при Bluetooth връзката");
       }
     } finally {
       setConnecting(false);
@@ -191,11 +201,17 @@ export function Home() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.5 }}
         whileTap={{ scale: 0.95 }}
-        onClick={() => navigate("/app/monitoring")}
-        className="w-full bg-[#030213] text-white py-5 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl transition-all flex items-center justify-center gap-3 active:scale-95"
+        onClick={() => {
+          if (!device.connected) {
+            toast.error("Моля, първо свържете ЕЕГ сензор!");
+            return;
+          }
+          navigate("/app/monitoring");
+        }}
+        className={`w-full py-5 rounded-2xl font-bold text-lg shadow-xl transition-all flex items-center justify-center gap-3 active:scale-95 ${device.connected ? 'bg-[#030213] text-white' : 'bg-gray-200 text-gray-400 opacity-80 cursor-not-allowed'}`}
       >
         <Activity className="w-6 h-6" />
-        Започнете мониторинг
+        {device.connected ? "Започнете мониторинг" : "Свържете сензор"}
       </motion.button>
     </div>
   );

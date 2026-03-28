@@ -55,6 +55,16 @@ def create_patient(db: Session, patient_data: schemas.PatientCreate, doctor_id: 
     db.commit()
     db.refresh(new_patient)
     
+    # NEW: Create initial medical note from history if it exists
+    if patient_data.medical_history:
+        initial_note = models.MedicalNote(
+            patient_id=new_patient.id,
+            doctor_id=doctor_id,
+            content=f"[Първоначална Анамнеза]: {patient_data.medical_history}"
+        )
+        db.add(initial_note)
+        db.commit()
+    
     # 4. Ако има начални ЕЕГ данни, обработваме ги
     if patient_data.initial_eeg_data:
         from api.services.monitoring import process_eeg_signal

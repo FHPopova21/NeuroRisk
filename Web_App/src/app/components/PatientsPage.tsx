@@ -84,7 +84,7 @@ export const PatientsPage: React.FC = () => {
                 filter === f ? "bg-white text-emerald-700 shadow-sm" : "text-slate-400 hover:text-slate-600"
               )}
             >
-              {f === "Active" ? "С приложение" : f === "Inactive" ? "Без приложение" : "Всички пациенти"}
+              {f === "Active" ? "Активирани" : f === "Inactive" ? "Неактивирани" : "Всички пациенти"}
             </button>
           ))}
         </div>
@@ -142,10 +142,10 @@ export const PatientsPage: React.FC = () => {
                   <td className="px-6 py-5">
                     <div className={clsx(
                       "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider",
-                      patient.is_active ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-400"
+                      patient.is_active ? "bg-emerald-50 text-emerald-600" : "bg-orange-50 text-orange-600"
                     )}>
                       <Smartphone className="w-3 h-3" />
-                      {patient.is_active ? "Свързан" : "Няма"}
+                      {patient.is_active ? "Активен" : "Неактивен"}
                     </div>
                   </td>
                   <td className="px-6 py-5 text-sm font-medium text-slate-500">{new Date(patient.created_at).toLocaleDateString()}</td>
@@ -257,19 +257,19 @@ export const PatientsPage: React.FC = () => {
                   )}>
                     <div className={clsx(
                       "w-10 h-10 rounded-xl flex items-center justify-center",
-                      selectedModalPatient.is_active ? "bg-emerald-100 text-emerald-600" : "bg-slate-200 text-slate-500"
+                      selectedModalPatient.is_active ? "bg-emerald-100 text-emerald-600" : "bg-orange-100 text-orange-600"
                     )}>
                       <Smartphone className="w-5 h-5" />
                     </div>
                     <div>
                       <span className={clsx(
                         "text-sm font-bold block",
-                        selectedModalPatient.is_active ? "text-emerald-700" : "text-slate-600"
+                        selectedModalPatient.is_active ? "text-emerald-700" : "text-orange-700"
                       )}>
-                        {selectedModalPatient.is_active ? "Свързан" : "Няма устройство"}
+                        {selectedModalPatient.is_active ? "Профилът е активен" : "Очаква активация"}
                       </span>
                       <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                        {selectedModalPatient.is_active ? "Синхронизация на живо" : "Неактивно"}
+                        {selectedModalPatient.is_active ? "Синхронизация на живо" : "Без връзка със сензор"}
                       </span>
                     </div>
                   </div>
