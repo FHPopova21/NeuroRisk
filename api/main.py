@@ -1,6 +1,6 @@
 import os
 import sys
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 
 from flask_cors import CORS
 
@@ -23,7 +23,19 @@ def create_app():
     Base.metadata.create_all(bind=engine)
     
     app = Flask(__name__)
-    CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
+    CORS(app, resources={r"/*": {
+        "origins": "*",
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    }}, supports_credentials=True)
+
+    @app.before_request
+    def log_request_info():
+        print(f"--- INCOMING REQUEST ---")
+        print(f"Method: {request.method}")
+        print(f"Path: {request.path}")
+        print(f"Headers: {dict(request.headers)}")
+        print(f"------------------------")
 
     
     # Конфигурация

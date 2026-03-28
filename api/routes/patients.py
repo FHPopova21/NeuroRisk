@@ -51,26 +51,6 @@ def get_my_patients(current_user):
     finally:
         db.close()
 
-@patients_bp.route('/activate/<token>', methods=['POST'])
-def activate_account(token):
-    """
-    Ендпойнт за активация на пациентски акаунт.
-    """
-    data = request.get_json()
-    try:
-        activation_data = schemas.PatientActivate(**data)
-    except ValidationError as e:
-        return jsonify({"detail": e.errors()}), 400
-
-    db = next(database.get_db())
-    try:
-        patient = patients.activate_patient(db=db, token=token, activation_data=activation_data)
-        return jsonify(schemas.Patient.model_validate(patient).model_dump()), 200
-    except Exception as e:
-        return jsonify({"detail": str(e)}), 400
-    finally:
-        db.close()
-
 @patients_bp.route('/<patient_id>', methods=['GET'])
 @token_required
 def get_patient_details(current_user, patient_id):

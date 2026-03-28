@@ -44,6 +44,7 @@ def create_patient(db: Session, patient_data: schemas.PatientCreate, doctor_id: 
         birth_date=patient_data.birth_date,
         gender=patient_data.gender,
         medical_history=patient_data.medical_history,
+        password_hash=hash_password(patient_data.patient_id), # Временна парола = Patient ID
         activation_token=token,
         token_expires_at=expiry,
         is_active=False,
@@ -66,20 +67,21 @@ def create_patient(db: Session, patient_data: schemas.PatientCreate, doctor_id: 
         process_eeg_signal(db, signal_in)
 
     # 5. Пращане на имейл (Real SMTP + Mock Log)
-    activation_url = f"http://localhost:5173/#/register/{token}"
+    login_url = f"http://localhost:5173/login"
     from api.utils.email_service import send_activation_email
     
     send_activation_email(
         to_email=new_patient.email,
         patient_id=new_patient.patient_id,
-        activation_url=activation_url
+        activation_url=login_url
     )
 
     print(f"--- EMAIL SERVICE LOG ---")
     print(f"To: {new_patient.email}")
     print(f"Subject: NeuroRisk - Активация на профил")
     print(f"Message: Здравейте, Вашият Patient ID е: {new_patient.patient_id}")
-    print(f"Активирайте профила си тук: {activation_url}")
+    print(f"Временна парола: {new_patient.patient_id}")
+    print(f"Влезте тук: {login_url}")
     print(f"--------------------------")
 
     return new_patient, token

@@ -52,9 +52,11 @@ def get_history(current_user, patient_id):
     """
     Връща историята на записите за конкретен пациент.
     """
-    # Защита: Ако е пациент, може да вижда само своя си ID
-    is_patient = not (hasattr(current_user, 'specialization') or hasattr(current_user, 'username'))
-    if is_patient and str(current_user.id) != str(patient_id):
+    # Проверяваме дали е администратор или лекар
+    is_privileged = hasattr(current_user, 'specialization') or hasattr(current_user, 'username')
+    
+    # Ако е пациент, може да вижда само своя си ID
+    if not is_privileged and str(current_user.id) != str(patient_id):
         return jsonify({"detail": "Нямате достъп до хронологията на друг пациент"}), 403
 
     db = next(database.get_db())
@@ -237,25 +239,32 @@ def patient_heartbeat(current_user):
     """
     Получава данни за активността на пациента в реално време (Mobile App).
     """
-    # Проверяваме дали е пациент (по липса на атрибут username/specialization или по роля)
-    if hasattr(current_user, 'specialization') or hasattr(current_user, 'username'):
-        return jsonify({"detail": "Само пациенти могат да изпращат heartbeat"}), 403
-        
+    # ВРЕМЕНЕН ДЕБЪГ: Позволяваме на всички логнати да минат, за да видим какво пристига
+    print(f"--- HEARTBEAT DEBUG ---")
+    print(f"User type: {type(current_user)}")
+    print(f"User dir: {dir(current_user)}")
+    if hasattr(current_user, 'id'):
+        print(f"User ID: {current_user.id}")
+    
     db = next(database.get_db())
     try:
-        from uuid import UUID
-        # Тъй като current_user е самият обект от базата в Flask версията ни
+        # Опитваме се да намерим пациент с това ID, независимо от обекта
         patient = db.query(models.Patient).filter(models.Patient.id == current_user.id).first()
         if patient:
+            print(f"Patient found: {patient.name}")
             patient.status = "ACTIVE"
-            patient.last_active = datetime.now() # Обновяваме времето на последна активност
+            from datetime import datetime
+            patient.last_active = datetime.now()
             db.commit()
+        else:
+            print("No patient record found for this user ID")
+            
         return jsonify({"status": "received"}), 200
     except Exception as e:
+        print(f"HEARTBEAT ERROR: {e}")
         db.rollback()
         return jsonify({"detail": str(e)}), 400
     finally:
-        db.close()
         db.close()
 
 @monitoring_bp.route('/signal', methods=['POST'])

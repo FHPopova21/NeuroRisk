@@ -30,6 +30,7 @@ export interface Patient {
   total_records?: number;
   doctor_name?: string;
   doctor_specialization?: string;
+  is_active: boolean;
   created_at: string;
 }
 
@@ -106,5 +107,18 @@ export const apiService = {
       body: JSON.stringify(metrics)
     });
     return response.ok;
+  },
+
+  async setPassword(password: string): Promise<any> {
+    const response = await fetch(`${API_BASE_URL}/auth/set-password`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ password })
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Грешка при задаване на паролата");
+    }
+    return response.json();
   }
 };

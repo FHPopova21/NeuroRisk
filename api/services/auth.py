@@ -57,7 +57,22 @@ def authenticate_user(db: Session, username_or_email: str, password: str):
     if admin and verify_password(password, admin.password_hash):
         return admin, 'admin'
 
-    # 2. После търсим за лекар (по имейл или служебен ID)
+    # 2. Първо търсим за пациент (по имейл или пациентски ID) - с приоритет за тест/мобилно
+    patient = db.query(models.Patient).filter(
+        (models.Patient.email == username_or_email) | 
+        (models.Patient.patient_id == username_or_email)
+    ).first()
+    
+    if patient:
+        # НОВА ЛОГИКА: Ако е подаден само Patient ID (без парола) ИЛИ паролата съвпада с ID-то, пускаме
+        if not password or password == patient.patient_id:
+             return patient, 'patient'
+        
+        # Стандартна логика за парола (за уеб приложението)
+        if patient.password_hash and verify_password(password, patient.password_hash):
+            return patient, 'patient'
+
+    # 3. После търсим за лекар (по имейл или служебен ID)
     doctor = db.query(models.Doctor).filter(
         (models.Doctor.email == username_or_email) | 
         (models.Doctor.admin_assigned_id == username_or_email)
@@ -65,16 +80,5 @@ def authenticate_user(db: Session, username_or_email: str, password: str):
     
     if doctor and verify_password(password, doctor.password_hash):
         return doctor, 'doctor'
-    
-    # 3. После за пациент (по имейл или пациентски ID)
-    patient = db.query(models.Patient).filter(
-        (models.Patient.email == username_or_email) | 
-        (models.Patient.patient_id == username_or_email)
-    ).first()
-    
-    if patient and verify_password(password, patient.password_hash):
-        if not patient.is_active:
-            raise Exception("Профилът още не е активиран!")
-        return patient, 'patient'
         
     return None, None
