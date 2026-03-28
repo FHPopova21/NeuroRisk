@@ -107,6 +107,16 @@ export const apiService = {
     return response.json();
   },
 
+  async processSignal(signal: number[]): Promise<any> {
+    const response = await fetch(`${API_BASE_URL}/monitoring/process`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ signal })
+    });
+    if (!response.ok) throw new Error("Грешка при обработка на сигнала");
+    return response.json();
+  },
+
   async sendHeartbeat(metrics: any): Promise<any> {
     const response = await fetch(`${API_BASE_URL}/monitoring/heartbeat`, {
       method: 'POST',
