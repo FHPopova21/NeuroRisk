@@ -1,28 +1,28 @@
 import eel
-import os
-import subprocess
-import serial
-from serial import Serial
+import socket
+import json
 import threading
 import time
+import os
+import sys
 
-# MindWave Config
-SERIAL_PORT = "/dev/tty.MindWaveMobile"
-BAUD_RATE = 57600 # Standard for MindWave
+# Add the project root to sys.path to allow importing from api
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+
+# ThinkGear Connector (TGC) Configuration
+TGC_HOST = '127.0.0.1'
+TGC_PORT = 13854
 
 streaming = False
 
 @eel.expose
 def start_eeg_stream():
     global streaming
-    if streaming:
-        return
-    
-    streaming = True
-    thread = threading.Thread(target=read_mindwave)
-    thread.daemon = True
-    thread.start()
-    return True
+    if not streaming:
+        streaming = True
+        threading.Thread(target=read_mindwave_socket, daemon=True).start()
+        return True
+    return False
 
 @eel.expose
 def stop_eeg_stream():
@@ -30,52 +30,85 @@ def stop_eeg_stream():
     streaming = False
     return True
 
-def read_mindwave():
+def read_mindwave_socket():
     global streaming
+    print(f"DEBUG: Connecting to ThinkGear Connector at {TGC_HOST}:{TGC_PORT}...")
+    
     try:
-        # Explicitly use Serial class to avoid namespace confusion
-        with Serial(SERIAL_PORT, BAUD_RATE, timeout=1) as ser:
-            print(f"Connected to {SERIAL_PORT}")
-            while streaming:
-                if ser.in_waiting > 0:
-                    data = ser.read(ser.in_waiting)
-                    for byte in data:
-                        # Push raw byte to frontend
-                        eel.updateEEGData(int(byte))
-                eel.sleep(0.01) # Crucial for Eel thread management
+        # Create TCP Socket
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.settimeout(5)
+        client.connect((TGC_HOST, TGC_PORT))
+        print("DEBUG: Connected to TGC Socket!")
+
+        # 1. Authorization Request
+        auth_req = {
+            "appName": "NeuroRisk",
+            "appKey": "9f54141b4b4c567748de857c093a8e7a63445582" # Standard local key
+        }
+        client.send(json.dumps(auth_req).encode('utf-8'))
+
+        # 2. Configuration: Enable Raw EEG
+        config_req = {"enableRawOutput": True, "format": "Json"}
+        client.send(json.dumps(config_req).encode('utf-8'))
+        
+        print("DEBUG: Handshake complete. Waiting for JSON stream...")
+
+        # Buffer for splitting packets by \r
+        buffer = ""
+        
+        while streaming:
+            try:
+                data = client.recv(4096).decode('utf-8')
+                if not data: break
+                
+                buffer += data
+                while '\r' in buffer:
+                    line, buffer = buffer.split('\r', 1)
+                    if line.strip():
+                        try:
+                            packet = json.loads(line)
+                            
+                            # Handle Raw EEG
+                            if "rawEeg" in packet:
+                                eel.updateEEGData(packet["rawEeg"])
+                                
+                            # Handle Connection/Signal Quality
+                            if "poorSignalLevel" in packet:
+                                eel.updateSignalQuality(packet["poorSignalLevel"])
+                                
+                        except json.JSONDecodeError:
+                            continue
+            except socket.timeout:
+                continue
+            except Exception as e:
+                print(f"DEBUG: Socket Read Error: {e}")
+                break
+                
     except Exception as e:
-        print(f"Serial Error: {e}")
-        # Use a safer way to call frontend if it might not be ready
+        print(f"DEBUG: Connection failed: {e}")
         try:
-            eel.onStreamError(str(e))()
+            eel.onStreamError(f"Уверете се, че ThinkGear Connector е пуснат (Port {TGC_PORT})")()
         except:
             pass
     finally:
         streaming = False
-        print("EEG Stream stopped")
+        try: client.close()
+        except: pass
+        print("DEBUG: MindWave Socket thread terminated.")
 
-def build_app():
-    print("Building Mobile App...")
-    frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../frontend'))
-    subprocess.run(["npm", "run", "build"], cwd=frontend_dir, shell=True)
+# Initialize Eel with the React build directory
+eel.init("../frontend/dist")
 
-if __name__ == '__main__':
-    # Build the app if dist doesn't exist
-    dist_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../frontend/dist'))
-    if not os.path.exists(dist_dir):
-        build_app()
-    
-    # Initialize Eel with the dist directory
-    eel.init(dist_dir)
-    
-    print("\n" + "="*50)
+try:
+    print("==================================================")
     print("NeuroRisk Mobile App Preview (Eel Engine)")
-    print("="*50)
-    print("\nСтартиране в самостоятелен прозорец...")
-    print("="*50 + "\n")
+    print("==================================================")
+    print("\nИнструкция: СТАРТИРАЙТЕ 'ThinkGear Connector' приложението.")
+    print("==================================================")
     
-    try:
-        # Start the app in a fixed mobile-sized window
-        eel.start('index.html', size=(400, 800))
-    except (SystemExit, MemoryError, KeyboardInterrupt):
-        print("\nПриложението е спряно.")
+    eel.start('index.html', mode='chrome', port=8080, size=(400, 800))
+except (SystemExit, KeyboardInterrupt):
+    print("\nЗатваряне...")
+except Exception as e:
+    print(f"Error starting Eel: {e}")

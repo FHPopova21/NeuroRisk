@@ -22,6 +22,7 @@ declare global {
       start_eeg_stream: () => Promise<boolean>;
       stop_eeg_stream: () => Promise<boolean>;
       expose: (fn: Function, name: string) => void;
+      sleep: (seconds: number) => Promise<void>;
     };
   }
 }
@@ -30,10 +31,12 @@ export function LiveMonitoring() {
   const navigate = useNavigate();
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isFinished, setIsFinished] = useState(false);
   const [status, setStatus] = useState<"stable" | "warning" | "high">("stable");
   const [duration, setDuration] = useState(0);
+  const [signalQuality, setSignalQuality] = useState(0);
   const [waveData, setWaveData] = useState<Array<{ time: number; value: number }>>([]);
-  const [riskScore, setRiskScore] = useState(0);
+  const [riskScore, setRiskScore] = useState<number | null>(null);
 
   // Processing Refs
   const resampledBufferRef = useRef<number[]>([]);
@@ -42,58 +45,81 @@ export function LiveMonitoring() {
 
   // Resampling Logic: 512Hz -> 173.61Hz
   const processRawData = (value: number) => {
-    // Update UI wave immediately (keep last 50 points for visualization)
+    if (isFinished) return;
+
+    // Update UI wave immediately
     setWaveData(prev => {
       const newData = [...prev, { time: Date.now(), value: value }];
       return newData.slice(-50);
     });
 
-    // Accumulator for linear sampling
     accumulatorRef.current += 1;
     if (accumulatorRef.current >= stepSize) {
       accumulatorRef.current -= stepSize;
       
-      // Normalize raw byte (0-255) to AI-friendly range (usually -1 to 1 or 0 to 1)
-      // MindWave raw is 16-bit signed, but byte-by-byte reading is simpler for now
-      const signalValue = (value - 127) / 128; 
+      const signalValue = value / 32768.0; // Normalized 16-bit
       resampledBufferRef.current.push(signalValue);
       
-      // Check if buffer is full (23.6s reached)
       if (resampledBufferRef.current.length >= BUFFER_SIZE) {
+        setIsFinished(true);
         const fullBuffer = [...resampledBufferRef.current];
-        resampledBufferRef.current = []; // Clear for next batch
-        handleSendSignal(fullBuffer);
+        handleSessionEnd(fullBuffer);
       }
     }
   };
 
-  const handleSendSignal = async (signal: number[]) => {
+  const handleSessionEnd = async (signal: number[]) => {
     try {
+      if (window.eel) window.eel.stop_eeg_stream();
+      
       const result = await apiService.processSignal(signal);
       if (result.risk_score !== undefined) {
         setRiskScore(result.risk_score);
         if (result.risk_score > 70) setStatus("high");
         else if (result.risk_score > 30) setStatus("warning");
         else setStatus("stable");
+        
+        toast.success("Анализът е завършен!");
       }
     } catch (err) {
-      console.error("Failed to process EEG batch", err);
+      toast.error("Грешка при анализа на сигнала");
     }
   };
 
-  // Expose function to Eel for real-time updates
+  const saveToHistory = async () => {
+    try {
+      if (riskScore !== null) {
+        toast.success("Резултатът е запазен в историята!");
+        navigate("/");
+      }
+    } catch (err) {
+      toast.error("Неуспешно запазване");
+    }
+  };
+
+  // Expose functions to Eel
   useEffect(() => {
     if (window.eel) {
+      // @ts-ignore
       window.eel.expose(processRawData, "updateEEGData");
+      // @ts-ignore
+      window.eel.expose((val: number) => {
+          setSignalQuality(Math.round((200 - val) / 2)); // 0 = perfect, 200 = no signal
+      }, "updateSignalQuality");
+      // @ts-ignore
       window.eel.expose((err: string) => {
-        toast.error(`Проблем с устройството: ${err}`);
+        toast.error(`Проблем: ${err}`);
         setIsConnected(false);
       }, "onStreamError");
     }
-  }, []);
+  }, [isFinished]);
 
   const connectDevice = async () => {
     setIsConnecting(true);
+    setIsFinished(false);
+    setDuration(0);
+    setWaveData([]);
+    resampledBufferRef.current = [];
     try {
       if (window.eel) {
         const success = await window.eel.start_eeg_stream();
@@ -101,38 +127,31 @@ export function LiveMonitoring() {
           setIsConnected(true);
           toast.success("Сесията започна!");
         }
-      } else {
-        toast.error("Eel не е зареден");
       }
     } catch (err) {
-      toast.error("Неуспешно свързване с порта");
-      console.error(err);
+      toast.error("Неуспешна връзка");
     } finally {
       setIsConnecting(false);
     }
   };
 
   const disconnectDevice = async () => {
-    if (window.eel) {
-      await window.eel.stop_eeg_stream();
-    }
+    if (window.eel) await window.eel.stop_eeg_stream();
     setIsConnected(false);
   };
 
   useEffect(() => {
     let timer: any;
-    if (isConnected) {
+    if (isConnected && !isFinished) {
       timer = setInterval(() => setDuration(d => d + 1), 1000);
     }
-    return () => {
-       if (timer) clearInterval(timer);
-    };
-  }, [isConnected]);
+    return () => { if (timer) clearInterval(timer); };
+  }, [isConnected, isFinished]);
 
   const statusConfig = {
-    stable: { color: "#10b981", text: "Стабилно", dotColor: "bg-green-500" },
-    warning: { color: "#f59e0b", text: "Предупреждение", dotColor: "bg-yellow-500" },
-    high: { color: "#ef4444", text: "Висока активност", dotColor: "bg-red-500" }
+    stable: { color: "#10b981", text: "Стабилно", dotColor: "bg-green-500", desc: "Няма признаци на активност." },
+    warning: { color: "#f59e0b", text: "Предупреждение", dotColor: "bg-yellow-500", desc: "Забелязана е необичайна активност." },
+    high: { color: "#ef4444", text: "Висока активност", dotColor: "bg-red-500", desc: "Вероятен риск! Свържете се с лекар." }
   }[status];
 
   const formatDuration = (seconds: number) => {
@@ -142,112 +161,91 @@ export function LiveMonitoring() {
   };
 
   return (
-    <div className="min-h-screen bg-[#030213] flex flex-col max-w-md mx-auto overflow-auto pb-6">
+    <div className="min-h-screen bg-[#030213] flex flex-col max-w-md mx-auto overflow-hidden pb-6 relative">
       {/* Header */}
       <div className="relative flex items-start justify-between p-6 pb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white mb-1">
-            Мониторинг
-          </h1>
+          <h1 className="text-2xl font-bold text-white mb-1">Мониторинг</h1>
           <div className="flex items-center gap-2">
             <span className={clsx("w-2 h-2 rounded-full", isConnected ? "bg-green-500 animate-pulse" : "bg-red-500")} />
-            <p className="text-white/60 text-sm">
-              {isConnected ? "В реално време" : "Няма връзка"}
-            </p>
+            <p className="text-white/60 text-sm">MindWave Mobile 2</p>
           </div>
         </div>
-        <button
-          onClick={() => navigate("/")}
-          className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/20 transition-colors flex-shrink-0"
-        >
+        <button onClick={() => navigate("/")} className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/20 transition-colors shrink-0">
           <X className="w-6 h-6 text-white" />
         </button>
       </div>
 
-      {/* Connection Action */}
-      <AnimatePresence>
-        {!isConnected && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="mx-6 mb-6 p-8 bg-blue-600 rounded-[2rem] flex flex-col items-center justify-center text-center shadow-2xl shadow-blue-900/40 border border-blue-400/30"
-          >
-            <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mb-6">
-              <Wifi className="w-10 h-10 text-white" />
-            </div>
-            <h2 className="text-xl font-bold text-white mb-2">MindWave Mobile 2</h2>
-            <p className="text-blue-100 text-sm mb-6 px-4">Моля, включете устройството и натиснете бутона за свързване.</p>
-            <button
-              onClick={connectDevice}
-              disabled={isConnecting}
-              className="w-full bg-white text-blue-600 font-bold py-4 rounded-2xl flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-50"
-            >
-              {isConnecting ? "Свързване..." : "Свържи сега"}
+      {!isConnected ? (
+          <div className="mx-6 p-8 bg-blue-600 rounded-[2rem] flex flex-col items-center justify-center text-center shadow-2xl shadow-blue-900/40">
+            <Wifi className="w-12 h-12 text-white mb-6" />
+            <h2 className="text-xl font-bold text-white mb-2">Започни измерване</h2>
+            <p className="text-blue-100 text-sm mb-6 px-4">Сесията продължава 23.6 секунди за максимална точност.</p>
+            <button onClick={connectDevice} disabled={isConnecting} className="w-full bg-white text-blue-600 font-bold py-4 rounded-2xl disabled:opacity-50">
+              {isConnecting ? "Свързване..." : "Старт сега"}
             </button>
+          </div>
+      ) : (
+        <div className="flex-1 space-y-6">
+          <div className="mx-6 bg-white/5 border border-white/10 rounded-3xl p-6">
+            <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-2">
+                    <div className={clsx("w-3 h-3 rounded-full", statusConfig.dotColor)} />
+                    <span className="text-white font-semibold text-lg">{statusConfig.text}</span>
+                </div>
+                {!isFinished && <button onClick={disconnectDevice} className="text-white/40 text-xs">Отказ</button>}
+            </div>
+            <div className="grid grid-cols-2 gap-6">
+                <div>
+                    <p className="text-white/60 text-xs mb-1">Време</p>
+                    <p className="text-white text-2xl font-bold">{formatDuration(duration)} / 00:24</p>
+                </div>
+                <div>
+                    <p className="text-white/60 text-xs mb-1">Качество</p>
+                    <p className="text-green-400 text-2xl font-bold">{signalQuality}%</p>
+                </div>
+            </div>
+          </div>
+
+          <div className="mx-6 bg-white/5 border border-white/10 rounded-3xl p-6 h-48">
+              <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={waveData}>
+                      <Line type="monotone" dataKey="value" stroke={statusConfig.color} strokeWidth={2} dot={false} isAnimationActive={false} />
+                  </LineChart>
+              </ResponsiveContainer>
+          </div>
+
+          <div className="mx-6 bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-3">
+              <Activity className="w-5 h-5 text-blue-400" />
+              <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
+                  <motion.div 
+                    className="h-full bg-blue-500" 
+                    initial={{ width: 0 }} 
+                    animate={{ width: `${Math.min(100, (resampledBufferRef.current.length / BUFFER_SIZE) * 100)}%` }} 
+                  />
+              </div>
+          </div>
+        </div>
+      )}
+
+      {/* Result Overlay */}
+      <AnimatePresence>
+        {isFinished && riskScore !== null && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 bg-[#030213]/90 backdrop-blur-xl z-50 flex items-center justify-center p-6 text-center">
+            <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} className="w-full bg-white/10 border border-white/20 rounded-[3rem] p-8">
+                <div className={clsx("w-32 h-32 mx-auto rounded-full flex items-center justify-center mb-6 border-4", status === 'stable' ? 'border-green-500/50 bg-green-500/10' : status === 'warning' ? 'border-yellow-500/50 bg-yellow-500/10' : 'border-red-500/50 bg-red-500/10')}>
+                    <span className={clsx("text-4xl font-black", status === 'stable' ? 'text-green-500' : status === 'warning' ? 'text-yellow-500' : 'text-red-500')}>{riskScore}%</span>
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-2">{statusConfig.text}</h2>
+                <p className="text-white/60 mb-8">{statusConfig.desc}</p>
+                <div className="space-y-3">
+                    <button onClick={saveToHistory} className="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-xl shadow-blue-600/20">Запази резултата</button>
+                    <button onClick={() => navigate("/")} className="w-full text-white/40 font-medium py-2">Затвори без запис</button>
+                </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Status & Waveform */}
-      {isConnected && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1">
-          {/* Status Card */}
-          <div className="mx-6 mb-6 bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6">
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-2">
-                <div className={clsx("w-3 h-3 rounded-full", statusConfig.dotColor)} />
-                <span className="text-white font-semibold text-lg">{statusConfig.text}</span>
-              </div>
-              <button onClick={disconnectDevice} className="text-white/40 text-xs hover:text-white transition-colors">Прекъсни връзката</button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <p className="text-white/60 text-sm mb-2">Продължителност</p>
-                <p className="text-white text-3xl font-bold">{formatDuration(duration)}</p>
-              </div>
-              <div>
-                <p className="text-white/60 text-sm mb-2">Рисков Индекс</p>
-                <p className={clsx("text-3xl font-bold", riskScore > 50 ? "text-red-400" : "text-green-400")}>{riskScore}%</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Waveform Visualization */}
-          <div className="mx-6 mb-6 bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6 relative overflow-hidden">
-             <div className="absolute top-0 right-0 p-4">
-                <Brain className="w-8 h-8 text-white/5" />
-             </div>
-             <h3 className="text-white font-bold text-lg mb-6">EEG Сигнал</h3>
-             <div className="h-48 mb-6">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={waveData}>
-                    <Line
-                      type="monotone"
-                      dataKey="value"
-                      stroke={statusConfig.color}
-                      strokeWidth={2}
-                      dot={false}
-                      isAnimationActive={false}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-             </div>
-             <div className="flex justify-between items-center bg-white/5 rounded-2xl p-4">
-                <div className="flex items-center gap-3">
-                  <Activity className="w-5 h-5 text-blue-400" />
-                  <span className="text-white/80 text-sm font-medium">Буфериране: 23.6с</span>
-                </div>
-                <div className="flex gap-1">
-                   {[1,2,3,4].map(i => (
-                     <div key={i} className={clsx("w-1.5 h-1.5 rounded-full", resampledBufferRef.current.length > (BUFFER_SIZE/4)*i ? "bg-blue-500" : "bg-white/10")} />
-                   ))}
-                </div>
-             </div>
-          </div>
-        </motion.div>
-      )}
     </div>
   );
 }
