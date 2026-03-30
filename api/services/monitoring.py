@@ -100,7 +100,7 @@ def get_spectral_data(signal, fs=100.0):
     Calculate Power Spectral Density using numpy FFT and group into 1-60 Hz bins.
     Uses log10 scaling to match medical standards (V^2/Hz log scale).
     """
-    if not signal or len(signal) < 2:
+    if signal is None or len(signal) < 2:
         return []
     
     x = np.array(signal)

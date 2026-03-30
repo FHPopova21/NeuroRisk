@@ -79,8 +79,7 @@ class LSTMModel:
     def load(cls, filepath, input_shape=None):
         """Loads a saved Keras model."""
         loaded_keras_model = tf.keras.models.load_model(filepath)
-        
-        # Create a dummy wrapper and inject the loaded model
+
         if input_shape is None:
             # Extract input shape from the loaded model
             input_shape = loaded_keras_model.input_shape[1:]
