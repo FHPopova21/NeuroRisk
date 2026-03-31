@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from api import schemas, database
 from api.services import patients
-from api.utils.auth import token_required, role_required
+from api.utils.jwt_helpers import token_required, role_required
 from pydantic import ValidationError
 
 patients_bp = Blueprint('patients', __name__)
@@ -197,5 +197,54 @@ def add_medical_note(current_user, patient_id):
         }), 201
     except Exception as e:
         return jsonify({"detail": str(e)}), 400
+    finally:
+        db.close()
+
+
+# ── Notes routes (merged from routes/notes.py) ──────────────────────────────
+
+@patients_bp.route('/notes', methods=['GET'])
+@token_required
+@role_required('doctor')
+def get_doctor_notes(current_user):
+    """Връща всички бележки, написани от текущия лекар."""
+    db = next(database.get_db())
+    try:
+        all_notes = patients.get_doctor_notes(db, current_user.id)
+        return jsonify([schemas.MedicalNote.model_validate(n).model_dump() for n in all_notes]), 200
+    finally:
+        db.close()
+
+@patients_bp.route('/notes/latest', methods=['GET'])
+@token_required
+def get_latest_note(current_user):
+    """Връща най-новата бележка за текущо логнатия пациент."""
+    from api import models as m
+    is_patient = not (hasattr(current_user, 'specialization') or hasattr(current_user, 'username'))
+    if not is_patient:
+        return jsonify({"detail": "Само за пациенти"}), 403
+    db = next(database.get_db())
+    try:
+        latest = db.query(m.MedicalNote)\
+            .filter(m.MedicalNote.patient_id == current_user.id)\
+            .order_by(m.MedicalNote.timestamp.desc()).first()
+        if not latest:
+            return jsonify(None), 200
+        return jsonify(schemas.MedicalNote.model_validate(latest).model_dump()), 200
+    finally:
+        db.close()
+
+@patients_bp.route('/notes/record/<record_id>', methods=['PUT'])
+@token_required
+@role_required('doctor')
+def update_record_note(current_user, record_id):
+    """Обновява бележката към конкретен ЕЕГ запис."""
+    data = request.get_json()
+    db = next(database.get_db())
+    try:
+        updated = patients.update_eeg_record_note(db, record_id, data.get('note', ''))
+        if not updated:
+            return jsonify({"detail": "Записът не е намерен"}), 404
+        return jsonify(schemas.EEGRecord.model_validate(updated).model_dump()), 200
     finally:
         db.close()

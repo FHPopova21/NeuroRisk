@@ -1,10 +1,13 @@
 {
-  "name": "@figma/my-make-file",
+  "name": "neurorisk",
   "private": true,
   "version": "0.0.1",
   "type": "module",
+  "homepage": "https://filipapopova.github.io/2526-dzi-ai-FHPopova21/Web_App/",
   "scripts": {
     "build": "vite build",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist",
     "dev": "vite"
   },
   "dependencies": {

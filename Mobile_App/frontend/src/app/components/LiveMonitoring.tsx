@@ -1,15 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router";
-import {
-  LineChart,
-  Line,
-  ResponsiveContainer,
-} from "recharts";
-import { X, Wifi, Activity, Brain } from "lucide-react";
+import { X, Wifi, Activity } from "lucide-react";
 import { apiService } from "../services/api";
 import { toast } from "sonner";
 import clsx from "clsx";
+import EEGVisualizer from "./EEGVisualizer";
 
 // MindWave Mobile 2 Constants
 const SAMPLING_RATE_MW = 512;
@@ -22,7 +18,6 @@ declare global {
       start_eeg_stream: () => Promise<boolean>;
       stop_eeg_stream: () => Promise<boolean>;
       expose: (fn: Function, name: string) => void;
-      sleep: (seconds: number) => Promise<void>;
     };
   }
 }
@@ -35,7 +30,6 @@ export function LiveMonitoring() {
   const [status, setStatus] = useState<"stable" | "warning" | "high">("stable");
   const [duration, setDuration] = useState(0);
   const [signalQuality, setSignalQuality] = useState(0);
-  const [waveData, setWaveData] = useState<Array<{ time: number; value: number }>>([]);
   const [riskScore, setRiskScore] = useState<number | null>(null);
 
   // Processing Refs
@@ -46,12 +40,6 @@ export function LiveMonitoring() {
   // Resampling Logic: 512Hz -> 173.61Hz
   const processRawData = (value: number) => {
     if (isFinished) return;
-
-    // Update UI wave immediately
-    setWaveData(prev => {
-      const newData = [...prev, { time: Date.now(), value: value }];
-      return newData.slice(-50);
-    });
 
     accumulatorRef.current += 1;
     if (accumulatorRef.current >= stepSize) {
@@ -118,7 +106,6 @@ export function LiveMonitoring() {
     setIsConnecting(true);
     setIsFinished(false);
     setDuration(0);
-    setWaveData([]);
     resampledBufferRef.current = [];
     try {
       if (window.eel) {
@@ -207,12 +194,8 @@ export function LiveMonitoring() {
             </div>
           </div>
 
-          <div className="mx-6 bg-white/5 border border-white/10 rounded-3xl p-6 h-48">
-              <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={waveData}>
-                      <Line type="monotone" dataKey="value" stroke={statusConfig.color} strokeWidth={2} dot={false} isAnimationActive={false} />
-                  </LineChart>
-              </ResponsiveContainer>
+          <div className="mx-6 bg-white/5 border border-white/10 rounded-3xl p-6 h-48 overflow-hidden">
+               <EEGVisualizer color={statusConfig.color} isFinished={isFinished} />
           </div>
 
           <div className="mx-6 bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-3">

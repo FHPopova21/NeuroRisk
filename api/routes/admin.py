@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from api import schemas, models, database
-from api.utils.auth import token_required, role_required
+from api.utils.jwt_helpers import token_required, role_required
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
 from datetime import datetime, timedelta

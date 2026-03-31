@@ -1,4 +1,6 @@
 import serial.tools.list_ports
+from mindwave.mindwave import Headset
+
 
 def scan():
     print("Searching for MindWave ports...")

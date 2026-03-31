@@ -22,5 +22,8 @@ pytest
 requests
 python-dotenv
 PyJWT
+
+#Mobile App
 eel
 pyserial
+bleak

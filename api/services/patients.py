@@ -179,3 +179,41 @@ def get_patients_by_doctor(db: Session, doctor_id: str):
     Връща всички пациенти, за които отговаря даден лекар.
     """
     return db.query(models.Patient).filter(models.Patient.doctor_id == doctor_id).all()
+
+
+# ── Medical Notes (merged from services/notes.py) ──────────────────────────
+
+def get_patient_notes(db: Session, patient_id: str):
+    """
+    Връща всички бележки за конкретен пациент.
+    """
+    from sqlalchemy.orm import joinedload
+    from uuid import UUID
+    return db.query(models.MedicalNote)\
+             .options(joinedload(models.MedicalNote.patient))\
+             .filter(models.MedicalNote.patient_id == UUID(patient_id))\
+             .order_by(models.MedicalNote.timestamp.desc())\
+             .all()
+
+def get_doctor_notes(db: Session, doctor_id):
+    """
+    Връща всички бележки, написани от конкретен лекар.
+    """
+    from sqlalchemy.orm import joinedload
+    return db.query(models.MedicalNote)\
+             .options(joinedload(models.MedicalNote.patient))\
+             .filter(models.MedicalNote.doctor_id == doctor_id)\
+             .order_by(models.MedicalNote.timestamp.desc())\
+             .all()
+
+def update_eeg_record_note(db: Session, record_id: str, note: str):
+    """
+    Обновява персоналната бележка към конкретен ЕЕГ запис.
+    """
+    from uuid import UUID
+    record = db.query(models.EEGRecord).filter(models.EEGRecord.id == UUID(record_id)).first()
+    if record:
+        record.doctor_note = note
+        db.commit()
+        db.refresh(record)
+    return record

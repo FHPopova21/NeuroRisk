@@ -142,40 +142,39 @@ def get_shap_explanations(features: dict, risk_score: int):
     Генерира симулирани SHAP стойности (локални обяснения)
     базирани на отклоненията от нормата.
     """
-    # Дефинираме "здрави" норми за сравнение
+    # Обновени норми за MindWave (базирани на измервания в реален режим)
     norms = {
-        "rms": 45.0,
-        "hjorth_mobility": 0.08,
-        "hjorth_complexity": 1.4,
+        "rms": 150.0,           
+        "hjorth_mobility": 0.30, 
+        "hjorth_complexity": 2.1,
         "zcr": 0.05
     }
     
     explanation = []
     
-    # Реално SHAP би се изчислило с shap.Explainer, тук симулираме приноса:
-    # Принос = (Стойност - Норма) * Тежест
-    
-    # 1. RMS (Високата енергия вдига риска)
+    # 1. RMS (Енергия)
+    # Ако е под нормата, влиянието е отрицателно (намалява риска)
     rms_diff = (features["rms"] - norms["rms"]) / norms["rms"]
     explanation.append({
         "feature": "Energy (RMS)",
         "value": f"{features['rms']:.1f} µV",
         "norm": f"~{norms['rms']:.1f} µV",
-        "impact": float(np.clip(rms_diff * 40, -50, 50)), # Max 50% impact
-        "status": "High" if features["rms"] > norms["rms"] * 1.5 else "Normal"
+        "impact": float(np.clip(rms_diff * 40, -50, 50)),
+        "status": "High" if features["rms"] > norms["rms"] * 1.3 else "Normal"
     })
     
-    # 2. Mobility (Високата мобилност е характерна за иктална активност)
+    # 2. Mobility (Честота)
     mob_diff = (features["hjorth_mobility"] - norms["hjorth_mobility"]) / norms["hjorth_mobility"]
     explanation.append({
         "feature": "Frequency (Mobility)",
         "value": f"{features['hjorth_mobility']:.3f}",
         "norm": f"~{norms['hjorth_mobility']:.3f}",
         "impact": float(np.clip(mob_diff * 35, -50, 50)),
-        "status": "High" if features["hjorth_mobility"] > norms["hjorth_mobility"] * 1.5 else "Normal"
+        "status": "High" if features["hjorth_mobility"] > norms["hjorth_mobility"] * 1.3 else "Normal"
     })
     
-    # 3. Complexity (Ниската сложност често означава по-ритмичен/пристъпен сигнал)
+    # 3. Complexity (Сложност)
+    # Тук по-НИСКАТА сложност често вдига риска (ритмичност)
     comp_diff = (norms["hjorth_complexity"] - features["hjorth_complexity"]) / norms["hjorth_complexity"]
     explanation.append({
         "feature": "Complexity",

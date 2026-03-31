@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from api import schemas, database, models
 from api.services import auth
-from api.utils.auth import generate_token, token_required
+from api.utils.jwt_helpers import generate_token, token_required
 from pydantic import ValidationError
 
 auth_bp = Blueprint('auth', __name__)

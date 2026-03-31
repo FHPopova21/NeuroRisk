@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from api import schemas, database
 from api.services import notes
-from api.utils.auth import token_required, role_required
+from api.utils.jwt_helpers import token_required, role_required
 from pydantic import ValidationError
 from uuid import UUID
 

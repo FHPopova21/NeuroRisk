@@ -30,7 +30,7 @@ class Doctor(Base):
     password_hash = Column(Text, nullable=False)
     specialization = Column(String(100))
     is_verified = Column(Boolean, default=False)
-    is_active = Column(Boolean, default=True) # Добавено за съвместимост с auth логиката
+    is_active = Column(Boolean, default=True) 
     status = Column(String(20), default="PENDING") # PENDING, ACTIVE, SUSPENDED
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
@@ -89,8 +89,8 @@ class EEGRecord(Base):
     envelope_max = Column(Float)
     deriv1_std = Column(Float)
     deriv2_std = Column(Float)
-    ai_metadata = Column(JSONB) # Гъвкаво съхранение на метаданни
-    doctor_note = Column(Text) # Лична бележка от лекаря
+    ai_metadata = Column(JSONB) 
+    doctor_note = Column(Text) 
     doctor_validation = Column(String(20), default="PENDING") # PENDING, VALIDATED, FALSE_ALARM
 
     @property
