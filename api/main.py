@@ -9,7 +9,7 @@ from api.routes.patients import patients_bp
 from api.routes.monitoring import monitoring_bp
 from api.routes.admin import admin_bp
 from api.database.models import Base
-from api.database import engine
+from api.database.database import engine
 
 # Добавяне на основната директория към пътя за импортиране
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
