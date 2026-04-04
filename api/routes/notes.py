@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from api import schemas, database
+from api.database import schemas, database
 from api.services import notes
 from api.utils.jwt_helpers import token_required, role_required
 from pydantic import ValidationError
@@ -54,7 +54,7 @@ def get_latest_note(current_user):
 
     db = next(database.get_db())
     try:
-        from api import models
+        from api.database import models
         latest_note = db.query(models.MedicalNote)\
             .filter(models.MedicalNote.patient_id == current_user.id)\
             .order_by(models.MedicalNote.timestamp.desc())\

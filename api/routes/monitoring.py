@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from api import schemas, database, models
+from api.database import schemas, database, models
 from api.services import monitoring
 from api.utils.jwt_helpers import token_required, role_required
 from pydantic import ValidationError
@@ -140,7 +140,7 @@ def analyze_existing_record(current_user, record_id):
         return jsonify({"detail": str(e)}), 400
     finally:
         db.close()
-from api import models
+from api.database import models
 
 @monitoring_bp.route('/eeg-records/<record_id>', methods=['PUT'])
 @token_required

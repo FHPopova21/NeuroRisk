@@ -6,7 +6,7 @@ import time
 import os
 import sys
 import requests 
-from mindwave.mindwave import Headset
+
 
 # Add the project root to sys.path to allow importing from api
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))

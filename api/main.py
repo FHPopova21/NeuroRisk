@@ -8,8 +8,8 @@ from api.routes.auth import auth_bp
 from api.routes.patients import patients_bp
 from api.routes.monitoring import monitoring_bp
 from api.routes.admin import admin_bp
-from api.models import Base
-from api.database import engine
+from api.database.models import Base
+from api.database.database import engine
 
 # Добавяне на основната директория към пътя за импортиране
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -24,7 +24,7 @@ def create_app():
     app = Flask(__name__)
     CORS(app, resources={r"/*": {
         "origins": "*",
-        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization"]
     }}, supports_credentials=True)
 

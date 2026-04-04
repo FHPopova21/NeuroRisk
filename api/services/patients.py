@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from api import models, schemas
+from api.database import models, schemas
 from api.services.auth import hash_password
 import secrets
 from datetime import datetime, timedelta
@@ -68,7 +68,7 @@ def create_patient(db: Session, patient_data: schemas.PatientCreate, doctor_id: 
     # 4. Ако има начални ЕЕГ данни, обработваме ги
     if patient_data.initial_eeg_data:
         from api.services.monitoring import process_eeg_signal
-        from api import schemas as monitoring_schemas
+        from api.database import schemas as monitoring_schemas
         
         signal_in = monitoring_schemas.EEGSignalIn(
             patient_id=new_patient.id,
