@@ -158,7 +158,7 @@ def get_current_user(current_user):
     user_data['role'] = role
     
     # Добавяме и флага is_active за мобилното приложение
-    user_data['is_active'] = current_user.is_active
+    user_data['is_active'] = getattr(current_user, 'is_active', True)
     
     return jsonify(user_data), 200
 

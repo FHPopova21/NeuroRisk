@@ -7,10 +7,12 @@ data/eeg_data/
 
 # Python
 __pycache__/
+src/data_processing/__pycache__/
 *.py[cod]
 *$py.class
 venv/
 .env
+*.pyc
 
 # Notebooks
 .ipynb_checkpoints/
