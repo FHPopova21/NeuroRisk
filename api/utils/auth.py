@@ -3,7 +3,7 @@ import datetime
 import os
 from functools import wraps
 from flask import request, jsonify, current_app
-from api import models, database
+from api.database import models, database
 
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-this-in-prod")
 

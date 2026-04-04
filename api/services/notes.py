@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session, joinedload
-from api import models, schemas
+from api.database import models, schemas
 from uuid import UUID
 
 def create_medical_note(db: Session, note_data: schemas.MedicalNoteCreate, doctor_id: UUID):

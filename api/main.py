@@ -8,7 +8,7 @@ from api.routes.auth import auth_bp
 from api.routes.patients import patients_bp
 from api.routes.monitoring import monitoring_bp
 from api.routes.admin import admin_bp
-from api.models import Base
+from api.database.models import Base
 from api.database import engine
 
 # Добавяне на основната директория към пътя за импортиране

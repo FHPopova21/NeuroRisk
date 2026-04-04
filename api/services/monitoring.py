@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session, joinedload
-from api import models, schemas
+from api.database import models, schemas
 from datetime import datetime
 import numpy as np
 

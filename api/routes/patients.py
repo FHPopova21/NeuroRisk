@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from api import schemas, database
+from api.database import schemas, database
 from api.services import patients
 from api.utils.jwt_helpers import token_required, role_required
 from pydantic import ValidationError
@@ -219,7 +219,7 @@ def get_doctor_notes(current_user):
 @token_required
 def get_latest_note(current_user):
     """Връща най-новата бележка за текущо логнатия пациент."""
-    from api import models as m
+    from api.database import models as m
     is_patient = not (hasattr(current_user, 'specialization') or hasattr(current_user, 'username'))
     if not is_patient:
         return jsonify({"detail": "Само за пациенти"}), 403

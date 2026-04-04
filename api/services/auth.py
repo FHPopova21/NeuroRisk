@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from api import models
+from api.database import models
 import bcrypt
 from typing import Optional, Tuple
 from sqlalchemy.ext.declarative import DeclarativeMeta as Base
