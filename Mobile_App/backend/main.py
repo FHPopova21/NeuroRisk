@@ -14,49 +14,48 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".
 # ThinkGear Connector (TGC) Configuration
 TGC_HOST = '127.0.0.1'
 TGC_PORT = 13854
-FLASK_API_URL = 'http://127.0.0.1:5001/api/monitoring/analyze' # НОВО: Адресът на твоя Flask сървър
 
 streaming = False
-eeg_buffer = [] # НОВО: Тук ще събираме точките
+
+from eeg_simulator import EEGSimulator
+simulator = None
 
 @eel.expose
 def start_eeg_stream():
-    global streaming, eeg_buffer
+    global streaming
     if not streaming:
         streaming = True
-        eeg_buffer = [] # Изчистваме буфера при старт
         threading.Thread(target=read_mindwave_socket, daemon=True).start()
         return True
     return False
 
 @eel.expose
+def start_simulation(patient_label=1):
+    """
+    Стартира виртуалната симулация.
+    label=1 (Епилепсия), label=5 (Здрав)
+    """
+    global streaming, simulator
+    if not streaming:
+        streaming = True
+        simulator = EEGSimulator()
+        threading.Thread(
+            target=simulator.stream_to_eel, 
+            args=(patient_label, None), 
+            daemon=True
+        ).start()
+        return True
+    return False
+
+@eel.expose
 def stop_eeg_stream():
-    global streaming
+    global streaming, simulator
     streaming = False
+    if 'simulator' in globals() and simulator:
+        simulator.stop_streaming()
     return True
 
-# НОВО: Функция, която праща събраните данни на Flask сървъра
-def send_to_flask_server(data_array):
-    try:
-        # В реална система ще ни трябва patient_id от сесията
-        # За демо цели ползваме "default_patient"
-        payload = {
-            "patient_id": "87654321-4321-4321-4321-098765432109", # Примерно ID
-            "signal": data_array,
-            "sampling_rate": 512
-        }
-        
-        # print(f"DEBUG: Пакет от {len(data_array)} точки -> Flask...")
-        response = requests.post(FLASK_API_URL, json=payload, timeout=2)
-        
-        if response.status_code == 200:
-            result = response.json()
-            # Пращаме резултата обратно на React UI
-            eel.onAiAnalysisResult(result)
-        else:
-            print(f"DEBUG: Flask Error {response.status_code}")
-    except Exception as e:
-        print(f"DEBUG: Flask Connection failed: {e}")
+
 
 def read_mindwave_socket():
     global streaming, eeg_buffer
@@ -102,20 +101,8 @@ def read_mindwave_socket():
                                 eeg_value = packet["rawEeg"]
                                 eel.updateEEGData(eeg_value)
                                 
-                                # НОВО: Добавяме в буфера за AI анализ
-                                eeg_buffer.append(eeg_value)
-                                
-                                # НОВО: На всеки 512 точки (1 секунда) пращаме към Flask
-                                if len(eeg_buffer) >= 512:
-                                    data_to_send = eeg_buffer.copy()
-                                    eeg_buffer.clear()
-                                    
-                                    # Изпращаме в отделна нишка, за да не бавим стрийма
-                                    threading.Thread(
-                                        target=send_to_flask_server, 
-                                        args=(data_to_send,), 
-                                        daemon=True
-                                    ).start()
+                                # Frontend LiveMonitoring component buffers these
+                                # natively and sends an authenticated REST API Call!
                                 
                             # Handle Connection/Signal Quality
                             if "poorSignalLevel" in packet:
@@ -152,8 +139,12 @@ try:
     print("==================================================")
     
     eel.start('index.html', mode='chrome', port=8080, size=(400, 800))
-except (SystemExit, KeyboardInterrupt):
-    print("\nЗатваряне...")
+except KeyboardInterrupt:
+    print("\n[Eel] Затваряне принудително от потребителя...")
+except SystemExit as e:
+    print(f"\n[Eel] SystemExit: {e}")
 except Exception as e:
-    print(f"Error starting Eel: {e}")
+    import traceback
+    print(f"\n[Eel] Фатална грешка при стартиране:")
+    traceback.print_exc()
 

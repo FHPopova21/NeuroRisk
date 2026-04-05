@@ -11,17 +11,15 @@ const EEGVisualizer: React.FC<EEGVisualizerProps> = ({ color = '#00ffcc', isFini
   const animationFrameRef = useRef<number>(undefined);
 
   useEffect(() => {
-    // 1. Дефинираме функцията, която Python ще извиква
-    const handleUpdateEEG = (value: number) => {
+    // 1. Използваме CustomEvent, излъчен от LiveMonitoring, за да избегнем конфликти с eel.expose
+    const handleUpdateEEG = (e: any) => {
+      const value = e.detail;
       if (isFinished) return;
       dataRef.current.push(value);
       dataRef.current.shift();
     };
 
-    // 2. Регистрираме функцията (вече е експонирана в LiveMonitoring, но тук я свързваме)
-    if ((window as any).eel) {
-      (window as any).eel.expose(handleUpdateEEG, 'updateEEGData');
-    }
+    window.addEventListener('new_eeg_data', handleUpdateEEG);
 
     // 3. Самата логика за рисуване върху Canvas (60 FPS)
     const drawChart = () => {
@@ -62,6 +60,7 @@ const EEGVisualizer: React.FC<EEGVisualizerProps> = ({ color = '#00ffcc', isFini
     animationFrameRef.current = requestAnimationFrame(drawChart);
 
     return () => {
+      window.removeEventListener('new_eeg_data', handleUpdateEEG);
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }

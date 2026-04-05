@@ -34,6 +34,11 @@ def process_signal(current_user):
     Ендпойнт за изпращане на суров ЕЕГ сигнал за автоматична обработка.
     """
     data = request.get_json()
+    
+    # Auto-inject patient_id from the current logged-in user if missing
+    if "patient_id" not in data and hasattr(current_user, "id"):
+        data["patient_id"] = str(current_user.id)
+        
     try:
         signal_in = schemas.EEGSignalIn(**data)
     except ValidationError as e:
@@ -52,6 +57,10 @@ def get_history(current_user, patient_id):
     """
     Връща историята на записите за конкретен пациент.
     """
+    # Поддръжка на специален параметър 'me' за текущия потребител
+    if patient_id == "me" and hasattr(current_user, "id"):
+        patient_id = str(current_user.id)
+
     # Проверяваме дали е администратор или лекар
     is_privileged = hasattr(current_user, 'specialization') or hasattr(current_user, 'username')
     

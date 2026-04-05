@@ -17,6 +17,7 @@ declare global {
     eel: {
       start_eeg_stream: () => Promise<boolean>;
       stop_eeg_stream: () => Promise<boolean>;
+      start_simulation: (label: number) => Promise<boolean>;
       expose: (fn: Function, name: string) => void;
     };
   }
@@ -35,24 +36,30 @@ export function LiveMonitoring() {
   // Processing Refs
   const resampledBufferRef = useRef<number[]>([]);
   const accumulatorRef = useRef(0);
+  const isSimRef = useRef(false);
   const stepSize = SAMPLING_RATE_MW / TARGET_SAMPLING_RATE; // ~2.949
 
-  // Resampling Logic: 512Hz -> 173.61Hz
+  // Logic to handle both MindWave and Simulator data
   const processRawData = (value: number) => {
     if (isFinished) return;
 
-    accumulatorRef.current += 1;
-    if (accumulatorRef.current >= stepSize) {
-      accumulatorRef.current -= stepSize;
-      
-      const signalValue = value / 32768.0; // Normalized 16-bit
-      resampledBufferRef.current.push(signalValue);
-      
-      if (resampledBufferRef.current.length >= BUFFER_SIZE) {
-        setIsFinished(true);
-        const fullBuffer = [...resampledBufferRef.current];
-        handleSessionEnd(fullBuffer);
+    if (isSimRef.current) {
+      // Simulator data is already 173.61Hz and raw Bonn ranges
+      resampledBufferRef.current.push(value);
+    } else {
+      // MindWave Resampling: 512Hz -> 173.61Hz
+      accumulatorRef.current += 1;
+      if (accumulatorRef.current >= stepSize) {
+        accumulatorRef.current -= stepSize;
+        const signalValue = value / 32768.0; // Normalized 16-bit
+        resampledBufferRef.current.push(signalValue);
       }
+    }
+      
+    if (resampledBufferRef.current.length >= BUFFER_SIZE) {
+      setIsFinished(true);
+      const fullBuffer = [...resampledBufferRef.current];
+      handleSessionEnd(fullBuffer);
     }
   };
 
@@ -88,8 +95,13 @@ export function LiveMonitoring() {
   // Expose functions to Eel
   useEffect(() => {
     if (window.eel) {
+      const onRawEEGData = (value: number) => {
+        processRawData(value);
+        window.dispatchEvent(new CustomEvent('new_eeg_data', { detail: value }));
+      };
       // @ts-ignore
-      window.eel.expose(processRawData, "updateEEGData");
+      window.eel.expose(onRawEEGData, "updateEEGData");
+
       // @ts-ignore
       window.eel.expose((val: number) => {
           setSignalQuality(Math.round((200 - val) / 2)); // 0 = perfect, 200 = no signal
@@ -102,17 +114,20 @@ export function LiveMonitoring() {
     }
   }, [isFinished]);
 
-  const connectDevice = async () => {
+  const connectDevice = async (isSimulation = false, label = 1) => {
     setIsConnecting(true);
     setIsFinished(false);
     setDuration(0);
     resampledBufferRef.current = [];
+    isSimRef.current = isSimulation;
     try {
       if (window.eel) {
-        const success = await window.eel.start_eeg_stream();
+        const success = isSimulation 
+            ? await window.eel.start_simulation(label)
+            : await window.eel.start_eeg_stream();
         if (success) {
           setIsConnected(true);
-          toast.success("Сесията започна!");
+          toast.success(isSimulation ? "Симулацията започна!" : "Сесията започна!");
         }
       }
     } catch (err) {
@@ -168,9 +183,17 @@ export function LiveMonitoring() {
             <Wifi className="w-12 h-12 text-white mb-6" />
             <h2 className="text-xl font-bold text-white mb-2">Започни измерване</h2>
             <p className="text-blue-100 text-sm mb-6 px-4">Сесията продължава 23.6 секунди за максимална точност.</p>
-            <button onClick={connectDevice} disabled={isConnecting} className="w-full bg-white text-blue-600 font-bold py-4 rounded-2xl disabled:opacity-50">
-              {isConnecting ? "Свързване..." : "Старт сега"}
+            <button onClick={() => connectDevice(false)} disabled={isConnecting} className="w-full bg-white text-blue-600 font-bold py-4 rounded-2xl disabled:opacity-50">
+              {isConnecting ? "Свързване..." : "Старт сега (MindWave)"}
             </button>
+            <div className="grid grid-cols-2 gap-3 w-full mt-4">
+               <button onClick={() => connectDevice(true, 5)} disabled={isConnecting} className="bg-green-500/20 text-green-100 text-sm font-bold py-3 rounded-xl border border-green-500/30 hover:bg-green-500/30 transition-colors">
+                  Виртуално (Здрав)
+               </button>
+               <button onClick={() => connectDevice(true, 1)} disabled={isConnecting} className="bg-red-500/20 text-red-100 text-sm font-bold py-3 rounded-xl border border-red-500/30 hover:bg-red-500/30 transition-colors">
+                  Виртуално (Болен)
+               </button>
+            </div>
           </div>
       ) : (
         <div className="flex-1 space-y-6">

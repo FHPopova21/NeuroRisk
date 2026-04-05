@@ -27,3 +27,4 @@ PyJWT
 eel
 pyserial
 bleak
+pandas

@@ -85,7 +85,7 @@ export const apiService = {
   },
 
   async getMyHistory(): Promise<EEGRecord[]> {
-    const response = await fetch(`${API_BASE_URL}/monitoring/history`, { headers: getHeaders() });
+    const response = await fetch(`${API_BASE_URL}/monitoring/history/me`, { headers: getHeaders() });
     if (!response.ok) throw new Error("Неуспешно зареждане на историята");
     return response.json();
   },
