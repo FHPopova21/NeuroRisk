@@ -129,9 +129,14 @@
 | :--- | :--- |
 | ![Dashboard Screenshot](Web_App/public/dashboard-preview.png) | ![SHAP Analysis](Web_App/public/shap-preview.png) |
 
+| Пациентски Панел | Мониторинг в реално време |
+| :--- | :--- |
+| ![Patient Dashboard Screenshot](Web_App/public/patient-dashboard.png) | ![Live Monitoring](Web_App/public/live-monitoring.png) |
 ---
 
 ## 🚀 Инсталация и локално стартиране
+
+> **⚠️ Важно: Проектът изисква инсталиран PostgreSQL 14+. Уверете се, че сте създали база данни с име neurorisk и сте конфигурирали DATABASE_URL в .env файла на Backend-а.**
 
 ### 🖥️ За Windows 
 ```bash
