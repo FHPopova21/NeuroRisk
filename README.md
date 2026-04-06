@@ -12,7 +12,7 @@
 ![React](https://img.shields.io/badge/React-Web_Dashboard-61DAFB?style=for-the-badge&logo=react&logoColor=20232A)
 ![React Native](https://img.shields.io/badge/React_Native-Mobile_App-61DAFB?style=for-the-badge&logo=react&logoColor=white)
 ![TensorFlow](https://img.shields.io/badge/TensorFlow-AI_Model-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)
-![SQLite](https://img.shields.io/badge/SQLite-Database-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-336791?style=for-the-badge&logo=postgresql&logoColor=white)
 
 > *Интелигентна екосистема за live мониторинг и превантивна реакция. Комбинация от AI алгоритми, облачна инфраструктура и потребителски интерфейс, която превръща суровия мозъчен сигнал в спасяваща информация.*
 
@@ -51,7 +51,7 @@
 
 ---
 
-# 🧠 Изкуствен интелект и Машинно обучение
+## 🧠 Изкуствен интелект и Машинно обучение
 
 Ядрото на **NeuroRisk** е усъвършенстван хибриден модел, базиран на **рекурентни невронни мрежи (LSTM)**. Той е оптимизиран за прецизен анализ на времеви редове (Time-series analysis) и ранно откриване на патологична невронна активност.
 
