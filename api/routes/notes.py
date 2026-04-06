@@ -63,7 +63,7 @@ def get_latest_note(current_user):
         if not latest_note:
             return jsonify(None), 200
             
-        return jsonify(schemas.MedicalNote.model_validate(latest_note).model_dump()), 200
+        return jsonify(schemas.MedicalNote.model_validate(latest_note).model_dump(mode='json')), 200
     finally:
         db.close()
 

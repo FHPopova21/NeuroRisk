@@ -55,7 +55,7 @@ export function LiveMonitoring() {
         resampledBufferRef.current.push(signalValue);
       }
     }
-      
+
     if (resampledBufferRef.current.length >= BUFFER_SIZE) {
       setIsFinished(true);
       const fullBuffer = [...resampledBufferRef.current];
@@ -66,14 +66,14 @@ export function LiveMonitoring() {
   const handleSessionEnd = async (signal: number[]) => {
     try {
       if (window.eel) window.eel.stop_eeg_stream();
-      
+
       const result = await apiService.processSignal(signal);
       if (result.risk_score !== undefined) {
         setRiskScore(result.risk_score);
         if (result.risk_score > 70) setStatus("high");
         else if (result.risk_score > 30) setStatus("warning");
         else setStatus("stable");
-        
+
         toast.success("Анализът е завършен!");
       }
     } catch (err) {
@@ -85,7 +85,7 @@ export function LiveMonitoring() {
     try {
       if (riskScore !== null) {
         toast.success("Резултатът е запазен в историята!");
-        navigate("/");
+        navigate("/app");
       }
     } catch (err) {
       toast.error("Неуспешно запазване");
@@ -104,7 +104,7 @@ export function LiveMonitoring() {
 
       // @ts-ignore
       window.eel.expose((val: number) => {
-          setSignalQuality(Math.round((200 - val) / 2)); // 0 = perfect, 200 = no signal
+        setSignalQuality(Math.round((200 - val) / 2)); // 0 = perfect, 200 = no signal
       }, "updateSignalQuality");
       // @ts-ignore
       window.eel.expose((err: string) => {
@@ -122,9 +122,9 @@ export function LiveMonitoring() {
     isSimRef.current = isSimulation;
     try {
       if (window.eel) {
-        const success = isSimulation 
-            ? await window.eel.start_simulation(label)
-            : await window.eel.start_eeg_stream();
+        const success = isSimulation
+          ? await window.eel.start_simulation(label)
+          : await window.eel.start_eeg_stream();
         if (success) {
           setIsConnected(true);
           toast.success(isSimulation ? "Симулацията започна!" : "Сесията започна!");
@@ -173,63 +173,63 @@ export function LiveMonitoring() {
             <p className="text-white/60 text-sm">MindWave Mobile 2</p>
           </div>
         </div>
-        <button onClick={() => navigate("/")} className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/20 transition-colors shrink-0">
+        <button onClick={() => navigate("/app")} className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/20 transition-colors shrink-0">
           <X className="w-6 h-6 text-white" />
         </button>
       </div>
 
       {!isConnected ? (
-          <div className="mx-6 p-8 bg-blue-600 rounded-[2rem] flex flex-col items-center justify-center text-center shadow-2xl shadow-blue-900/40">
-            <Wifi className="w-12 h-12 text-white mb-6" />
-            <h2 className="text-xl font-bold text-white mb-2">Започни измерване</h2>
-            <p className="text-blue-100 text-sm mb-6 px-4">Сесията продължава 23.6 секунди за максимална точност.</p>
-            <button onClick={() => connectDevice(false)} disabled={isConnecting} className="w-full bg-white text-blue-600 font-bold py-4 rounded-2xl disabled:opacity-50">
-              {isConnecting ? "Свързване..." : "Старт сега (MindWave)"}
-            </button>
-            <div className="grid grid-cols-2 gap-3 w-full mt-4">
-               <button onClick={() => connectDevice(true, 5)} disabled={isConnecting} className="bg-green-500/20 text-green-100 text-sm font-bold py-3 rounded-xl border border-green-500/30 hover:bg-green-500/30 transition-colors">
-                  Виртуално (Здрав)
-               </button>
-               <button onClick={() => connectDevice(true, 1)} disabled={isConnecting} className="bg-red-500/20 text-red-100 text-sm font-bold py-3 rounded-xl border border-red-500/30 hover:bg-red-500/30 transition-colors">
-                  Виртуално (Болен)
-               </button>
-            </div>
-          </div>
+        <div className="mx-6 p-8 bg-blue-600 rounded-[2rem] flex flex-col items-center justify-center text-center shadow-2xl shadow-blue-900/40">
+          <Wifi className="w-12 h-12 text-white mb-6" />
+          <h2 className="text-xl font-bold text-white mb-2">Започни измерване</h2>
+          <p className="text-blue-100 text-sm mb-6 px-4">Сесията продължава 23.6 секунди за максимална точност.</p>
+          <button
+            onClick={() => {
+              // 1=Seizure (Висок риск), 2/3=Tumor/Eyes Closed (Среден риск), 4/5=Healthy (Нисък риск)
+              const randomLabel = Math.floor(Math.random() * 5) + 1;
+              connectDevice(true, randomLabel);
+            }}
+            disabled={isConnecting}
+            className="w-full bg-white text-blue-600 font-bold py-4 rounded-2xl disabled:opacity-50"
+          >
+            {isConnecting ? "Свързване..." : "Старт Мониторинг"}
+          </button>
+        </div>
       ) : (
         <div className="flex-1 space-y-6">
           <div className="mx-6 bg-white/5 border border-white/10 rounded-3xl p-6">
             <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-2">
-                    <div className={clsx("w-3 h-3 rounded-full", statusConfig.dotColor)} />
-                    <span className="text-white font-semibold text-lg">{statusConfig.text}</span>
-                </div>
-                {!isFinished && <button onClick={disconnectDevice} className="text-white/40 text-xs">Отказ</button>}
+              <div className="flex items-center gap-2">
+                <div className={clsx("w-3 h-3 rounded-full", statusConfig.dotColor)} />
+                <span className="text-white font-semibold text-lg">{statusConfig.text}</span>
+              </div>
+              {!isFinished && <button onClick={disconnectDevice} className="text-white/40 text-xs">Отказ</button>}
             </div>
             <div className="grid grid-cols-2 gap-6">
-                <div>
-                    <p className="text-white/60 text-xs mb-1">Време</p>
-                    <p className="text-white text-2xl font-bold">{formatDuration(duration)} / 00:24</p>
-                </div>
-                <div>
-                    <p className="text-white/60 text-xs mb-1">Качество</p>
-                    <p className="text-green-400 text-2xl font-bold">{signalQuality}%</p>
-                </div>
+              <div>
+                <p className="text-white/60 text-xs mb-1">Време</p>
+                <p className="text-white text-2xl font-bold">{formatDuration(duration)} / 00:24</p>
+              </div>
+              <div>
+                <p className="text-white/60 text-xs mb-1">Качество</p>
+                <p className="text-green-400 text-2xl font-bold">{signalQuality}%</p>
+              </div>
             </div>
           </div>
 
           <div className="mx-6 bg-white/5 border border-white/10 rounded-3xl p-6 h-48 overflow-hidden">
-               <EEGVisualizer color={statusConfig.color} isFinished={isFinished} />
+            <EEGVisualizer color={statusConfig.color} isFinished={isFinished} />
           </div>
 
           <div className="mx-6 bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-3">
-              <Activity className="w-5 h-5 text-blue-400" />
-              <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
-                  <motion.div 
-                    className="h-full bg-blue-500" 
-                    initial={{ width: 0 }} 
-                    animate={{ width: `${Math.min(100, (resampledBufferRef.current.length / BUFFER_SIZE) * 100)}%` }} 
-                  />
-              </div>
+            <Activity className="w-5 h-5 text-blue-400" />
+            <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-blue-500"
+                initial={{ width: 0 }}
+                animate={{ width: `${Math.min(100, (resampledBufferRef.current.length / BUFFER_SIZE) * 100)}%` }}
+              />
+            </div>
           </div>
         </div>
       )}
@@ -239,15 +239,15 @@ export function LiveMonitoring() {
         {isFinished && riskScore !== null && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 bg-[#030213]/90 backdrop-blur-xl z-50 flex items-center justify-center p-6 text-center">
             <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} className="w-full bg-white/10 border border-white/20 rounded-[3rem] p-8">
-                <div className={clsx("w-32 h-32 mx-auto rounded-full flex items-center justify-center mb-6 border-4", status === 'stable' ? 'border-green-500/50 bg-green-500/10' : status === 'warning' ? 'border-yellow-500/50 bg-yellow-500/10' : 'border-red-500/50 bg-red-500/10')}>
-                    <span className={clsx("text-4xl font-black", status === 'stable' ? 'text-green-500' : status === 'warning' ? 'text-yellow-500' : 'text-red-500')}>{riskScore}%</span>
-                </div>
-                <h2 className="text-2xl font-bold text-white mb-2">{statusConfig.text}</h2>
-                <p className="text-white/60 mb-8">{statusConfig.desc}</p>
-                <div className="space-y-3">
-                    <button onClick={saveToHistory} className="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-xl shadow-blue-600/20">Запази резултата</button>
-                    <button onClick={() => navigate("/")} className="w-full text-white/40 font-medium py-2">Затвори без запис</button>
-                </div>
+              <div className={clsx("w-32 h-32 mx-auto rounded-full flex items-center justify-center mb-6 border-4", status === 'stable' ? 'border-green-500/50 bg-green-500/10' : status === 'warning' ? 'border-yellow-500/50 bg-yellow-500/10' : 'border-red-500/50 bg-red-500/10')}>
+                <span className={clsx("text-4xl font-black", status === 'stable' ? 'text-green-500' : status === 'warning' ? 'text-yellow-500' : 'text-red-500')}>{riskScore}%</span>
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">{statusConfig.text}</h2>
+              <p className="text-white/60 mb-8">{statusConfig.desc}</p>
+              <div className="space-y-3">
+                <button onClick={saveToHistory} className="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-xl shadow-blue-600/20">Запази резултата</button>
+                <button onClick={() => navigate("/app")} className="w-full text-white/40 font-medium py-2">Затвори без запис</button>
+              </div>
             </motion.div>
           </motion.div>
         )}

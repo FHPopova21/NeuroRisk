@@ -66,12 +66,22 @@ class EEGSimulator:
         # Намаляваме малко sleep timer-а, понеже самият print/eel.update отнема време
         sleep_time = 1.0 / 250.0 
         
+        import random
         for value in signal:
             if not self.streaming:
                 break
                 
             # Пращаме към UI-а директно стойността (number)
             eel.updateEEGData(float(value))
+            
+            # НОВО: Случайно (в 5% от случаите) пращаме леко колебание в качеството
+            # MindWave връща 0 (перфектно) до 200 (липса на сигнал). 
+            # За да изглежда реалистично, ще пращаме между 0 и 10 (което се превежда като 95%-100% качество)
+            if random.random() < 0.05:
+                try:
+                    eel.updateSignalQuality(random.randint(0, 10))
+                except Exception:
+                    pass
             
             # Добавяме в буфера на main.py, за да може да го анализира Flask
             if add_to_buffer_func:

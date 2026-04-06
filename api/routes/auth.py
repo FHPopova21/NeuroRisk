@@ -126,14 +126,14 @@ def get_current_user(current_user):
     """
     if hasattr(current_user, 'username'):
         role = 'admin'
-        user_data = schemas.Admin.model_validate(current_user).model_dump()
+        user_data = schemas.Admin.model_validate(current_user).model_dump(mode='json')
     elif hasattr(current_user, 'specialization'):
         role = 'doctor'
-        user_data = schemas.Doctor.model_validate(current_user).model_dump()
+        user_data = schemas.Doctor.model_validate(current_user).model_dump(mode='json')
     else:
         role = 'patient'
         # ПРОВЕРКА: Ако пациентът не е активен, връщаме само основното му инфо без да гърмим
-        user_data = schemas.Patient.model_validate(current_user).model_dump()
+        user_data = schemas.Patient.model_validate(current_user).model_dump(mode='json')
         user_data['is_active'] = getattr(current_user, 'is_active', True)
         
         db = next(database.get_db())

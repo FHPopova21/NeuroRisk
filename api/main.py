@@ -8,6 +8,7 @@ from api.routes.auth import auth_bp
 from api.routes.patients import patients_bp
 from api.routes.monitoring import monitoring_bp
 from api.routes.admin import admin_bp
+from api.routes.notes import notes_bp
 from api.database.models import Base
 from api.database.database import engine
 
@@ -50,6 +51,7 @@ def create_app():
     app.register_blueprint(patients_bp, url_prefix='/api/patients')
     app.register_blueprint(monitoring_bp, url_prefix='/api/monitoring')
     app.register_blueprint(admin_bp, url_prefix='/api/admin')
+    app.register_blueprint(notes_bp, url_prefix='/api/notes')
 
     @app.route('/')
     def index():
